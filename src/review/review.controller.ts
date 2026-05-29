@@ -18,7 +18,6 @@ export class ReviewController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   findAll() {
     return this.reviewService.findAll();
   }
