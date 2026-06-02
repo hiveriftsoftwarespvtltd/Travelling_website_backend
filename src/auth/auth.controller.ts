@@ -12,4 +12,27 @@ export class AuthController {
     const user = await this.authService.validateUser(loginDto);
     return this.authService.login(user);
   }
+
+  @Post('register')
+  async register(@Body() registerDto: any) {
+    return this.authService.register(registerDto);
+  }
+
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(@Body() verifyDto: any) {
+    return this.authService.verifyEmail(verifyDto);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body('email') email: string) {
+    return this.authService.forgotPassword(email);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() resetDto: any) {
+    return this.authService.resetPassword(resetDto);
+  }
 }

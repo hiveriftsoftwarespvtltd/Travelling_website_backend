@@ -10,6 +10,7 @@ import { TourModule } from './tour/tour.module';
 import { GalleryModule } from './gallery/gallery.module';
 import { ReviewModule } from './review/review.module';
 import { BlogModule } from './blog/blog.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { BlogModule } from './blog/blog.module';
     GalleryModule,
     ReviewModule,
     BlogModule,
+    MailModule,
   ],
 })
 export class AppModule { }
