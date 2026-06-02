@@ -6,4 +6,4 @@ import { FlightService } from './flight.service';
   controllers: [FlightController],
   providers: [FlightService],
 })
-export class FlightModule {}
+export class FlightModule { }

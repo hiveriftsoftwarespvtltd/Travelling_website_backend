@@ -8,11 +8,12 @@ import * as fs from 'fs';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS
+  // Enable CORS - allow all origins (browser-safe: no credentials conflict)
   app.enableCors({
-    origin: '*', // We can restrict to allowed origins if needed, but '*' or exact frontend URLs are standard
+    origin: true,  // reflects the request origin — works with all browsers
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
+    allowedHeaders: 'Content-Type,Authorization',
+    credentials: false,
   });
 
   // Increase payload size limit
