@@ -11,6 +11,10 @@ import { GalleryModule } from './gallery/gallery.module';
 import { ReviewModule } from './review/review.module';
 import { BlogModule } from './blog/blog.module';
 import { MailModule } from './mail/mail.module';
+import { TokenModule } from './token/token.module';
+import { CommonModule } from './common/common.module';
+import { FlightModule } from './flight/flight.module';
+import { BookingModule } from './booking/booking.module';
 
 @Module({
   imports: [
@@ -40,6 +44,10 @@ import { MailModule } from './mail/mail.module';
     ReviewModule,
     BlogModule,
     MailModule,
+    TokenModule,
+    CommonModule,
+    FlightModule,
+    BookingModule,
   ],
 })
 export class AppModule { }
