@@ -37,5 +37,45 @@ export class FlightController {
 
     return this.flightService.updateCalendarFareOfDay(searchDto, endUserIp);
   }
+
+  @Post('fare-upsell')
+  async getFareUpsell(@Body() reqBody: any, @Req() req: Request) {
+    const endUserIp =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      req.socket.remoteAddress ||
+      '103.98.38.139'; // fallback IP
+
+    return this.flightService.getFareUpsell(reqBody, endUserIp);
+  }
+
+  @Post('fare-rule')
+  async getFareRule(@Body() reqBody: any, @Req() req: Request) {
+    const endUserIp =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      req.socket.remoteAddress ||
+      '103.98.38.139'; // fallback IP
+
+    return this.flightService.getFareRule(reqBody, endUserIp);
+  }
+
+  @Post('fare-quote')
+  async getFareQuote(@Body() reqBody: any, @Req() req: Request) {
+    const endUserIp =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      req.socket.remoteAddress ||
+      '103.98.38.139'; // fallback IP
+
+    return this.flightService.getFareQuote(reqBody, endUserIp);
+  }
+
+  @Post('ssr')
+  async getSSR(@Body() reqBody: any, @Req() req: Request) {
+    const endUserIp =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      req.socket.remoteAddress ||
+      '103.98.38.139'; // fallback IP
+
+    return this.flightService.getSSR(reqBody, endUserIp);
+  }
 }
 

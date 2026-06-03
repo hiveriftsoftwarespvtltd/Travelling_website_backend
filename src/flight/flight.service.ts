@@ -5,6 +5,10 @@ import { FlightSearchDto } from './dto/flight-search.dto';
 // ─── TBO API Endpoints (from TBO Documentation) ────────────────────────────
 const AUTH_URL = 'http://Sharedapi.tektravels.com/SharedData.svc/rest/Authenticate';
 const SEARCH_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/Search';
+const FARE_UPSELL_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/FareUpsell';
+const FARE_RULE_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/FareRule';
+const FARE_QUOTE_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/FareQuote';
+const SSR_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/SSR';
 
 // ─── TBO Credentials (Backend only — never expose to frontend) ──────────────
 const AUTH_CREDENTIALS = {
@@ -114,8 +118,8 @@ export class FlightService {
 
         // ErrorCode 25 is "No result found". Return the response data with a successful response
         // so the frontend can handle it nicely rather than getting a 502 Bad Gateway error.
-        if (tboError?.ErrorCode === 25) {
-          this.logger.warn('⚠️ TBO Search: No flights found (ErrorCode 25)');
+        if (tboError?.ErrorCode === 25 || tboError?.ErrorCode === 2) {
+          this.logger.warn(`⚠️ TBO Search: No flights found (ErrorCode ${tboError?.ErrorCode})`);
           return data;
         }
 
@@ -185,8 +189,8 @@ export class FlightService {
         const tboError = data?.Response?.Error;
         this.logger.error('❌ TBO Calendar Fare returned error', tboError);
 
-        if (tboError?.ErrorCode === 25) {
-          this.logger.warn('⚠️ TBO Calendar Fare: No fares found (ErrorCode 25)');
+        if (tboError?.ErrorCode === 25 || tboError?.ErrorCode === 2) {
+          this.logger.warn(`⚠️ TBO Calendar Fare: No fares found (ErrorCode ${tboError?.ErrorCode})`);
           return data;
         }
 
@@ -252,8 +256,8 @@ export class FlightService {
         const tboError = data?.Response?.Error;
         this.logger.error('❌ TBO Update Calendar Fare of Day returned error', tboError);
 
-        if (tboError?.ErrorCode === 25) {
-          this.logger.warn('⚠️ TBO Update Calendar Fare: No fares found (ErrorCode 25)');
+        if (tboError?.ErrorCode === 25 || tboError?.ErrorCode === 2) {
+          this.logger.warn(`⚠️ TBO Update Calendar Fare: No fares found (ErrorCode ${tboError?.ErrorCode})`);
           return data;
         }
 
@@ -279,5 +283,180 @@ export class FlightService {
       throw new HttpException('Failed to update calendar fares from TBO API', HttpStatus.BAD_GATEWAY);
     }
   }
-}
+  // ─── Step 6: Fare Upsell (Branded Fares) ──────────────────────────────────
+  async getFareUpsell(reqBody: any, endUserIp: string) {
+    const tokenId = await this.getToken(endUserIp);
 
+    const payload = {
+      EndUserIp: endUserIp,
+      TokenId: tokenId,
+      TraceId: reqBody.TraceId,
+      ResultIndex: reqBody.ResultIndex,
+    };
+
+    this.logger.log(`📈 TBO Fare Upsell Request for ResultIndex: ${reqBody.ResultIndex}`);
+
+    try {
+      const response = await axios.post(FARE_UPSELL_URL, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 15000,
+      });
+
+      const data = response.data;
+      if (data?.Response?.ResponseStatus !== 1) {
+        const tboError = data?.Response?.Error;
+        // Just return it nicely so frontend handles "no upsell options"
+        this.logger.warn(`⚠️ TBO Fare Upsell no results or error (ErrorCode ${tboError?.ErrorCode})`);
+        return data;
+      }
+
+      this.logger.log(`✅ TBO Fare Upsell success! TraceId: ${data?.Response?.TraceId}`);
+      return data;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      const tboErrorCode = error?.response?.data?.Response?.Error?.ErrorCode;
+      if (tboErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboErrorCode === TBO_ERROR_INVALID_TOKEN) {
+        this.logger.warn('⚠️ TBO token expired/invalid on Fare Upsell. Clearing cache and retrying...');
+        this.cachedToken = null;
+        this.tokenExpiry = 0;
+        return this.getFareUpsell(reqBody, endUserIp);
+      }
+
+      this.logger.error('❌ TBO Fare Upsell API error', error?.message);
+      throw new HttpException('Failed to fetch fare upsell options from TBO API', HttpStatus.BAD_GATEWAY);
+    }
+  }
+  // ─── Step 7: Fare Rules (Cancellation / Date Change) ──────────────────────
+  async getFareRule(reqBody: any, endUserIp: string) {
+    const tokenId = await this.getToken(endUserIp);
+
+    const payload = {
+      EndUserIp: endUserIp,
+      TokenId: tokenId,
+      TraceId: reqBody.TraceId,
+      ResultIndex: reqBody.ResultIndex,
+    };
+
+    this.logger.log(`📜 TBO Fare Rule Request for ResultIndex: ${reqBody.ResultIndex}`);
+
+    try {
+      const response = await axios.post(FARE_RULE_URL, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 15000,
+      });
+
+      const data = response.data;
+      if (data?.Response?.ResponseStatus !== 1) {
+        const tboError = data?.Response?.Error;
+        this.logger.warn(`⚠️ TBO Fare Rule no results or error (ErrorCode ${tboError?.ErrorCode})`);
+        return data;
+      }
+
+      this.logger.log(`✅ TBO Fare Rule success! TraceId: ${data?.Response?.TraceId}`);
+      return data;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      const tboErrorCode = error?.response?.data?.Response?.Error?.ErrorCode;
+      if (tboErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboErrorCode === TBO_ERROR_INVALID_TOKEN) {
+        this.logger.warn('⚠️ TBO token expired/invalid on Fare Rule. Clearing cache and retrying...');
+        this.cachedToken = null;
+        this.tokenExpiry = 0;
+        return this.getFareRule(reqBody, endUserIp);
+      }
+
+      this.logger.error('❌ TBO Fare Rule API error', error?.message);
+      throw new HttpException('Failed to fetch fare rules from TBO API', HttpStatus.BAD_GATEWAY);
+    }
+  }
+  // ─── Step 8: Fare Quote (Re-validation) ───────────────────────────────────
+  async getFareQuote(reqBody: any, endUserIp: string) {
+    const tokenId = await this.getToken(endUserIp);
+
+    const payload = {
+      EndUserIp: endUserIp,
+      TokenId: tokenId,
+      TraceId: reqBody.TraceId,
+      ResultIndex: reqBody.ResultIndex,
+    };
+
+    this.logger.log(`🛡️ TBO Fare Quote Request for ResultIndex: ${reqBody.ResultIndex}`);
+
+    try {
+      const response = await axios.post(FARE_QUOTE_URL, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 25000,
+      });
+
+      const data = response.data;
+      if (data?.Response?.ResponseStatus !== 1) {
+        const tboError = data?.Response?.Error;
+        this.logger.error(`❌ TBO Fare Quote Failed (ErrorCode ${tboError?.ErrorCode}): ${tboError?.ErrorMessage}`);
+        throw new HttpException(
+          tboError?.ErrorMessage || 'Fare re-validation failed. Flight might be sold out.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      this.logger.log(`✅ TBO Fare Quote success! IsPriceChanged: ${data?.Response?.IsPriceChanged}`);
+      return data;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      const tboErrorCode = error?.response?.data?.Response?.Error?.ErrorCode;
+      if (tboErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboErrorCode === TBO_ERROR_INVALID_TOKEN) {
+        this.logger.warn('⚠️ TBO token expired/invalid on Fare Quote. Clearing cache and retrying...');
+        this.cachedToken = null;
+        this.tokenExpiry = 0;
+        return this.getFareQuote(reqBody, endUserIp);
+      }
+
+      this.logger.error('❌ TBO Fare Quote API error', error?.message);
+      throw new HttpException('Failed to re-validate fare with TBO API', HttpStatus.BAD_GATEWAY);
+    }
+  }
+  // ─── Step 9: SSR (Meals, Baggage, Seats) ────────────────────────────────
+  async getSSR(reqBody: any, endUserIp: string) {
+    const tokenId = await this.getToken(endUserIp);
+
+    const payload = {
+      EndUserIp: endUserIp,
+      TokenId: tokenId,
+      TraceId: reqBody.TraceId,
+      ResultIndex: reqBody.ResultIndex,
+    };
+
+    this.logger.log(`🍽️ TBO SSR Request for ResultIndex: ${reqBody.ResultIndex}`);
+
+    try {
+      const response = await axios.post(SSR_URL, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 20000,
+      });
+
+      const data = response.data;
+      if (data?.Response?.ResponseStatus !== 1) {
+        const tboError = data?.Response?.Error;
+        this.logger.warn(`⚠️ TBO SSR no results or error (ErrorCode ${tboError?.ErrorCode})`);
+        return data; // SSR is optional, we don't throw an error if it fails
+      }
+
+      this.logger.log(`✅ TBO SSR success! TraceId: ${data?.Response?.TraceId}`);
+      return data;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      const tboErrorCode = error?.response?.data?.Response?.Error?.ErrorCode;
+      if (tboErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboErrorCode === TBO_ERROR_INVALID_TOKEN) {
+        this.logger.warn('⚠️ TBO token expired/invalid on SSR. Clearing cache and retrying...');
+        this.cachedToken = null;
+        this.tokenExpiry = 0;
+        return this.getSSR(reqBody, endUserIp);
+      }
+
+      this.logger.error('❌ TBO SSR API error', error?.message);
+      throw new HttpException('Failed to fetch SSR from TBO API', HttpStatus.BAD_GATEWAY);
+    }
+  }
+}
