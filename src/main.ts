@@ -8,12 +8,17 @@ import * as fs from 'fs';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS - allow all origins (browser-safe: no credentials conflict)
+  // Enable CORS - allow specific live domains and local testing
   app.enableCors({
-    origin: true,  // reflects the request origin — works with all browsers
+    origin: [
+      'https://jiyolifetravel.com',
+      'https://www.jiyolifetravel.com',
+      'http://localhost:3000',
+      'http://localhost:3001'
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type,Authorization',
-    credentials: false,
+    credentials: true,
   });
 
   // Increase payload size limit

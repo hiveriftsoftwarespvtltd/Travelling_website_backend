@@ -9,6 +9,13 @@ const FARE_UPSELL_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirS
 const FARE_RULE_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/FareRule';
 const FARE_QUOTE_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/FareQuote';
 const SSR_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/SSR';
+const BOOK_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/Book';
+const TICKET_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/Ticket';
+const GET_BOOKING_DETAILS_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/GetBookingDetails';
+const RELEASE_PNR_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/ReleasePNRRequest';
+const SEND_CHANGE_REQUEST_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/SendChangeRequest';
+const GET_CHANGE_REQUEST_STATUS_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/GetChangeRequestStatus';
+const GET_CANCELLATION_CHARGES_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/GetCancellationCharges';
 
 // ─── TBO Credentials (Backend only — never expose to frontend) ──────────────
 const AUTH_CREDENTIALS = {
@@ -115,6 +122,12 @@ export class FlightService {
       if (data?.Response?.ResponseStatus !== 1) {
         const tboError = data?.Response?.Error;
         this.logger.error('❌ TBO Search returned error', tboError);
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.searchFlights(searchDto, endUserIp);
+        }
 
         // ErrorCode 25 is "No result found". Return the response data with a successful response
         // so the frontend can handle it nicely rather than getting a 502 Bad Gateway error.
@@ -188,6 +201,12 @@ export class FlightService {
       if (data?.Response?.ResponseStatus !== 1) {
         const tboError = data?.Response?.Error;
         this.logger.error('❌ TBO Calendar Fare returned error', tboError);
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.getCalendarFare(searchDto, endUserIp);
+        }
 
         if (tboError?.ErrorCode === 25 || tboError?.ErrorCode === 2) {
           this.logger.warn(`⚠️ TBO Calendar Fare: No fares found (ErrorCode ${tboError?.ErrorCode})`);
@@ -255,16 +274,20 @@ export class FlightService {
       if (data?.Response?.ResponseStatus !== 1) {
         const tboError = data?.Response?.Error;
         this.logger.error('❌ TBO Update Calendar Fare of Day returned error', tboError);
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.updateCalendarFareOfDay(searchDto, endUserIp);
+        }
 
         if (tboError?.ErrorCode === 25 || tboError?.ErrorCode === 2) {
           this.logger.warn(`⚠️ TBO Update Calendar Fare: No fares found (ErrorCode ${tboError?.ErrorCode})`);
           return data;
         }
 
-        throw new HttpException(
-          tboError?.ErrorMessage || 'Update calendar fare fetch failed',
-          HttpStatus.BAD_GATEWAY,
-        );
+        this.logger.warn(`⚠️ TBO Update Calendar Fare returned non-critical error (ErrorCode ${tboError?.ErrorCode}). Returning empty results.`);
+        return { Response: { SearchResults: [] } };
       }
 
       return data;
@@ -279,8 +302,8 @@ export class FlightService {
         return this.updateCalendarFareOfDay(searchDto, endUserIp);
       }
 
-      this.logger.error('❌ TBO Update Calendar Fare API error', error?.message);
-      throw new HttpException('Failed to update calendar fares from TBO API', HttpStatus.BAD_GATEWAY);
+      this.logger.warn('⚠️ TBO Update Calendar Fare API error, returning empty results to avoid frontend crash: ' + error?.message);
+      return { Response: { SearchResults: [] } };
     }
   }
   // ─── Step 6: Fare Upsell (Branded Fares) ──────────────────────────────────
@@ -307,10 +330,21 @@ export class FlightService {
         const tboError = data?.Response?.Error;
         // Just return it nicely so frontend handles "no upsell options"
         this.logger.warn(`⚠️ TBO Fare Upsell no results or error (ErrorCode ${tboError?.ErrorCode})`);
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.getFareUpsell(reqBody, endUserIp);
+        }
         return data;
       }
 
       this.logger.log(`✅ TBO Fare Upsell success! TraceId: ${data?.Response?.TraceId}`);
+      try {
+        require('fs').writeFileSync('test/fare-upsell-debug.json', JSON.stringify(data, null, 2));
+      } catch (e) {
+        this.logger.error('Failed to write debug JSON', e);
+      }
       return data;
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -350,6 +384,12 @@ export class FlightService {
       if (data?.Response?.ResponseStatus !== 1) {
         const tboError = data?.Response?.Error;
         this.logger.warn(`⚠️ TBO Fare Rule no results or error (ErrorCode ${tboError?.ErrorCode})`);
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.getFareRule(reqBody, endUserIp);
+        }
         return data;
       }
 
@@ -393,6 +433,12 @@ export class FlightService {
       if (data?.Response?.ResponseStatus !== 1) {
         const tboError = data?.Response?.Error;
         this.logger.error(`❌ TBO Fare Quote Failed (ErrorCode ${tboError?.ErrorCode}): ${tboError?.ErrorMessage}`);
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.getFareQuote(reqBody, endUserIp);
+        }
         throw new HttpException(
           tboError?.ErrorMessage || 'Fare re-validation failed. Flight might be sold out.',
           HttpStatus.BAD_REQUEST,
@@ -439,6 +485,12 @@ export class FlightService {
       if (data?.Response?.ResponseStatus !== 1) {
         const tboError = data?.Response?.Error;
         this.logger.warn(`⚠️ TBO SSR no results or error (ErrorCode ${tboError?.ErrorCode})`);
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.getSSR(reqBody, endUserIp);
+        }
         return data; // SSR is optional, we don't throw an error if it fails
       }
 
@@ -457,6 +509,447 @@ export class FlightService {
 
       this.logger.error('❌ TBO SSR API error', error?.message);
       throw new HttpException('Failed to fetch SSR from TBO API', HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  // ─── Step 10: Book Flight ────────────────────────────────────────────────
+  async bookFlight(reqBody: any, endUserIp: string) {
+    const tokenId = await this.getToken(endUserIp);
+
+    const payload = {
+      ...reqBody,
+      EndUserIp: endUserIp,
+      TokenId: tokenId,
+    };
+
+    this.logger.log(`🎫 TBO Book Request for TraceId: ${reqBody.TraceId}`);
+
+    try {
+      const response = await axios.post(BOOK_URL, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 45000, // Booking can take a bit longer
+      });
+
+      const data = response.data;
+      if (data?.Response?.ResponseStatus !== 1) {
+        const tboError = data?.Response?.Error;
+        this.logger.error('❌ TBO Book returned error: ' + JSON.stringify(tboError));
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.bookFlight(reqBody, endUserIp);
+        }
+
+        throw new HttpException(
+          { message: tboError?.ErrorMessage || 'Booking failed at airline/TBO level', details: tboError },
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+
+      this.logger.log(`✅ TBO Book success! PNR: ${data?.Response?.Response?.PNR}`);
+      return data;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      const tboErrorCode = error?.response?.data?.Response?.Error?.ErrorCode;
+      if (tboErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboErrorCode === TBO_ERROR_INVALID_TOKEN) {
+        this.logger.warn('⚠️ TBO token expired/invalid on Book. Clearing cache and retrying...');
+        this.cachedToken = null;
+        this.tokenExpiry = 0;
+        return this.bookFlight(reqBody, endUserIp);
+      }
+
+      const responseData = error?.response?.data || error?.message;
+      this.logger.error('❌ TBO Book API error details: ' + JSON.stringify(responseData));
+      
+      throw new HttpException({
+        message: 'Failed to book flight with TBO API',
+        details: responseData
+      }, HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  // ─── Step 11: Ticket Flight (LCC & Non-LCC) ──────────────────────────────
+  async ticketFlight(reqBody: any, endUserIp: string) {
+    const tokenId = await this.getToken(endUserIp);
+
+    const payload = {
+      ...reqBody,
+      EndUserIp: endUserIp,
+      TokenId: tokenId,
+    };
+
+    this.logger.log(`🎫 TBO Ticket Request for TraceId: ${reqBody.TraceId}`);
+
+    try {
+      const response = await axios.post(TICKET_URL, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 45000, 
+      });
+
+      const data = response.data;
+      if (data?.Response?.ResponseStatus !== 1) {
+        const tboError = data?.Response?.Error;
+        this.logger.error('❌ TBO Ticket returned error: ' + JSON.stringify(tboError));
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.ticketFlight(reqBody, endUserIp);
+        }
+
+        throw new HttpException(
+          { message: tboError?.ErrorMessage || 'Ticketing failed at airline/TBO level', details: tboError },
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+
+      this.logger.log(`✅ TBO Ticket success! PNR: ${data?.Response?.Response?.PNR}`);
+      return data;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      const tboErrorCode = error?.response?.data?.Response?.Error?.ErrorCode;
+      if (tboErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboErrorCode === TBO_ERROR_INVALID_TOKEN) {
+        this.logger.warn('⚠️ TBO token expired/invalid on Ticket. Clearing cache and retrying...');
+        this.cachedToken = null;
+        this.tokenExpiry = 0;
+        return this.ticketFlight(reqBody, endUserIp);
+      }
+
+      const responseData = error?.response?.data || error?.message;
+      this.logger.error('❌ TBO Ticket API error details: ' + JSON.stringify(responseData));
+      
+      throw new HttpException({
+        message: 'Failed to ticket flight with TBO API',
+        details: responseData
+      }, HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  // ─── Step 12: Get Booking Details ──────────────────────────────────────────
+  async getBookingDetails(reqBody: any, endUserIp: string) {
+    const tokenId = await this.getToken(endUserIp);
+
+    const payload: any = {
+      EndUserIp: endUserIp,
+      TokenId: tokenId,
+    };
+
+    if (reqBody.PNR) {
+      payload.PNR = reqBody.PNR;
+    }
+    if (reqBody.BookingId) {
+      payload.BookingId = reqBody.BookingId;
+    }
+    if (reqBody.FirstName) {
+      payload.FirstName = reqBody.FirstName;
+    }
+    if (reqBody.LastName) {
+      payload.LastName = reqBody.LastName;
+    }
+    if (reqBody.TraceId) {
+      payload.TraceId = reqBody.TraceId;
+    }
+
+    this.logger.log(`🔍 TBO Get Booking Details Request | PNR: ${reqBody.PNR || 'N/A'}, BookingId: ${reqBody.BookingId || 'N/A'}, TraceId: ${reqBody.TraceId || 'N/A'}`);
+
+    try {
+      const response = await axios.post(GET_BOOKING_DETAILS_URL, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 25000,
+      });
+
+      const data = response.data;
+      if (data?.Response?.ResponseStatus !== 1) {
+        const tboError = data?.Response?.Error;
+        this.logger.error('❌ TBO Get Booking Details returned error: ' + JSON.stringify(tboError));
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.getBookingDetails(reqBody, endUserIp);
+        }
+
+        throw new HttpException(
+          { message: tboError?.ErrorMessage || 'Failed to get booking details', details: tboError },
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+
+      this.logger.log(`✅ TBO Get Booking Details success! PNR: ${data?.Response?.FlightItinerary?.PNR}`);
+      return data;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      const tboErrorCode = error?.response?.data?.Response?.Error?.ErrorCode;
+      if (tboErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboErrorCode === TBO_ERROR_INVALID_TOKEN) {
+        this.logger.warn('⚠️ TBO token expired/invalid on Get Booking Details. Clearing cache and retrying...');
+        this.cachedToken = null;
+        this.tokenExpiry = 0;
+        return this.getBookingDetails(reqBody, endUserIp);
+      }
+
+      const responseData = error?.response?.data || error?.message;
+      this.logger.error('❌ TBO Get Booking Details API error details: ' + JSON.stringify(responseData));
+      
+      throw new HttpException({
+        message: 'Failed to fetch booking details from TBO API',
+        details: responseData
+      }, HttpStatus.BAD_GATEWAY);
+    }
+  }
+  // ─── Step 13: Release PNR (Cancel Un-Ticketed Booking) ────────────────────
+  async releasePNR(reqBody: any, endUserIp: string) {
+    const tokenId = await this.getToken(endUserIp);
+
+    const payload = {
+      EndUserIp: endUserIp,
+      TokenId: tokenId,
+      BookingId: reqBody.BookingId,
+      Source: reqBody.Source,
+    };
+
+    this.logger.log(`🗑️ TBO Release PNR Request for BookingId: ${reqBody.BookingId}`);
+
+    try {
+      const response = await axios.post(RELEASE_PNR_URL, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 25000,
+      });
+
+      const data = response.data;
+      if (data?.Response?.ResponseStatus !== 1) {
+        const tboError = data?.Response?.Error;
+        this.logger.error('❌ TBO Release PNR returned error: ' + JSON.stringify(tboError));
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.releasePNR(reqBody, endUserIp);
+        }
+        throw new HttpException(
+          {
+            message: tboError?.ErrorMessage || 'TBO API rejected the Release PNR request',
+            error: tboError,
+          },
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+
+      this.logger.log(`✅ TBO Release PNR success! BookingId: ${reqBody.BookingId}`);
+      return data;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      const tboErrorCode = error?.response?.data?.Response?.Error?.ErrorCode;
+      if (tboErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboErrorCode === TBO_ERROR_INVALID_TOKEN) {
+        this.logger.warn('⚠️ TBO token expired/invalid on Release PNR. Clearing cache and retrying...');
+        this.cachedToken = null;
+        this.tokenExpiry = 0;
+        return this.releasePNR(reqBody, endUserIp);
+      }
+
+      const responseData = error?.response?.data || error?.message;
+      this.logger.error('❌ TBO Release PNR API error details: ' + JSON.stringify(responseData));
+      
+      throw new HttpException({
+        message: 'Failed to release PNR from TBO API',
+        details: responseData
+      }, HttpStatus.BAD_GATEWAY);
+    }
+  }
+  // ─── Step 14: Send Change Request (Modify/Cancel Ticketed Booking) ────────
+  async sendChangeRequest(reqBody: any, endUserIp: string) {
+    const tokenId = await this.getToken(endUserIp);
+
+    const payload: any = {
+      BookingId: reqBody.BookingId,
+      RequestType: reqBody.RequestType,
+      CancellationType: reqBody.CancellationType,
+      Remarks: reqBody.Remarks || "Change request submitted via platform.",
+      EndUserIp: endUserIp,
+      TokenId: tokenId,
+    };
+
+    if (reqBody.TicketId && Array.isArray(reqBody.TicketId) && reqBody.TicketId.length > 0) {
+      payload.TicketId = reqBody.TicketId;
+    }
+
+    if (reqBody.Sectors && Array.isArray(reqBody.Sectors) && reqBody.Sectors.length > 0) {
+      payload.Sectors = reqBody.Sectors;
+    }
+
+    this.logger.log(`🔄 TBO Send Change Request for BookingId: ${reqBody.BookingId}, RequestType: ${reqBody.RequestType}`);
+
+    try {
+      const response = await axios.post(SEND_CHANGE_REQUEST_URL, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 25000,
+      });
+
+      const data = response.data;
+      if (data?.Response?.ResponseStatus !== 1 && data?.Response?.ResponseStatus !== 4) { // Sometimes 4 is successful partial
+        const tboError = data?.Response?.Error;
+        this.logger.error('❌ TBO Send Change Request returned error: ' + JSON.stringify(tboError));
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.sendChangeRequest(reqBody, endUserIp);
+        }
+        throw new HttpException(
+          {
+            message: tboError?.ErrorMessage || 'TBO API rejected the Change request',
+            error: tboError,
+          },
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+
+      this.logger.log(`✅ TBO Send Change Request success! Ticket Change Requested for: ${reqBody.BookingId}`);
+      return data;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      const tboErrorCode = error?.response?.data?.Response?.Error?.ErrorCode;
+      if (tboErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboErrorCode === TBO_ERROR_INVALID_TOKEN) {
+        this.logger.warn('⚠️ TBO token expired/invalid on Send Change Request. Clearing cache and retrying...');
+        this.cachedToken = null;
+        this.tokenExpiry = 0;
+        return this.sendChangeRequest(reqBody, endUserIp);
+      }
+
+      const responseData = error?.response?.data || error?.message;
+      this.logger.error('❌ TBO Send Change Request API error details: ' + JSON.stringify(responseData));
+      
+      throw new HttpException({
+        message: 'Failed to send change request to TBO API',
+        details: responseData
+      }, HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  // ─── Step 15: Get Change Request Status ───────────────────────────────────
+  async getChangeRequestStatus(reqBody: any, endUserIp: string) {
+    const tokenId = await this.getToken(endUserIp);
+
+    const payload = {
+      ChangeRequestId: reqBody.ChangeRequestId,
+      EndUserIp: endUserIp,
+      TokenId: tokenId,
+    };
+
+    this.logger.log(`🔍 TBO Get Change Request Status for ID: ${reqBody.ChangeRequestId}`);
+
+    try {
+      const response = await axios.post(GET_CHANGE_REQUEST_STATUS_URL, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 25000,
+      });
+
+      const data = response.data;
+      if (data?.Response?.ResponseStatus !== 1) {
+        const tboError = data?.Response?.Error;
+        this.logger.error('❌ TBO Get Change Request Status returned error: ' + JSON.stringify(tboError));
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.getChangeRequestStatus(reqBody, endUserIp);
+        }
+        throw new HttpException(
+          {
+            message: tboError?.ErrorMessage || 'TBO API rejected the Status request',
+            error: tboError,
+          },
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+
+      this.logger.log(`✅ TBO Get Change Request Status success! Request ID: ${reqBody.ChangeRequestId}`);
+      return data;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      const tboErrorCode = error?.response?.data?.Response?.Error?.ErrorCode;
+      if (tboErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboErrorCode === TBO_ERROR_INVALID_TOKEN) {
+        this.logger.warn('⚠️ TBO token expired/invalid on Get Change Request Status. Clearing cache and retrying...');
+        this.cachedToken = null;
+        this.tokenExpiry = 0;
+        return this.getChangeRequestStatus(reqBody, endUserIp);
+      }
+
+      const responseData = error?.response?.data || error?.message;
+      this.logger.error('❌ TBO Get Change Request Status API error details: ' + JSON.stringify(responseData));
+      
+      throw new HttpException({
+        message: 'Failed to get change request status from TBO API',
+        details: responseData
+      }, HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  // ─── Step 16: Get Cancellation Charges (Quote) ───────────────────────────
+  async getCancellationCharges(reqBody: any, endUserIp: string) {
+    const tokenId = await this.getToken(endUserIp);
+
+    const payload = {
+      BookingId: reqBody.BookingId,
+      RequestType: reqBody.RequestType || "1",
+      BookingMode: reqBody.BookingMode || "5",
+      EndUserIp: endUserIp,
+      TokenId: tokenId,
+    };
+
+    this.logger.log(`💵 TBO Get Cancellation Charges for BookingId: ${reqBody.BookingId}`);
+
+    try {
+      const response = await axios.post(GET_CANCELLATION_CHARGES_URL, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 25000,
+      });
+
+      const data = response.data;
+      if (data?.Response?.ResponseStatus !== 1) {
+        const tboError = data?.Response?.Error;
+        this.logger.error('❌ TBO Get Cancellation Charges returned error: ' + JSON.stringify(tboError));
+        if (tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN) {
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
+          this.cachedToken = null;
+          this.tokenExpiry = 0;
+          return this.getCancellationCharges(reqBody, endUserIp);
+        }
+        throw new HttpException(
+          {
+            message: tboError?.ErrorMessage || 'TBO API rejected the Cancellation Charges request',
+            error: tboError,
+          },
+          HttpStatus.BAD_GATEWAY,
+        );
+      }
+
+      this.logger.log(`✅ TBO Get Cancellation Charges success! BookingId: ${reqBody.BookingId}`);
+      return data;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      const tboErrorCode = error?.response?.data?.Response?.Error?.ErrorCode;
+      if (tboErrorCode === TBO_ERROR_TOKEN_EXPIRED || tboErrorCode === TBO_ERROR_INVALID_TOKEN) {
+        this.logger.warn('⚠️ TBO token expired/invalid on Get Cancellation Charges. Clearing cache and retrying...');
+        this.cachedToken = null;
+        this.tokenExpiry = 0;
+        return this.getCancellationCharges(reqBody, endUserIp);
+      }
+
+      const responseData = error?.response?.data || error?.message;
+      this.logger.error('❌ TBO Get Cancellation Charges API error details: ' + JSON.stringify(responseData));
+      
+      throw new HttpException({
+        message: 'Failed to get cancellation charges from TBO API',
+        details: responseData
+      }, HttpStatus.BAD_GATEWAY);
     }
   }
 }
