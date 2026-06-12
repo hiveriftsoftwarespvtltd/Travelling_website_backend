@@ -1,5 +1,9 @@
-import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Logger, OnModuleInit } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import axios from 'axios';
+import { HotelCity, HotelCityDocument } from './schemas/hotel-city.schema';
+import { HotelProperty, HotelPropertyDocument } from './schemas/hotel-property.schema';
 
 // ─── TBO Shared Auth (same as flight module) ────────────────────────────────
 const AUTH_URL = 'http://Sharedapi.tektravels.com/SharedData.svc/rest/Authenticate';
@@ -40,8 +44,13 @@ const TBO_ERROR_TOKEN_EXPIRED = 6;
 const TBO_ERROR_INVALID_TOKEN  = 7;
 
 @Injectable()
-export class HotelService {
+export class HotelService implements OnModuleInit {
   private readonly logger = new Logger(HotelService.name);
+
+  constructor(
+    @InjectModel(HotelCity.name) private cityModel: Model<HotelCityDocument>,
+    @InjectModel(HotelProperty.name) private propertyModel: Model<HotelPropertyDocument>,
+  ) {}
 
   // In-memory token cache (shared auth, same as flights)
   private cachedToken: string | null = null;
@@ -575,5 +584,88 @@ export class HotelService {
       this.logger.error('❌ TBO Hotel Codes By City error', error?.message);
       throw new HttpException('Failed to fetch hotel codes by city', HttpStatus.BAD_GATEWAY);
     }
+  }
+
+  // ─── Search Suggestions (Unified Search) ────────────────────────────────────
+  async getSearchSuggestions(query: string) {
+    if (!query || query.trim().length === 0) {
+      return { cities: [], hotels: [] };
+    }
+
+    const regex = new RegExp(query.trim(), 'i');
+
+    const [cities, hotels] = await Promise.all([
+      this.cityModel.find({ CityName: { $regex: regex } }).limit(10).exec(),
+      this.propertyModel.find({ HotelName: { $regex: regex } }).limit(10).exec(),
+    ]);
+
+    return { cities, hotels };
+  }
+
+  // ─── Seeding Static Data ──────────────────────────────────────────────────
+  async onModuleInit() {
+    // Run seed asynchronously so it doesn't block app startup
+    this.seedStaticData().catch(err => this.logger.error('Failed to seed hotel static data', err));
+  }
+
+  private async seedStaticData() {
+    const cityCount = await this.cityModel.countDocuments();
+    if (cityCount > 0) {
+      this.logger.log(`🏨 Hotel Static Data already seeded with ${cityCount} cities.`);
+      return;
+    }
+
+    this.logger.log('🌱 Seeding top Hotel Static Data (Cities & Hotels) for unified search...');
+    
+    // Define a targeted list of popular destination countries to keep seed time reasonable
+    const targetCountries = ['IN', 'TH', 'AE', 'ID', 'SG', 'MY', 'LK', 'MV'];
+
+    for (const countryCode of targetCountries) {
+      this.logger.log(`Fetching cities for Country: ${countryCode}...`);
+      try {
+        const cityData = await this.getCityList(countryCode);
+        const cities = cityData?.CityList || [];
+        
+        for (const city of cities) {
+          // Save city
+          await this.cityModel.updateOne(
+            { CityCode: city.Code },
+            { $set: { CityCode: city.Code, CityName: city.Name, CountryCode: countryCode } },
+            { upsert: true }
+          );
+
+          // Fetch hotels for this city
+          try {
+            const hotelData = await this.getHotelCodesByCity(city.Code);
+            const hotels = hotelData?.Hotels || [];
+            
+            if (hotels.length > 0) {
+              const bulkOps = hotels.map(h => ({
+                updateOne: {
+                  filter: { HotelCode: h.HotelCode },
+                  update: {
+                    $set: {
+                      HotelCode: h.HotelCode,
+                      HotelName: h.HotelName,
+                      CityCode: city.Code,
+                      CountryCode: countryCode,
+                      StarRating: h.StarRating,
+                    }
+                  },
+                  upsert: true
+                }
+              }));
+              await this.propertyModel.bulkWrite(bulkOps);
+            }
+          } catch (err) {
+            this.logger.warn(`Failed to fetch hotels for city ${city.Name} (${city.Code})`);
+          }
+        }
+        this.logger.log(`✅ Synced ${cities.length} cities for ${countryCode}`);
+      } catch (err) {
+        this.logger.warn(`Failed to fetch cities for country ${countryCode}`);
+      }
+    }
+    this.logger.log('✅ Hotel Static Data seeding completed!');
   }
 }

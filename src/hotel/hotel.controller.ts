@@ -79,4 +79,9 @@ export class HotelController {
   async getHotelCodesByCity(@Body() body: { CityCode: string }) {
     return this.hotelService.getHotelCodesByCity(body.CityCode);
   }
+
+  @Get('search-suggestions')
+  async getSearchSuggestions(@Query('q') q: string) {
+    return this.hotelService.getSearchSuggestions(q);
+  }
 }

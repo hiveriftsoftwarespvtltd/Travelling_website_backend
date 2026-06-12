@@ -13,6 +13,8 @@ import { BlogModule } from './blog/blog.module';
 import { MailModule } from './mail/mail.module';
 import { FlightModule } from './flight/flight.module';
 import { HotelModule } from './hotel/hotel.module';
+import { AirportModule } from './airport/airport.module';
+import { WalletModule } from './wallet/wallet.module';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { HotelModule } from './hotel/hotel.module';
     MailModule,
     FlightModule,
     HotelModule,
+    AirportModule,
+    WalletModule,
   ],
 })
 export class AppModule { }
