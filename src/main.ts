@@ -8,14 +8,9 @@ import * as fs from 'fs';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS - allow specific live domains and local testing
+  // Enable CORS - allow any origin dynamically
   app.enableCors({
-    origin: [
-      'https://jiyolifetravel.com',
-      'https://www.jiyolifetravel.com',
-      'http://localhost:3000',
-      'http://localhost:3001'
-    ],
+    origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type,Authorization',
     credentials: true,

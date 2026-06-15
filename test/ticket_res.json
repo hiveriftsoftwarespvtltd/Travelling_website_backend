@@ -1,0 +1,324 @@
+{
+  "Response": {
+    "B2B2BStatus": false,
+    "Error": {
+      "ErrorCode": 0,
+      "ErrorMessage": ""
+    },
+    "ResponseStatus": 1,
+    "TraceId": "920273dd-6c2b-4a00-be18-753142c7e1d7",
+    "Response": {
+      "ItineraryChangeList": null,
+      "PNR": "TESTPNR",
+      "BookingId": 2142853,
+      "SSRDenied": false,
+      "SSRMessage": null,
+      "Status": 1,
+      "IsPriceChanged": false,
+      "IsTimeChanged": false,
+      "FlightItinerary": {
+        "CommentDetails": null,
+        "FareClassification": "Inst_SeriesPurTPO#Yellow",
+        "IsPartialVoidAllowed": true,
+        "IsSeatsBooked": false,
+        "IssuancePcc": "tpdtbo",
+        "JourneyType": 1,
+        "SearchCombinationType": 2,
+        "SupplierFareClasses": null,
+        "TBOConfNo": "TBFQER1T9",
+        "TBOTripID": null,
+        "TripIndicator": 1,
+        "BookingAllowedForRoamer": true,
+        "BookingId": 2142853,
+        "IsCouponAppilcable": true,
+        "IsManual": false,
+        "PNR": "TESTPNR",
+        "AgentReferenceNo": "TOURM-1781503040129",
+        "IsDomestic": true,
+        "ResultFareType": "RegularFare",
+        "Source": 199,
+        "Origin": "DEL",
+        "Destination": "BOM",
+        "AirlineCode": "6E",
+        "ValidatingAirlineCode": "6E",
+        "AirlineRemark": "",
+        "AirlineTollFreeNo": "1800-0001-5456-51515",
+        "IsLCC": true,
+        "NonRefundable": true,
+        "FareType": "PUB",
+        "CreditNoteNo": null,
+        "Fare": {
+          "CFARAmount": 0,
+          "DCFARAmount": 0,
+          "ServiceFeeDisplayType": 0,
+          "Currency": "INR",
+          "BaseFare": 5000,
+          "Tax": 229,
+          "TaxBreakup": [
+            {
+              "key": "K3",
+              "value": 0
+            }
+          ],
+          "YQTax": 0,
+          "AdditionalTxnFeeOfrd": 0,
+          "AdditionalTxnFeePub": 0,
+          "PGCharge": 0,
+          "OtherCharges": 236,
+          "ChargeBU": [
+            {
+              "key": "TBOMARKUP",
+              "value": 0
+            },
+            {
+              "key": "GLOBALPROCUREMENTCHARGE",
+              "value": 0
+            },
+            {
+              "key": "OTHERCHARGE",
+              "value": 236
+            },
+            {
+              "key": "CONVENIENCECHARGE",
+              "value": 0
+            }
+          ],
+          "Discount": 0,
+          "PublishedFare": 5465,
+          "CommissionEarned": 0,
+          "PLBEarned": 0,
+          "IncentiveEarned": 0,
+          "OfferedFare": 5465,
+          "TdsOnCommission": 0,
+          "TdsOnPLB": 0,
+          "TdsOnIncentive": 0,
+          "ServiceFee": 0,
+          "TotalBaggageCharges": 0,
+          "TotalMealCharges": 0,
+          "TotalSeatCharges": 0,
+          "TotalSpecialServiceCharges": 0
+        },
+        "CreditNoteCreatedOn": null,
+        "Passenger": [
+          {
+            "BarcodeDetails": null,
+            "DocumentDetails": [
+              {
+                "DocumentExpiryDate": "2029-10-16",
+                "DocumentIssueDate": "2020-01-01",
+                "DocumentIssuingCountry": "IN",
+                "DocumentNumber": "A1234567",
+                "DocumentTypeId": "Passport",
+                "PaxId": 0,
+                "ResultFareType": 0
+              }
+            ],
+            "GuardianDetails": null,
+            "IsReissued": false,
+            "SegmentDetails": [
+              {
+                "CabinBaggage": {
+                  "Unit": "KG",
+                  "Value": "7"
+                },
+                "CheckedInBaggage": {
+                  "Unit": "KG",
+                  "Value": "15"
+                },
+                "FareBasis": "PI",
+                "FlightInfoIndex": "1"
+              }
+            ],
+            "PaxId": 3445501,
+            "Title": "Mr",
+            "FirstName": "samunder",
+            "LastName": "yadav",
+            "PaxType": 1,
+            "DateOfBirth": "1990-01-01T00:00:00",
+            "Gender": 1,
+            "IsPANRequired": false,
+            "IsPassportRequired": false,
+            "PAN": "",
+            "PassportNo": "A1234567",
+            "PassportExpiry": "2029-10-16T00:00:00",
+            "AddressLine1": "123, Test",
+            "Fare": {
+              "CFARAmount": 0,
+              "DCFARAmount": 0,
+              "ServiceFeeDisplayType": 0,
+              "Currency": "INR",
+              "BaseFare": 5000,
+              "Tax": 229,
+              "TaxBreakup": [
+                {
+                  "key": "K3",
+                  "value": 0
+                }
+              ],
+              "YQTax": 0,
+              "AdditionalTxnFeeOfrd": 0,
+              "AdditionalTxnFeePub": 0,
+              "PGCharge": 0,
+              "OtherCharges": 236,
+              "ChargeBU": [
+                {
+                  "key": "TBOMARKUP",
+                  "value": 0
+                },
+                {
+                  "key": "GLOBALPROCUREMENTCHARGE",
+                  "value": 0
+                },
+                {
+                  "key": "OTHERCHARGE",
+                  "value": 236
+                },
+                {
+                  "key": "CONVENIENCECHARGE",
+                  "value": 0
+                }
+              ],
+              "Discount": 0,
+              "PublishedFare": 5465,
+              "CommissionEarned": 0,
+              "PLBEarned": 0,
+              "IncentiveEarned": 0,
+              "OfferedFare": 5465,
+              "TdsOnCommission": 0,
+              "TdsOnPLB": 0,
+              "TdsOnIncentive": 0,
+              "ServiceFee": 0,
+              "TotalBaggageCharges": 0,
+              "TotalMealCharges": 0,
+              "TotalSeatCharges": 0,
+              "TotalSpecialServiceCharges": 0
+            },
+            "City": "Gurgaon",
+            "CountryCode": "IN",
+            "CountryName": "India",
+            "Nationality": "IN",
+            "ContactNo": "+91- 8222971021",
+            "Email": "sam@gmail.com",
+            "IsLeadPax": true,
+            "FFAirlineCode": null,
+            "FFNumber": "",
+            "Ssr": [],
+            "Ticket": {
+              "TicketId": 2444707,
+              "TicketNumber": "TESTPNR",
+              "IssueDate": "2026-06-15T11:27:26",
+              "ValidatingAirline": "708",
+              "Remarks": "",
+              "ServiceFeeDisplayType": "ShowInTax",
+              "Status": "OK",
+              "ConjunctionNumber": "",
+              "TicketType": "N"
+            },
+            "SegmentAdditionalInfo": [
+              {
+                "FareBasis": "PI",
+                "NVA": "",
+                "NVB": "",
+                "Baggage": "15 KG",
+                "Meal": "0 Platter",
+                "Seat": "",
+                "SpecialService": "",
+                "CabinBaggage": "7 KG"
+              }
+            ]
+          }
+        ],
+        "CancellationCharges": null,
+        "Segments": [
+          {
+            "Baggage": "15 KG",
+            "CabinBaggage": "7 KG",
+            "CabinClass": 2,
+            "SupplierFareClass": null,
+            "TripIndicator": 1,
+            "SegmentIndicator": 1,
+            "Airline": {
+              "AirlineCode": "6E",
+              "AirlineName": "IndiGo",
+              "FlightNumber": "611",
+              "FareClass": "PI",
+              "OperatingCarrier": "6E"
+            },
+            "AirlinePNR": "TESTPNR",
+            "Origin": {
+              "Airport": {
+                "AirportCode": "DEL",
+                "AirportName": "Indira Gandhi Airport",
+                "Terminal": "",
+                "CityCode": "DEL",
+                "CityName": "Delhi",
+                "CountryCode": "IN",
+                "CountryName": "India"
+              },
+              "DepTime": "2026-06-16T06:30:00"
+            },
+            "Destination": {
+              "Airport": {
+                "AirportCode": "BOM",
+                "AirportName": "Chhatrapati Shivaji International Airport",
+                "Terminal": "",
+                "CityCode": "BOM",
+                "CityName": "Mumbai",
+                "CountryCode": "IN",
+                "CountryName": "India"
+              },
+              "ArrTime": "2026-06-16T09:30:00"
+            },
+            "Duration": 180,
+            "GroundTime": 0,
+            "Mile": 0,
+            "StopOver": false,
+            "FlightInfoIndex": "1",
+            "StopPoint": "",
+            "StopPointArrivalTime": "0001-01-01T00:00:00",
+            "StopPointDepartureTime": "0001-01-01T00:00:00",
+            "Craft": "",
+            "Remark": "",
+            "IsETicketEligible": true,
+            "FlightStatus": "Confirmed",
+            "Status": "HK",
+            "FareClassification": null
+          }
+        ],
+        "FareRules": [
+          {
+            "Origin": "DEL",
+            "Destination": "BOM",
+            "Airline": "6E",
+            "FareBasisCode": "PI",
+            "FareRuleDetail": "<br/> <br/><ul><li>GST, RAF AND ANY OTHER APPLICABLE CHARGES ARE EXTRA.</li><li>FEES ARE INDICATIVE PER PAX AND PER SECTOR.</li><li>FOR DOMESTIC BOOKINGS, PASSENGERS MUST SUBMIT THE CANCELLATION OR REISSUE REQUEST AT LEAST 2 HOURS BEFORE THE TIME LIMIT DEFINED IN THE AIRLINE's POLICY.</li><li>FOR INTERNATIONAL BOOKINGS, PASSENGERS MUST SUBMIT THE CANCELLATION OR REISSUE REQUEST AT LEAST 4 HOURS BEFORE THE TIME LIMIT DEFINED IN THE AIRLINE's POLICY.</li></ul>",
+            "FareRestriction": "",
+            "FareFamilyCode": "",
+            "FareRuleIndex": ""
+          }
+        ],
+        "PenaltyCharges": {},
+        "Status": 5,
+        "Invoice": [
+          {
+            "CreditNoteGSTIN": null,
+            "GSTIN": null,
+            "InvoiceCreatedOn": "2026-06-15T11:27:27",
+            "InvoiceId": 17944,
+            "InvoiceNo": "DW/2627/17944",
+            "InvoiceAmount": 5465,
+            "Remarks": "",
+            "InvoiceStatus": 3
+          }
+        ],
+        "InvoiceAmount": 5465,
+        "InvoiceNo": "DW/2627/17944",
+        "InvoiceStatus": 3,
+        "InvoiceCreatedOn": "2026-06-15T11:27:27",
+        "Remarks": "",
+        "IsWebCheckInAllowed": false
+      },
+      "TicketStatus": 1
+    }
+  }
+}

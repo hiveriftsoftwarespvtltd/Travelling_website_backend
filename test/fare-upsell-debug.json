@@ -26,8 +26,8 @@
         "LastNameFormat": null,
         "NonStopFirstRanking": 1,
         "SmartChoiceRanking": 1,
-        "ResultIndex": "OB1-1",
-        "Source": 200,
+        "ResultIndex": "OB2-1",
+        "Source": 199,
         "IsLCC": true,
         "IsRefundable": false,
         "IsPanRequiredAtBook": false,
@@ -37,7 +37,7 @@
         "GSTAllowed": true,
         "IsCouponAppilcable": true,
         "IsGSTMandatory": false,
-        "AirlineRemark": "Safiya result.",
+        "AirlineRemark": "Travelopedia result.",
         "IsPassportFullDetailRequiredAtBook": false,
         "ResultFareType": "RegularFare",
         "Fare": {
@@ -46,7 +46,7 @@
           "ServiceFeeDisplayType": 0,
           "Currency": "INR",
           "BaseFare": 5000,
-          "Tax": 210,
+          "Tax": 229,
           "TaxBreakup": [
             {
               "key": "K3",
@@ -77,11 +77,11 @@
             }
           ],
           "Discount": 0,
-          "PublishedFare": 5446,
+          "PublishedFare": 5465,
           "CommissionEarned": 0,
           "PLBEarned": 0,
           "IncentiveEarned": 0,
-          "OfferedFare": 5446,
+          "OfferedFare": 5465,
           "TdsOnCommission": 0,
           "TdsOnPLB": 0,
           "TdsOnIncentive": 0,
@@ -120,7 +120,7 @@
             "PassengerType": 1,
             "PassengerCount": 1,
             "BaseFare": 5000,
-            "Tax": 210,
+            "Tax": 229,
             "TransactionFee": 0,
             "YQTax": 0,
             "TaxBreakUp": null,
@@ -136,7 +136,7 @@
               "Baggage": "15 KG",
               "CabinBaggage": "7 KG",
               "CabinClass": 2,
-              "SupplierFareClass": "Inst_SeriesPurSAF",
+              "SupplierFareClass": "Inst_SeriesPurTPO",
               "TripIndicator": 1,
               "SegmentIndicator": 1,
               "Airline": {
@@ -156,7 +156,7 @@
                   "CountryCode": "IN",
                   "CountryName": "India"
                 },
-                "DepTime": "2026-06-25T06:30:00"
+                "DepTime": "2026-06-16T06:30:00"
               },
               "Destination": {
                 "Airport": {
@@ -168,9 +168,9 @@
                   "CountryCode": "IN",
                   "CountryName": "India"
                 },
-                "ArrTime": "2026-06-25T09:00:00"
+                "ArrTime": "2026-06-16T09:30:00"
               },
-              "Duration": 150,
+              "Duration": 180,
               "GroundTime": 0,
               "Mile": 0,
               "StopOver": false,
@@ -204,11 +204,11 @@
         "AirlineCode": "6E",
         "ValidatingAirline": "6E",
         "FareClassification": {
-          "Color": "Black",
-          "Type": "Inst_SeriesPurSAF"
+          "Color": "Yellow",
+          "Type": "Inst_SeriesPurTPO"
         }
       }
     ],
-    "TraceId": "5fd70bfd-b1dd-4456-8dc0-b4fa29d6dde4"
+    "TraceId": "920273dd-6c2b-4a00-be18-753142c7e1d7"
   }
 }
