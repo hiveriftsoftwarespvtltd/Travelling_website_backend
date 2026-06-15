@@ -113,5 +113,26 @@ export class FlightController {
 
     return this.flightService.getCancellationCharges(reqBody, endUserIp);
   }
+
+  // --- Database Fetch Routes ---
+  
+  @Post('my-bookings')
+  async getMyBookings(@Body() reqBody: any, @Req() req: Request) {
+    // Ideally this would use JWT user ID. Using EndUserIp or all for now.
+    const endUserIp = this.getValidIp(req);
+    return this.flightService.getMyBookings(reqBody, endUserIp);
+  }
+
+  @Post('my-cancellations')
+  async getMyCancellations(@Body() reqBody: any, @Req() req: Request) {
+    const endUserIp = this.getValidIp(req);
+    return this.flightService.getMyCancellations(reqBody, endUserIp);
+  }
+
+  @Post('cancellation-by-booking')
+  async getCancellationByBooking(@Body() reqBody: any, @Req() req: Request) {
+    const endUserIp = this.getValidIp(req);
+    return this.flightService.getCancellationByBooking(reqBody, endUserIp);
+  }
 }
 

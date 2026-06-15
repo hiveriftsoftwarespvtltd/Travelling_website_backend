@@ -1,6 +1,10 @@
 import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import axios from 'axios';
 import { FlightSearchDto } from './dto/flight-search.dto';
+import { FlightBooking } from './schemas/flight-booking.schema';
+import { Cancellation } from './schemas/cancellation.schema';
 
 // ─── TBO API Endpoints (from TBO Documentation) ────────────────────────────
 const AUTH_URL = 'http://Sharedapi.tektravels.com/SharedData.svc/rest/Authenticate';
@@ -31,6 +35,11 @@ const TBO_ERROR_INVALID_TOKEN = 7;
 @Injectable()
 export class FlightService {
   private readonly logger = new Logger(FlightService.name);
+
+  constructor(
+    @InjectModel(FlightBooking.name) private flightBookingModel: Model<FlightBooking>,
+    @InjectModel(Cancellation.name) private cancellationModel: Model<Cancellation>,
+  ) {}
 
   // In-memory token cache — valid for 3 hours (TBO tokens last longer but 3h is safe)
   private cachedToken: string | null = null;
@@ -531,6 +540,14 @@ export class FlightService {
       });
 
       const data = response.data;
+      console.log("\n================ TBO BOOK REQUEST PAYLOAD ================\n", JSON.stringify(payload, null, 2));
+      console.log("\n================ TBO BOOK RESPONSE ================\n", JSON.stringify(data, null, 2));
+      
+      try {
+        require('fs').writeFileSync('test/book_req.json', JSON.stringify(payload, null, 2));
+        require('fs').writeFileSync('test/book_res.json', JSON.stringify(data, null, 2));
+      } catch(e) {}
+
       if (data?.Response?.ResponseStatus !== 1) {
         const tboError = data?.Response?.Error;
         this.logger.error('❌ TBO Book returned error: ' + JSON.stringify(tboError));
@@ -548,6 +565,30 @@ export class FlightService {
       }
 
       this.logger.log(`✅ TBO Book success! PNR: ${data?.Response?.Response?.PNR}`);
+      
+      try {
+        const responseData = data?.Response?.Response;
+        if (responseData && responseData.BookingId) {
+          await this.flightBookingModel.findOneAndUpdate(
+            { bookingId: String(responseData.BookingId) },
+            {
+              bookingId: String(responseData.BookingId),
+              pnr: responseData.PNR || '',
+              traceId: reqBody.TraceId || '',
+              status: responseData.Status || 'Confirmed',
+              passengers: responseData.FlightItinerary?.Passenger || [],
+              flightDetails: responseData.FlightItinerary || {},
+              fareDetails: responseData.FlightItinerary?.Fare || {},
+              endUserIp: endUserIp,
+            },
+            { upsert: true, new: true }
+          );
+          this.logger.log(`💾 Saved/Updated FlightBooking in DB: ${responseData.BookingId}`);
+        }
+      } catch (dbError) {
+        this.logger.error('❌ Failed to save booking to DB: ' + dbError.message);
+      }
+
       return data;
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -589,6 +630,14 @@ export class FlightService {
       });
 
       const data = response.data;
+      console.log("\n================ TBO TICKET REQUEST PAYLOAD ================\n", JSON.stringify(payload, null, 2));
+      console.log("\n================ TBO TICKET RESPONSE ================\n", JSON.stringify(data, null, 2));
+
+      try {
+        require('fs').writeFileSync('test/ticket_req.json', JSON.stringify(payload, null, 2));
+        require('fs').writeFileSync('test/ticket_res.json', JSON.stringify(data, null, 2));
+      } catch(e) {}
+
       if (data?.Response?.ResponseStatus !== 1) {
         const tboError = data?.Response?.Error;
         this.logger.error('❌ TBO Ticket returned error: ' + JSON.stringify(tboError));
@@ -606,6 +655,30 @@ export class FlightService {
       }
 
       this.logger.log(`✅ TBO Ticket success! PNR: ${data?.Response?.Response?.PNR}`);
+      
+      try {
+        const responseData = data?.Response?.Response;
+        if (responseData && responseData.BookingId) {
+          await this.flightBookingModel.findOneAndUpdate(
+            { bookingId: String(responseData.BookingId) },
+            {
+              bookingId: String(responseData.BookingId),
+              pnr: responseData.PNR || '',
+              traceId: reqBody.TraceId || '',
+              status: responseData.Status || 'Confirmed',
+              passengers: responseData.FlightItinerary?.Passenger || [],
+              flightDetails: responseData.FlightItinerary || {},
+              fareDetails: responseData.FlightItinerary?.Fare || {},
+              endUserIp: endUserIp,
+            },
+            { upsert: true, new: true }
+          );
+          this.logger.log(`💾 Saved/Updated FlightBooking in DB: ${responseData.BookingId}`);
+        }
+      } catch (dbError) {
+        this.logger.error('❌ Failed to save booking to DB: ' + dbError.message);
+      }
+
       return data;
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -720,6 +793,9 @@ export class FlightService {
       });
 
       const data = response.data;
+      console.log("\n================ TBO RELEASE PNR REQUEST PAYLOAD ================\n", JSON.stringify(payload, null, 2));
+      console.log("\n================ TBO RELEASE PNR RESPONSE ================\n", JSON.stringify(data, null, 2));
+
       if (data?.Response?.ResponseStatus !== 1) {
         const tboError = data?.Response?.Error;
         this.logger.error('❌ TBO Release PNR returned error: ' + JSON.stringify(tboError));
@@ -790,6 +866,9 @@ export class FlightService {
       });
 
       const data = response.data;
+      console.log("\n================ TBO CHANGE REQUEST PAYLOAD ================\n", JSON.stringify(payload, null, 2));
+      console.log("\n================ TBO CHANGE RESPONSE ================\n", JSON.stringify(data, null, 2));
+
       if (data?.Response?.ResponseStatus !== 1 && data?.Response?.ResponseStatus !== 4) { // Sometimes 4 is successful partial
         const tboError = data?.Response?.Error;
         this.logger.error('❌ TBO Send Change Request returned error: ' + JSON.stringify(tboError));
@@ -799,6 +878,7 @@ export class FlightService {
           this.tokenExpiry = 0;
           return this.sendChangeRequest(reqBody, endUserIp);
         }
+
         throw new HttpException(
           {
             message: tboError?.ErrorMessage || 'TBO API rejected the Change request',
@@ -809,6 +889,27 @@ export class FlightService {
       }
 
       this.logger.log(`✅ TBO Send Change Request success! Ticket Change Requested for: ${reqBody.BookingId}`);
+
+      try {
+        const responseData = data?.Response;
+        if (responseData && responseData.ChangeRequestId) {
+          await this.cancellationModel.findOneAndUpdate(
+            { changeRequestId: String(responseData.ChangeRequestId) },
+            {
+              changeRequestId: String(responseData.ChangeRequestId),
+              bookingId: String(reqBody.BookingId),
+              cancellationType: reqBody.RequestType === 1 || reqBody.RequestType === "1" ? 'FULL_CANCEL' : 'PARTIAL_CANCEL',
+              status: 'Processing',
+              endUserIp: endUserIp,
+            },
+            { upsert: true, new: true }
+          );
+          this.logger.log(`💾 Saved/Updated Cancellation in DB: ${responseData.ChangeRequestId}`);
+        }
+      } catch (dbError) {
+        this.logger.error('❌ Failed to save cancellation to DB: ' + dbError.message);
+      }
+
       return data;
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -850,6 +951,9 @@ export class FlightService {
       });
 
       const data = response.data;
+      console.log("\n================ TBO CHANGE STATUS PAYLOAD ================\n", JSON.stringify(payload, null, 2));
+      console.log("\n================ TBO CHANGE STATUS RESPONSE ================\n", JSON.stringify(data, null, 2));
+
       if (data?.Response?.ResponseStatus !== 1) {
         const tboError = data?.Response?.Error;
         this.logger.error('❌ TBO Get Change Request Status returned error: ' + JSON.stringify(tboError));
@@ -869,6 +973,40 @@ export class FlightService {
       }
 
       this.logger.log(`✅ TBO Get Change Request Status success! Request ID: ${reqBody.ChangeRequestId}`);
+
+      try {
+        const responseData = data?.Response;
+        if (responseData && responseData.ChangeRequestId) {
+          const statusText = responseData.ChangeRequestStatus === 1 ? 'Unassigned' :
+                             responseData.ChangeRequestStatus === 2 ? 'Assigned' :
+                             responseData.ChangeRequestStatus === 3 ? 'Acknowledged' :
+                             responseData.ChangeRequestStatus === 4 ? 'Completed' :
+                             responseData.ChangeRequestStatus === 5 ? 'Rejected' :
+                             responseData.ChangeRequestStatus === 6 ? 'InProgress' : 'Pending';
+
+          await this.cancellationModel.findOneAndUpdate(
+            { changeRequestId: String(responseData.ChangeRequestId) },
+            {
+              status: statusText,
+              refundAmount: responseData.RefundedAmount || 0,
+              cancellationCharge: responseData.CancellationCharge || 0,
+              refundDetails: responseData,
+            },
+            { new: true }
+          );
+          
+          // If Completed, also mark the original booking as Cancelled
+          if (statusText === 'Completed') {
+            await this.flightBookingModel.findOneAndUpdate(
+              { bookingId: String(responseData.BookingId) }, // Might not be returned here, but we can query by cancellation doc
+              { status: 'Cancelled' }
+            );
+          }
+        }
+      } catch (dbError) {
+        this.logger.error('❌ Failed to update cancellation in DB: ' + dbError.message);
+      }
+
       return data;
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -912,6 +1050,9 @@ export class FlightService {
       });
 
       const data = response.data;
+      console.log("\n================ TBO CANCELLATION REQUEST PAYLOAD ================\n", JSON.stringify(payload, null, 2));
+      console.log("\n================ TBO CANCELLATION RESPONSE ================\n", JSON.stringify(data, null, 2));
+
       if (data?.Response?.ResponseStatus !== 1) {
         const tboError = data?.Response?.Error;
         this.logger.error('❌ TBO Get Cancellation Charges returned error: ' + JSON.stringify(tboError));
@@ -921,6 +1062,7 @@ export class FlightService {
           this.tokenExpiry = 0;
           return this.getCancellationCharges(reqBody, endUserIp);
         }
+
         throw new HttpException(
           {
             message: tboError?.ErrorMessage || 'TBO API rejected the Cancellation Charges request',
@@ -950,6 +1092,58 @@ export class FlightService {
         message: 'Failed to get cancellation charges from TBO API',
         details: responseData
       }, HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  // ─── DB Fetch Methods ───────────────────────────────────────────
+  
+  async getMyBookings(reqBody: any, endUserIp: string) {
+    try {
+      // In a real app, query by userId. For testing, just return all sorted by newest.
+      const bookings = await this.flightBookingModel.find().sort({ createdAt: -1 }).exec();
+      return { success: true, data: bookings };
+    } catch (e) {
+      throw new HttpException({ message: 'Failed to fetch bookings', details: e.message }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getMyCancellations(reqBody: any, endUserIp: string) {
+    try {
+      const cancellations = await this.cancellationModel.find().sort({ createdAt: -1 }).exec();
+      return { success: true, data: cancellations };
+    } catch (e) {
+      throw new HttpException({ message: 'Failed to fetch cancellations', details: e.message }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getCancellationByBooking(reqBody: any, endUserIp: string) {
+    try {
+      if (!reqBody.BookingId) {
+        throw new Error('BookingId is required');
+      }
+      // Get the most recent cancellation request for this booking
+      const cancellation = await this.cancellationModel.findOne({ bookingId: String(reqBody.BookingId) }).sort({ createdAt: -1 }).exec();
+      
+      if (!cancellation) {
+         return { success: true, data: null };
+      }
+
+      // If it's pending/processing, try to fetch the latest status from TBO
+      if (cancellation.status === 'Pending' || cancellation.status === 'Processing') {
+         try {
+           const statusRes = await this.getChangeRequestStatus({ ChangeRequestId: cancellation.changeRequestId }, endUserIp);
+           // getChangeRequestStatus already updates the DB internally
+           // Refetch after update
+           const updated = await this.cancellationModel.findOne({ changeRequestId: cancellation.changeRequestId }).exec();
+           return { success: true, data: updated };
+         } catch(err) {
+           this.logger.error('Failed to sync cancellation status with TBO: ' + err.message);
+         }
+      }
+
+      return { success: true, data: cancellation };
+    } catch (e) {
+      throw new HttpException({ message: 'Failed to fetch cancellation by booking', details: e.message }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

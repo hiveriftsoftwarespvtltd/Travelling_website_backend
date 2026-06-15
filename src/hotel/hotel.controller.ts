@@ -53,6 +53,11 @@ export class HotelController {
     return this.hotelService.sendChangeRequest(body, this.getValidIp(req));
   }
 
+  @Get('my-bookings')
+  async getMyBookings(@Query('email') email: string, @Query('phone') phone: string) {
+    return this.hotelService.getMyBookings(email, phone);
+  }
+
   // ─── Static Data Endpoints ──────────────────────────────────────────────────
 
   @Get('countries')
