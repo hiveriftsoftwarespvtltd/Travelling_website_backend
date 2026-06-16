@@ -54,8 +54,8 @@ export class HotelController {
   }
 
   @Get('my-bookings')
-  async getMyBookings(@Query('email') email: string, @Query('phone') phone: string) {
-    return this.hotelService.getMyBookings(email, phone);
+  async getMyBookings(@Query('userId') userId: string) {
+    return this.hotelService.getMyBookings(userId);
   }
 
   // ─── Static Data Endpoints ──────────────────────────────────────────────────

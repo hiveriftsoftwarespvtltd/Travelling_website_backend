@@ -27,7 +27,12 @@ export class FlightBooking extends Document {
   @Prop({ type: SchemaTypes.Mixed })
   ssrDetails: any; // Seats, Meals, Baggage (if kept separate, or inside passengers)
 
-  // We can add userId later if auth is integrated.
+  @Prop()
+  userId: string; // The MongoDB User ID of the person who booked this
+
+  @Prop()
+  email: string; // The email of the person who booked this
+
   @Prop()
   endUserIp: string;
 }

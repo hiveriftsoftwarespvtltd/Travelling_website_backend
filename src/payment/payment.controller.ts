@@ -18,7 +18,7 @@ export class PaymentController {
       );
     }
 
-    const receipt = body.receipt || `TOURM-${Date.now()}`;
+    const receipt = body.receipt || `JIYOLIFE-${Date.now()}`;
     const currency = body.currency || 'INR';
 
     return this.paymentService.createOrder(body.amount, currency, receipt);

@@ -47,7 +47,13 @@ export class AuthService implements OnModuleInit {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    return { id: user._id, email: user.email };
+    return { 
+      id: user._id, 
+      email: user.email, 
+      firstName: user.firstName, 
+      lastName: user.lastName, 
+      mobile: user.mobile 
+    };
   }
 
   async login(user: any) {
@@ -65,10 +71,12 @@ export class AuthService implements OnModuleInit {
     return {
       access_token: this.jwtService.sign(payload),
       user: {
+        _id: user.id,
         id: user.id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        mobile: user.mobile,
       },
     };
   }

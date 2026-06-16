@@ -387,6 +387,8 @@ export class HotelService implements OnModuleInit {
       guestDetails: body.HotelRoomsDetails, 
       fareDetails: { NetAmount: body.NetAmount },
       endUserIp,
+      userId: body.userId || '',
+      email: body.email || '',
       traceId: body.TraceId,
       apiLogs: { request: payload },
     });
@@ -490,20 +492,13 @@ export class HotelService implements OnModuleInit {
   }
 
   // ─── Get My Bookings ────────────────────────────────────────────────────────
-  async getMyBookings(email: string, phone: string) {
-    if (!email && !phone) {
+  async getMyBookings(userId?: string) {
+    // Only filter by userId — email/phone fallback removed to prevent cross-user data leaks
+    if (!userId) {
       return [];
     }
-    
-    // Find bookings where any of the passengers match the email or phone
-    const query: any = {};
-    if (email) {
-      query['guestDetails.HotelPassenger.Email'] = email;
-    } else if (phone) {
-      query['guestDetails.HotelPassenger.Phoneno'] = phone;
-    }
 
-    const bookings = await this.bookingModel.find(query).sort({ createdAt: -1 }).exec();
+    const bookings = await this.bookingModel.find({ userId }).sort({ createdAt: -1 }).exec();
     return bookings;
   }
 

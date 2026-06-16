@@ -580,6 +580,8 @@ export class FlightService {
               flightDetails: responseData.FlightItinerary || {},
               fareDetails: responseData.FlightItinerary?.Fare || {},
               endUserIp: endUserIp,
+              userId: reqBody.userId || '',
+              email: reqBody.email || '',
             },
             { upsert: true, new: true }
           );
@@ -670,6 +672,8 @@ export class FlightService {
               flightDetails: responseData.FlightItinerary || {},
               fareDetails: responseData.FlightItinerary?.Fare || {},
               endUserIp: endUserIp,
+              userId: reqBody.userId || '',
+              email: reqBody.email || '',
             },
             { upsert: true, new: true }
           );
@@ -1099,8 +1103,18 @@ export class FlightService {
   
   async getMyBookings(reqBody: any, endUserIp: string) {
     try {
-      // In a real app, query by userId. For testing, just return all sorted by newest.
-      const bookings = await this.flightBookingModel.find().sort({ createdAt: -1 }).exec();
+      this.logger.log(`getMyBookings reqBody: ${JSON.stringify(reqBody)}`);
+
+      // Only filter by userId — email fallback removed to prevent cross-user data leaks
+      if (!reqBody.userId) {
+        this.logger.log(`getMyBookings: No userId provided, returning []`);
+        return { success: true, data: [] };
+      }
+
+      const query: any = { userId: reqBody.userId };
+      this.logger.log(`getMyBookings query: ${JSON.stringify(query)}`);
+      const bookings = await this.flightBookingModel.find(query).sort({ createdAt: -1 }).exec();
+      this.logger.log(`getMyBookings found ${bookings.length} flights`);
       return { success: true, data: bookings };
     } catch (e) {
       throw new HttpException({ message: 'Failed to fetch bookings', details: e.message }, HttpStatus.INTERNAL_SERVER_ERROR);
