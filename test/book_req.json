@@ -1,0 +1,49 @@
+{
+  "PreferredCurrency": null,
+  "AgentReferenceNo": "JIYOLIFE-1781594702774",
+  "TraceId": "cd35d3c2-8860-41a5-9c82-c36f4ea832e7",
+  "userId": "6a30eb6e9d240d3c3da9ce2d",
+  "email": "samunderrao2611@gmail.com",
+  "Passengers": [
+    {
+      "Title": "Mr",
+      "FirstName": "Samundr",
+      "LastName": "Yadav",
+      "PaxType": 1,
+      "DateOfBirth": "1990-01-01T00:00:00",
+      "Gender": 1,
+      "PassportNo": "A123478",
+      "PassportExpiry": "2029-10-16T00:00:00",
+      "AddressLine1": "123, Test",
+      "AddressLine2": "",
+      "Fare": {
+        "Currency": "INR",
+        "BaseFare": 7602,
+        "Tax": 2105,
+        "YQTax": 0,
+        "AdditionalTxnFeePub": 0,
+        "AdditionalTxnFeeOfrd": 0,
+        "OtherCharges": 0
+      },
+      "City": "Gurgaon",
+      "CountryCode": "IN",
+      "CountryName": "India",
+      "Nationality": "IN",
+      "ContactNo": "7648396583",
+      "Email": "sam23@gmail.com",
+      "FFAirlineCode": null,
+      "FFNumber": "",
+      "Baggage": [],
+      "MealDynamic": [],
+      "SeatDynamic": [],
+      "PassportIssueDate": "2020-01-01T00:00:00",
+      "DocumentIssuingCountry": "IN",
+      "PassportIssueCountryCode": "IN",
+      "PassportIssueCountry": "IN",
+      "CellCountryCode": "+91"
+    }
+  ],
+  "ResultIndex": "OB3-2",
+  "EndUserIp": "103.98.38.139",
+  "TokenId": "84879345-d1d2-419f-85b3-7ee7be29c074"
+}

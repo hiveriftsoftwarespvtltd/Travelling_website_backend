@@ -8,14 +8,10 @@
     "Results": [
       {
         "FareInclusions": [
-          "Non-Refundable",
-          " Non-Voidable",
-          " Non-Changeable",
-          " Seats are chargeable",
-          " No Show refunds are not permitted",
-          " GST is not applicable on Series Fare",
-          " Names may appear on the airline website one day before departure",
-          " Web check-in is available on the airline website by entering the PNR and last name."
+          "Cabin Baggage Included",
+          "Check-In baggage Included",
+          "Cancellation fees apply",
+          "Reissue fees apply"
         ],
         "FirstNameFormat": null,
         "IsBookableIfSeatNotAvailable": false,
@@ -26,10 +22,10 @@
         "LastNameFormat": null,
         "NonStopFirstRanking": 1,
         "SmartChoiceRanking": 1,
-        "ResultIndex": "OB2-1",
-        "Source": 199,
+        "ResultIndex": "OB1-1",
+        "Source": 14,
         "IsLCC": true,
-        "IsRefundable": false,
+        "IsRefundable": true,
         "IsPanRequiredAtBook": false,
         "IsPanRequiredAtTicket": false,
         "IsPassportRequiredAtBook": false,
@@ -37,7 +33,7 @@
         "GSTAllowed": true,
         "IsCouponAppilcable": true,
         "IsGSTMandatory": false,
-        "AirlineRemark": "Travelopedia result.",
+        "AirlineRemark": null,
         "IsPassportFullDetailRequiredAtBook": false,
         "ResultFareType": "RegularFare",
         "Fare": {
@@ -45,8 +41,8 @@
           "DCFARAmount": 0,
           "ServiceFeeDisplayType": 0,
           "Currency": "INR",
-          "BaseFare": 5000,
-          "Tax": 229,
+          "BaseFare": 8000,
+          "Tax": 2874,
           "TaxBreakup": [
             {
               "key": "K3",
@@ -57,7 +53,7 @@
           "AdditionalTxnFeeOfrd": 0,
           "AdditionalTxnFeePub": 0,
           "PGCharge": 0,
-          "OtherCharges": 236,
+          "OtherCharges": 708,
           "ChargeBU": [
             {
               "key": "TBOMARKUP",
@@ -73,15 +69,15 @@
             },
             {
               "key": "OTHERCHARGE",
-              "value": 236
+              "value": 708
             }
           ],
           "Discount": 0,
-          "PublishedFare": 5465,
+          "PublishedFare": 11582,
           "CommissionEarned": 0,
           "PLBEarned": 0,
           "IncentiveEarned": 0,
-          "OfferedFare": 5465,
+          "OfferedFare": 11582,
           "TdsOnCommission": 0,
           "TdsOnPLB": 0,
           "TdsOnIncentive": 0,
@@ -100,27 +96,27 @@
                 "BaggageURL": "",
                 "CabinBaggage": {
                   "BaggageUrl": "",
-                  "FreeText": "",
+                  "FreeText": "7 KG",
                   "NoOfPiece": "",
                   "Unit": "KG",
                   "Value": "7"
                 },
                 "CheckedInBaggage": {
                   "BaggageUrl": "",
-                  "FreeText": "",
+                  "FreeText": "15 KG",
                   "NoOfPiece": "",
                   "Unit": "KG",
                   "Value": "15"
                 },
-                "FareBasis": "PI",
+                "FareBasis": "",
                 "FlightInfoIndex": "1"
               }
             ],
             "Currency": "INR",
             "PassengerType": 1,
-            "PassengerCount": 1,
-            "BaseFare": 5000,
-            "Tax": 229,
+            "PassengerCount": 2,
+            "BaseFare": 8000,
+            "Tax": 2874,
             "TransactionFee": 0,
             "YQTax": 0,
             "TaxBreakUp": null,
@@ -136,41 +132,41 @@
               "Baggage": "15 KG",
               "CabinBaggage": "7 KG",
               "CabinClass": 2,
-              "SupplierFareClass": "Inst_SeriesPurTPO",
+              "SupplierFareClass": "Value",
               "TripIndicator": 1,
               "SegmentIndicator": 1,
               "Airline": {
-                "AirlineCode": "6E",
-                "AirlineName": "IndiGo",
-                "FlightNumber": "611",
-                "FareClass": "PI",
-                "OperatingCarrier": "6E"
+                "AirlineCode": "IX",
+                "AirlineName": "Air India Express",
+                "FlightNumber": "1235",
+                "FareClass": "KC",
+                "OperatingCarrier": ""
               },
               "Origin": {
                 "Airport": {
                   "AirportCode": "DEL",
                   "AirportName": "Indira Gandhi Airport",
-                  "Terminal": "",
+                  "Terminal": "1",
                   "CityCode": "DEL",
                   "CityName": "Delhi",
                   "CountryCode": "IN",
                   "CountryName": "India"
                 },
-                "DepTime": "2026-06-16T06:30:00"
+                "DepTime": "2026-06-18T23:30:00"
               },
               "Destination": {
                 "Airport": {
                   "AirportCode": "BOM",
                   "AirportName": "Chhatrapati Shivaji International Airport",
-                  "Terminal": "",
+                  "Terminal": "2",
                   "CityCode": "BOM",
                   "CityName": "Mumbai",
                   "CountryCode": "IN",
                   "CountryName": "India"
                 },
-                "ArrTime": "2026-06-16T09:30:00"
+                "ArrTime": "2026-06-19T01:55:00"
               },
-              "Duration": 180,
+              "Duration": 145,
               "GroundTime": 0,
               "Mile": 0,
               "StopOver": false,
@@ -178,12 +174,15 @@
               "StopPoint": "",
               "StopPointArrivalTime": "0001-01-01T00:00:00",
               "StopPointDepartureTime": "0001-01-01T00:00:00",
-              "Craft": "",
+              "Craft": "7M8",
               "Remark": null,
               "IsETicketEligible": true,
               "FlightStatus": "Confirmed",
               "Status": "",
-              "FareClassification": null
+              "FareClassification": {
+                "Color": "rgb(255,213,128)",
+                "Type": "Value"
+              }
             }
           ]
         ],
@@ -193,22 +192,78 @@
           {
             "Origin": "DEL",
             "Destination": "BOM",
-            "Airline": "6E",
-            "FareBasisCode": "PI",
-            "FareRuleDetail": "",
-            "FareRestriction": "",
-            "FareFamilyCode": "",
-            "FareRuleIndex": ""
+            "Airline": "IX",
+            "FareBasisCode": "KNRA000",
+            "FareRuleDetail": "The FareBasisCode is: KNRA000<br /><span><b>IX-I5 Domestic Fare Rules</b></span><br /><br /><table border=\"1\"><tbody><tr><td rowspan=\"2\"><b>Change/Cancel/Meal/Seat/Baggage</b></td><td rowspan=\"2\"></td><td style=\"text-align:center\"><b>Fare Type</b></td></tr><tr><th width=\"200px;\">Xpress Value (EC)</th></tr><tr><td rowspan=\"4\">Baggage</td><td>Check-in Baggage<br />(Adult/Child)</td><td style=\"text-align:center\">15 KG (1 piece)</td></tr><tr><td>Check-in Baggage<br />(Infant)</td><td style=\"text-align:center\">Nil</td></tr><tr><td>Check-in Baggage (Student Fare)</td><td style=\"text-align:center\">25 KG (1 piece)</td></tr><tr><td>Cabin Baggage<br />(Not applicable for Infant)</td><td style=\"text-align:center\">7 KG</td></tr><tr><td>Meal/Seat</td><td></td><td style=\"text-align:center\">Chargeable</td></tr><tr><td rowspan=\"2\" width=\"200px;\">Change Fee <br><b>(Fare Difference is also applicable)</b><br />Per Person Per Sector</b></td><td>0 to 2 Hours prior to the departure</td><th>Not Allowed</th></tr><tr><td>Upto 2 hrs prior to the departure</td><td style=\"text-align:center\">INR 3000/-</td></tr></tr><tr><td rowspan=\"2\" width=\"200px;\">Cancellation Fee<br><b>or Airfare charges (Whichever is lower)</b><br />Per Person Per Sector</td><td>0 to 2 Hours prior to the departure</td><th>Not Allowed</th></tr><tr><td>Upto 2 hrs prior to the departure</td><td style=\"text-align:center\">INR 3500/-</td></tr></tbody></table><br /><b>Note</b>:<br /><ol><li>Subject to change without prior notice.</li><li>We should receive the request at least 4 hours prior to Airline Fare Rules Policy.</li></ol><br /><b>Note: Any booking change/Cancellation is not allowed within 2 hrs from the Departure irrespective of the product book</b><br /><br /><br/> <br/><ul><li>GST, RAF AND ANY OTHER APPLICABLE CHARGES ARE EXTRA.</li><li>FEES ARE INDICATIVE PER PAX AND PER SECTOR.</li><li>FOR DOMESTIC BOOKINGS, PASSENGERS MUST SUBMIT THE CANCELLATION OR REISSUE REQUEST AT LEAST 2 HOURS BEFORE THE TIME LIMIT DEFINED IN THE AIRLINE's POLICY.</li><li>FOR INTERNATIONAL BOOKINGS, PASSENGERS MUST SUBMIT THE CANCELLATION OR REISSUE REQUEST AT LEAST 4 HOURS BEFORE THE TIME LIMIT DEFINED IN THE AIRLINE's POLICY.</li></ul>",
+            "FareRestriction": null,
+            "FareInclusions": [
+              "Cabin Baggage Included",
+              "Check-In baggage Included",
+              "Cancellation fees apply",
+              "Reissue fees apply"
+            ],
+            "MiniFareRules": {
+              "Currency": null,
+              "Rules": []
+            }
           }
         ],
-        "AirlineCode": "6E",
-        "ValidatingAirline": "6E",
+        "AirlineCode": "IX",
+        "MiniFareRules": [
+          [
+            {
+              "CFARExcludedDetails": "",
+              "JourneyPoints": "DEL-BOM",
+              "Type": "Reissue",
+              "From": "2",
+              "To": "",
+              "Unit": "HOURS",
+              "Details": "INR 3000",
+              "OnlineReissueAllowed": false,
+              "OnlineRefundAllowed": false
+            },
+            {
+              "CFARExcludedDetails": "",
+              "JourneyPoints": "DEL-BOM",
+              "Type": "Cancellation",
+              "From": "0",
+              "To": "2",
+              "Unit": "HOURS",
+              "Details": "100%",
+              "OnlineReissueAllowed": false,
+              "OnlineRefundAllowed": false
+            },
+            {
+              "CFARExcludedDetails": "",
+              "JourneyPoints": "DEL-BOM",
+              "Type": "Cancellation",
+              "From": "2",
+              "To": "",
+              "Unit": "HOURS",
+              "Details": "INR 3500",
+              "OnlineReissueAllowed": false,
+              "OnlineRefundAllowed": false
+            },
+            {
+              "CFARExcludedDetails": "",
+              "JourneyPoints": "DEL-BOM",
+              "Type": "Reissue",
+              "From": "0",
+              "To": "2",
+              "Unit": "HOURS",
+              "Details": "100%",
+              "OnlineReissueAllowed": false,
+              "OnlineRefundAllowed": false
+            }
+          ]
+        ],
+        "ValidatingAirline": "IX",
         "FareClassification": {
-          "Color": "Yellow",
-          "Type": "Inst_SeriesPurTPO"
+          "Color": "rgb(255,213,128)",
+          "Type": "Value"
         }
       }
     ],
-    "TraceId": "920273dd-6c2b-4a00-be18-753142c7e1d7"
+    "TraceId": "197fd4b8-39b2-47a7-b61a-b30e2c8b9906"
   }
 }
