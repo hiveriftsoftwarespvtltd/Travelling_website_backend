@@ -28,10 +28,17 @@ export class AuthService implements OnModuleInit {
       await this.userModel.create({
         email: adminEmail,
         password: hashedPassword,
+        isVerified: true,
       });
       console.log('Admin user seeded successfully!');
     } else {
-      console.log('Admin user already exists.');
+      if (!existingAdmin.isVerified) {
+        existingAdmin.isVerified = true;
+        await existingAdmin.save();
+        console.log('Admin user verification status updated to true.');
+      } else {
+        console.log('Admin user already exists and is verified.');
+      }
     }
   }
 
