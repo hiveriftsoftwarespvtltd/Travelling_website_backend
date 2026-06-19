@@ -41,8 +41,8 @@
           "DCFARAmount": 0,
           "ServiceFeeDisplayType": 0,
           "Currency": "INR",
-          "BaseFare": 8000,
-          "Tax": 2874,
+          "BaseFare": 4000,
+          "Tax": 1437,
           "TaxBreakup": [
             {
               "key": "K3",
@@ -53,7 +53,7 @@
           "AdditionalTxnFeeOfrd": 0,
           "AdditionalTxnFeePub": 0,
           "PGCharge": 0,
-          "OtherCharges": 708,
+          "OtherCharges": 354,
           "ChargeBU": [
             {
               "key": "TBOMARKUP",
@@ -69,15 +69,15 @@
             },
             {
               "key": "OTHERCHARGE",
-              "value": 708
+              "value": 354
             }
           ],
           "Discount": 0,
-          "PublishedFare": 11582,
+          "PublishedFare": 5791,
           "CommissionEarned": 0,
           "PLBEarned": 0,
           "IncentiveEarned": 0,
-          "OfferedFare": 11582,
+          "OfferedFare": 5791,
           "TdsOnCommission": 0,
           "TdsOnPLB": 0,
           "TdsOnIncentive": 0,
@@ -114,9 +114,9 @@
             ],
             "Currency": "INR",
             "PassengerType": 1,
-            "PassengerCount": 2,
-            "BaseFare": 8000,
-            "Tax": 2874,
+            "PassengerCount": 1,
+            "BaseFare": 4000,
+            "Tax": 1437,
             "TransactionFee": 0,
             "YQTax": 0,
             "TaxBreakUp": null,
@@ -264,6 +264,6 @@
         }
       }
     ],
-    "TraceId": "197fd4b8-39b2-47a7-b61a-b30e2c8b9906"
+    "TraceId": "5fe9ec40-6281-43a3-af04-4b2ecb77b146"
   }
 }
