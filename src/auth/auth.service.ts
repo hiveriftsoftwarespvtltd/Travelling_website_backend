@@ -21,10 +21,11 @@ export class AuthService implements OnModuleInit {
     const adminEmail = this.configService.get<string>('ADMIN_EMAIL') || 'vineetvineet8006@gmail.com';
     const adminPassword = this.configService.get<string>('ADMIN_PASSWORD') || 'vineet123';
 
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
     const existingAdmin = await this.userModel.findOne({ email: adminEmail });
+
     if (!existingAdmin) {
       console.log(`Seeding Admin User: ${adminEmail}...`);
-      const hashedPassword = await bcrypt.hash(adminPassword, 10);
       await this.userModel.create({
         email: adminEmail,
         password: hashedPassword,
@@ -32,13 +33,11 @@ export class AuthService implements OnModuleInit {
       });
       console.log('Admin user seeded successfully!');
     } else {
-      if (!existingAdmin.isVerified) {
-        existingAdmin.isVerified = true;
-        await existingAdmin.save();
-        console.log('Admin user verification status updated to true.');
-      } else {
-        console.log('Admin user already exists and is verified.');
-      }
+      // Always sync admin password & verification from .env on every startup
+      existingAdmin.password = hashedPassword;
+      existingAdmin.isVerified = true;
+      await existingAdmin.save();
+      console.log(`Admin user synced from .env: ${adminEmail}`);
     }
   }
 

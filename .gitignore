@@ -1,23 +1,69 @@
-# compiled output
+# ===============================
+# 🔨 Compiled / Build Output
+# ===============================
 /dist
+/build
+
+# ===============================
+# 📦 Dependencies
+# ===============================
 /node_modules
 
-# Logs
-logs
+# ===============================
+# 🔐 Environment Variables (NEVER push these!)
+# ===============================
+.env
+.env.local
+.env.test
+.env.development
+.env.production
+.env.staging
+*.env
+
+# ===============================
+# 📋 Logs
+# ===============================
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+pnpm-debug.log*
 
-# OS
-.DS_Store
+# ===============================
+# 🧪 Test / Debug Files (Sensitive TBO response data)
+# ===============================
+test/book_req.json
+test/book_res.json
+test/ticket_req.json
+test/ticket_res.json
+test/fare-upsell-debug.json
 
-# Tests
+# ===============================
+# 📁 Uploads (user uploaded files)
+# ===============================
+/uploads
+uploads/
+
+# ===============================
+# 🗂️ Static Data (large seeded JSON files)
+# ===============================
+/data
+data/
+*.xlsx
+*.csv
+search.json
+
+# ===============================
+# 🧪 Coverage & Testing
+# ===============================
 /coverage
 /.nyc_output
 
-# IDEs and editors
+# ===============================
+# 💻 IDEs and Editors
+# ===============================
 /.idea
 .project
 .classpath
@@ -25,33 +71,38 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
+*.sublime-project
 
-# IDE - VSCode
+# VSCode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# misc
-/.sass-cache
-/connect.lock
-/coverage
-/libpeerconnection.log
-npm-debug.log
-yarn-error.log
-testem.log
-/typings
-
-# System Files
+# ===============================
+# 🖥️ OS Files
+# ===============================
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Environment variables
-.env
-.env.test
-.env.production
-.env.development
+# ===============================
+# 🔧 Misc
+# ===============================
+/.sass-cache
+/connect.lock
+/libpeerconnection.log
+/typings
+testem.log
+npm-debug.log
+yarn-error.log
 
-# Uploads
-/uploads
+# ===============================
+# 🐛 Debug / Temp Scripts
+# ===============================
+patch_tbo_token.js
+test_admin.js
+test_booking.js
+test-booking.js
+convert-xlsx.js
