@@ -10,6 +10,9 @@ export class Category {
 
   @Prop({ required: true })
   imgSrc: string;
+
+  @Prop({ required: false, default: 'Active' })
+  status: string;
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);

@@ -10,6 +10,15 @@ export class Gallery {
 
   @Prop({ default: 'gallery' })
   title: string;
+
+  @Prop({ required: false })
+  caption: string;
+
+  @Prop({ required: false })
+  destination: string;
+
+  @Prop({ required: false, default: 'Active' })
+  status: string;
 }
 
 export const GallerySchema = SchemaFactory.createForClass(Gallery);

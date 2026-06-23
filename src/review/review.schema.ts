@@ -22,6 +22,15 @@ export class Review {
 
   @Prop({ default: 5 })
   rating: number;
+
+  @Prop({ required: false })
+  city: string;
+
+  @Prop({ required: false })
+  customerImage: string;
+
+  @Prop({ required: false, default: 'Active' })
+  status: string;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);

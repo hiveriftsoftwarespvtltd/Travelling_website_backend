@@ -43,6 +43,15 @@ export class Blog {
 
   @Prop([String])
   tags: string[];
+
+  @Prop({ required: false })
+  slug: string;
+
+  @Prop({ required: false })
+  metaTitle: string;
+
+  @Prop({ required: false })
+  metaDescription: string;
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);

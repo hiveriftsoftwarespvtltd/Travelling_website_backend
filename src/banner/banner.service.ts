@@ -39,7 +39,6 @@ export class BannerService implements OnModuleInit {
   async findAll(): Promise<Banner[]> {
     return this.bannerModel.find().exec();
   }
-
   async updateAll(slides: BannerSlideDto[]): Promise<Banner[]> {
     // Clear all existing banners and insert the new ones
     await this.bannerModel.deleteMany({});

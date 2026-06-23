@@ -218,4 +218,8 @@ export class AuthService implements OnModuleInit {
 
     return { message: 'Password reset successfully' };
   }
+
+  async getAllUsers(): Promise<User[]> {
+    return this.userModel.find({}, { password: 0, otp: 0, otpExpiry: 0 }).exec();
+  }
 }

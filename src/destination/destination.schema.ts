@@ -79,6 +79,30 @@ export class Destination {
 
   @Prop({ type: Boolean, default: false })
   isPopularTour: boolean;
+
+  @Prop({ required: false })
+  category: string;
+
+  @Prop({ required: false })
+  location: string;
+
+  @Prop({ required: false })
+  itinerary: string;
+
+  @Prop({ required: false })
+  inclusions: string;
+
+  @Prop({ required: false })
+  exclusions: string;
+
+  @Prop({ required: false })
+  termsConditions: string;
+
+  @Prop({ type: Boolean, default: false })
+  featuredTour: boolean;
+
+  @Prop({ required: false, default: 'Active' })
+  status: string;
 }
 
 export const DestinationSchema = SchemaFactory.createForClass(Destination);

@@ -13,6 +13,15 @@ export class Banner {
 
   @Prop({ required: true })
   bgImage: string;
+
+  @Prop({ required: false, default: 'Book Now' })
+  buttonText: string;
+
+  @Prop({ required: false, default: '/tour' })
+  buttonLink: string;
+
+  @Prop({ required: false, default: 'Active' })
+  status: string;
 }
 
 export const BannerSchema = SchemaFactory.createForClass(Banner);

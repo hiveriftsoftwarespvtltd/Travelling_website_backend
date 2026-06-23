@@ -16,6 +16,11 @@ import { HotelModule } from './hotel/hotel.module';
 import { AirportModule } from './airport/airport.module';
 import { WalletModule } from './wallet/wallet.module';
 import { PaymentModule } from './payment/payment.module';
+import { BookingModule } from './booking/booking.module';
+import { LeadModule } from './lead/lead.module';
+import { NewsletterModule } from './newsletter/newsletter.module';
+import { ContactEnquiryModule } from './contact-enquiry/contact-enquiry.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -50,6 +55,11 @@ import { PaymentModule } from './payment/payment.module';
     AirportModule,
     WalletModule,
     PaymentModule,
+    BookingModule,
+    LeadModule,
+    NewsletterModule,
+    ContactEnquiryModule,
+    SettingsModule,
   ],
 })
 export class AppModule { }

@@ -24,4 +24,16 @@ export class CreateReviewDto {
   @IsNumber()
   @IsOptional()
   rating?: number;
+
+  @IsString()
+  @IsOptional()
+  city?: string;
+
+  @IsString()
+  @IsOptional()
+  customerImage?: string;
+
+  @IsString()
+  @IsOptional()
+  status?: string;
 }

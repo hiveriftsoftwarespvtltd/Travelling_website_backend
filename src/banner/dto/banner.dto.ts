@@ -13,6 +13,15 @@ export class BannerSlideDto {
   @IsString()
   @IsNotEmpty()
   bgImage: string;
+
+  @IsString()
+  buttonText?: string;
+
+  @IsString()
+  buttonLink?: string;
+
+  @IsString()
+  status?: string;
 }
 
 export class UpdateBannersDto {
