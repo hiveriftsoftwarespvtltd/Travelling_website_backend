@@ -6,11 +6,11 @@
       "ErrorMessage": ""
     },
     "ResponseStatus": 1,
-    "TraceId": "daf16348-b1f5-4c7d-a9b9-d3c2e30553be",
+    "TraceId": "4ff89e0a-c0f1-46bc-842a-305ff4b3c62a",
     "Response": {
       "ItineraryChangeList": null,
-      "PNR": "U45VYB",
-      "BookingId": 2143752,
+      "PNR": "L1P97M",
+      "BookingId": 2158174,
       "SSRDenied": false,
       "SSRMessage": null,
       "Status": 1,
@@ -18,32 +18,31 @@
       "IsTimeChanged": false,
       "FlightItinerary": {
         "CommentDetails": null,
-        "FareClassification": "Spice Saver#rgb(182,215,228)",
+        "FareClassification": "Value#rgb(255,213,128)",
         "IsAutoReissuanceAllowed": true,
         "IsPartialVoidAllowed": true,
         "IsSeatsBooked": false,
-        "IssuancePcc": "APITESTID",
+        "IssuancePcc": "APIRTOTAAPI",
         "JourneyType": 1,
         "SearchCombinationType": 2,
-        "SupplierFareClasses": "Spice Saver",
-        "TBOConfNo": "TBFY6171T",
+        "SupplierFareClasses": "Value",
+        "TBOConfNo": "TBF6E5HMI",
         "TBOTripID": null,
         "TripIndicator": 1,
         "BookingAllowedForRoamer": true,
-        "BookingId": 2143752,
+        "BookingId": 2158174,
         "IsCouponAppilcable": true,
         "IsManual": false,
-        "PNR": "U45VYB",
-        "AgentReferenceNo": "JIYOLIFE-1781595769086",
+        "PNR": "L1P97M",
+        "AgentReferenceNo": "JIYOLIFE-1783921109580",
         "IsDomestic": true,
         "ResultFareType": "RegularFare",
-        "Source": 25,
+        "Source": 14,
         "Origin": "BLR",
-        "Destination": "BOM",
-        "AirlineCode": "SG",
-        "LastTicketDate": "9999-12-31T05:25:00",
-        "ValidatingAirlineCode": "SG",
-        "AirlineRemark": "SG L2B - Star Coupon",
+        "Destination": "CCU",
+        "AirlineCode": "IX",
+        "ValidatingAirlineCode": "IX",
+        "AirlineRemark": "",
         "IsLCC": true,
         "NonRefundable": false,
         "FareType": "PUB",
@@ -53,64 +52,21 @@
           "DCFARAmount": 0,
           "ServiceFeeDisplayType": 0,
           "Currency": "INR",
-          "BaseFare": 2639,
-          "Tax": 992,
-          "TaxBreakup": [
-            {
-              "key": "K3",
-              "value": 162
-            },
-            {
-              "key": "UDF",
-              "value": 211
-            },
-            {
-              "key": "YR",
-              "value": 70
-            },
-            {
-              "key": "YQTax",
-              "value": 499
-            },
-            {
-              "key": "RcfTax",
-              "value": 50
-            },
-            {
-              "key": "TotalTax",
-              "value": 992
-            }
-          ],
-          "TransactionFee": 282.42,
-          "YQTax": 499,
+          "BaseFare": 2000,
+          "Tax": 1761,
+          "TaxBreakup": [],
+          "YQTax": 749,
           "AdditionalTxnFeeOfrd": 0,
           "AdditionalTxnFeePub": 0,
           "PGCharge": 0,
-          "OtherCharges": 118,
-          "ChargeBU": [
-            {
-              "key": "TBOMARKUP",
-              "value": 0
-            },
-            {
-              "key": "GLOBALPROCUREMENTCHARGE",
-              "value": 0
-            },
-            {
-              "key": "OTHERCHARGE",
-              "value": 118
-            },
-            {
-              "key": "CONVENIENCECHARGE",
-              "value": 0
-            }
-          ],
+          "OtherCharges": 354,
+          "ChargeBU": null,
           "Discount": 0,
-          "PublishedFare": 4031.42,
+          "PublishedFare": 4115,
           "CommissionEarned": 0,
           "PLBEarned": 0,
           "IncentiveEarned": 0,
-          "OfferedFare": 4031.42,
+          "OfferedFare": 4115,
           "TdsOnCommission": 0,
           "TdsOnPLB": 0,
           "TdsOnIncentive": 0,
@@ -124,87 +80,81 @@
         "Passenger": [
           {
             "BarcodeDetails": {
-              "Id": 3446716,
+              "Id": 3462664,
               "Barcode": [
                 {
                   "Index": 1,
                   "Format": "PDF417",
-                  "Content": "M1RAO/SAMU             U45VYB BLRBOMSG 0269 169Y00000000 000",
+                  "Content": "M1KUMAR/VINEET         L1P97M BLRCCUIX 1131 203Y00000000 000",
                   "BarCodeInBase64": null,
                   "JourneyWayType": 3
                 }
               ]
             },
-            "DocumentDetails": [
-              {
-                "DocumentExpiryDate": "2029-06-21",
-                "DocumentIssueDate": "2020-01-01",
-                "DocumentIssuingCountry": "IN",
-                "DocumentNumber": "D125637",
-                "DocumentTypeId": "Passport",
-                "PaxId": 0,
-                "ResultFareType": 0
-              }
-            ],
+            "DocumentDetails": null,
             "GuardianDetails": null,
             "IsReissued": false,
             "SegmentDetails": [
               {
+                "CabinBaggage": {
+                  "FreeText": "7 KG",
+                  "Unit": "KG",
+                  "Value": "7"
+                },
+                "CheckedInBaggage": {
+                  "FreeText": "15 KG",
+                  "Unit": "KG",
+                  "Value": "15"
+                },
                 "FlightInfoIndex": "1"
               }
             ],
-            "PaxId": 3446716,
+            "PaxId": 3462664,
             "Title": "Mr",
-            "FirstName": "samu",
-            "LastName": "rao",
+            "FirstName": "vineet",
+            "LastName": "kumar",
             "PaxType": 1,
             "DateOfBirth": "1990-01-01T00:00:00",
             "Gender": 1,
             "IsPANRequired": false,
             "IsPassportRequired": false,
             "PAN": "",
-            "PassportNo": "D125637",
-            "PassportExpiry": "2029-06-21T00:00:00",
+            "PassportNo": "",
             "AddressLine1": "123, Test",
             "Fare": {
               "CFARAmount": 0,
               "DCFARAmount": 0,
               "ServiceFeeDisplayType": 0,
               "Currency": "INR",
-              "BaseFare": 2639,
-              "Tax": 992,
+              "BaseFare": 2000,
+              "Tax": 1761,
               "TaxBreakup": [
                 {
                   "key": "K3",
-                  "value": 162
-                },
-                {
-                  "key": "UDF",
-                  "value": 211
+                  "value": 146
                 },
                 {
                   "key": "YR",
-                  "value": 70
+                  "value": 75
                 },
                 {
                   "key": "YQTax",
-                  "value": 499
-                },
-                {
-                  "key": "RcfTax",
-                  "value": 50
+                  "value": 749
                 },
                 {
                   "key": "TotalTax",
-                  "value": 992
+                  "value": 1761
+                },
+                {
+                  "key": "OtherTaxes",
+                  "value": 791
                 }
               ],
-              "TransactionFee": 282.42,
-              "YQTax": 499,
+              "YQTax": 749,
               "AdditionalTxnFeeOfrd": 0,
               "AdditionalTxnFeePub": 0,
               "PGCharge": 0,
-              "OtherCharges": 118,
+              "OtherCharges": 354,
               "ChargeBU": [
                 {
                   "key": "TBOMARKUP",
@@ -216,7 +166,7 @@
                 },
                 {
                   "key": "OTHERCHARGE",
-                  "value": 118
+                  "value": 354
                 },
                 {
                   "key": "CONVENIENCECHARGE",
@@ -224,11 +174,11 @@
                 }
               ],
               "Discount": 0,
-              "PublishedFare": 4031.42,
+              "PublishedFare": 4115,
               "CommissionEarned": 0,
               "PLBEarned": 0,
               "IncentiveEarned": 0,
-              "OfferedFare": 4031.42,
+              "OfferedFare": 4115,
               "TdsOnCommission": 0,
               "TdsOnPLB": 0,
               "TdsOnIncentive": 0,
@@ -242,17 +192,17 @@
             "CountryCode": "IN",
             "CountryName": "India",
             "Nationality": "IN",
-            "ContactNo": "+91 7847384728",
-            "Email": "yadv@gmail.com",
+            "ContactNo": "+91 9876543273",
+            "Email": "vuneet@gmail.com",
             "IsLeadPax": true,
             "FFAirlineCode": null,
             "FFNumber": "",
             "Ssr": [],
             "Ticket": {
-              "TicketId": 2445749,
-              "TicketNumber": "U45VYB",
-              "IssueDate": "2026-06-16T13:12:54",
-              "ValidatingAirline": "001",
+              "TicketId": 2459509,
+              "TicketNumber": "L1P97M",
+              "IssueDate": "2026-07-13T11:08:33",
+              "ValidatingAirline": "098",
               "Remarks": "",
               "ServiceFeeDisplayType": "ShowInTax",
               "Status": "OK",
@@ -261,14 +211,14 @@
             },
             "SegmentAdditionalInfo": [
               {
-                "FareBasis": "USAV",
+                "FareBasis": "GNRA000",
                 "NVA": "",
                 "NVB": "",
-                "Baggage": "0 Kg",
-                "Meal": "0 Platter",
+                "Baggage": "15 KG",
+                "Meal": "",
                 "Seat": "",
                 "SpecialService": "",
-                "CabinBaggage": ""
+                "CabinBaggage": "7 KG"
               }
             ]
           }
@@ -276,17 +226,17 @@
         "CancellationCharges": null,
         "Segments": [
           {
-            "Baggage": null,
-            "CabinBaggage": null,
+            "Baggage": "15 KG",
+            "CabinBaggage": "7 KG",
             "CabinClass": 2,
             "SupplierFareClass": null,
             "TripIndicator": 1,
             "SegmentIndicator": 1,
             "Airline": {
-              "AirlineCode": "SG",
-              "AirlineName": "SpiceJet",
-              "FlightNumber": "269",
-              "FareClass": "RS",
+              "AirlineCode": "IX",
+              "AirlineName": "Air India Express",
+              "FlightNumber": "1131",
+              "FareClass": "GC",
               "OperatingCarrier": ""
             },
             "AirlinePNR": "",
@@ -294,27 +244,27 @@
               "Airport": {
                 "AirportCode": "BLR",
                 "AirportName": "Kempegowda International Airport",
-                "Terminal": "1",
+                "Terminal": "2",
                 "CityCode": "BLR",
                 "CityName": "Bangalore",
                 "CountryCode": "IN",
                 "CountryName": "India"
               },
-              "DepTime": "2026-06-18T22:35:00"
+              "DepTime": "2026-07-22T07:05:00"
             },
             "Destination": {
               "Airport": {
-                "AirportCode": "BOM",
-                "AirportName": "Chhatrapati Shivaji International Airport",
-                "Terminal": "1",
-                "CityCode": "BOM",
-                "CityName": "Mumbai",
+                "AirportCode": "CCU",
+                "AirportName": "Netaji Subhash Chandra Bose International Airport",
+                "Terminal": "2",
+                "CityCode": "CCU",
+                "CityName": "Kolkata",
                 "CountryCode": "IN",
                 "CountryName": "India"
               },
-              "ArrTime": "2026-06-19T00:35:00"
+              "ArrTime": "2026-07-22T09:35:00"
             },
-            "Duration": 120,
+            "Duration": 150,
             "GroundTime": 0,
             "Mile": 0,
             "StopOver": false,
@@ -322,26 +272,31 @@
             "StopPoint": "",
             "StopPointArrivalTime": "0001-01-01T00:00:00",
             "StopPointDepartureTime": "0001-01-01T00:00:00",
-            "Craft": "73H",
-            "Remark": "Spice Saver",
+            "Craft": "738",
+            "Remark": "Value",
             "IsETicketEligible": true,
             "FlightStatus": "Confirmed",
             "Status": "HK",
             "FareClassification": {
-              "Color": "rgb(182,215,228)",
-              "Type": "Spice Saver"
+              "Color": "rgb(255,213,128)",
+              "Type": "Value"
             }
           }
         ],
         "FareRules": [
           {
             "Origin": "BLR",
-            "Destination": "BOM",
-            "Airline": "SG",
-            "FareBasisCode": "USAV",
-            "FareRuleDetail": "The FareBasisCode is: USAV<br /> \r\n\r\n Changes and cancellations are permitted as per applicable rules and charges.\r <br/> <br/><ul><li>GST, RAF AND ANY OTHER APPLICABLE CHARGES ARE EXTRA.</li><li>FEES ARE INDICATIVE PER PAX AND PER SECTOR.</li><li>FOR DOMESTIC BOOKINGS, PASSENGERS MUST SUBMIT THE CANCELLATION OR REISSUE REQUEST AT LEAST 2 HOURS BEFORE THE TIME LIMIT DEFINED IN THE AIRLINE's POLICY.</li><li>FOR INTERNATIONAL BOOKINGS, PASSENGERS MUST SUBMIT THE CANCELLATION OR REISSUE REQUEST AT LEAST 4 HOURS BEFORE THE TIME LIMIT DEFINED IN THE AIRLINE's POLICY.</li></ul>",
+            "Destination": "CCU",
+            "Airline": "IX",
+            "FareBasisCode": "GNRA000",
+            "FareRuleDetail": "The FareBasisCode is: GNRA000<br /><span><b>IX-I5 Domestic Fare Rules</b></span><br /><br /><table border=\"1\"><tbody><tr><td rowspan=\"2\"><b>Change/Cancel/Meal/Seat/Baggage</b></td><td rowspan=\"2\"></td><td style=\"text-align:center\"><b>Fare Type</b></td></tr><tr><th width=\"200px;\">Xpress Value (EC)</th></tr><tr><td rowspan=\"4\">Baggage</td><td>Check-in Baggage<br />(Adult/Child)</td><td style=\"text-align:center\">15 KG (1 piece)</td></tr><tr><td>Check-in Baggage<br />(Infant)</td><td style=\"text-align:center\">Nil</td></tr><tr><td>Check-in Baggage (Student Fare)</td><td style=\"text-align:center\">25 KG (1 piece)</td></tr><tr><td>Cabin Baggage<br />(Not applicable for Infant)</td><td style=\"text-align:center\">7 KG</td></tr><tr><td>Meal/Seat</td><td></td><td style=\"text-align:center\">Chargeable</td></tr><tr><td rowspan=\"2\" width=\"200px;\">Change Fee <br><b>(Fare Difference is also applicable)</b><br />Per Person Per Sector</b></td><td>0 to 2 Hours prior to the departure</td><th>Not Allowed</th></tr><tr><td>Upto 2 hrs prior to the departure</td><td style=\"text-align:center\">INR 3000/-</td></tr></tr><tr><td rowspan=\"2\" width=\"200px;\">Cancellation Fee<br><b>or Airfare charges (Whichever is lower)</b><br />Per Person Per Sector</td><td>0 to 2 Hours prior to the departure</td><th>Not Allowed</th></tr><tr><td>Upto 2 hrs prior to the departure</td><td style=\"text-align:center\">INR 3500/-</td></tr></tbody></table><br /><b>Note</b>:<br /><ol><li>Subject to change without prior notice.</li><li>We should receive the request at least 4 hours prior to Airline Fare Rules Policy.</li></ol><br /><b>Note: Any booking change/Cancellation is not allowed within 2 hrs from the Departure irrespective of the product book</b><br /><br /><br/> <br/>",
             "FareRestriction": null,
-            "FareInclusions": []
+            "FareInclusions": [
+              "Cabin Baggage Included",
+              "Check-In baggage Included",
+              "Cancellation fees apply",
+              "Reissue fees apply"
+            ]
           }
         ],
         "PenaltyCharges": {},
@@ -350,18 +305,18 @@
           {
             "CreditNoteGSTIN": null,
             "GSTIN": null,
-            "InvoiceCreatedOn": "2026-06-16T13:12:54",
-            "InvoiceId": 18360,
-            "InvoiceNo": "DW/2627/18360",
-            "InvoiceAmount": 4031,
+            "InvoiceCreatedOn": "2026-07-13T11:08:33",
+            "InvoiceId": 25774,
+            "InvoiceNo": "DW/2627/25774",
+            "InvoiceAmount": 4115,
             "Remarks": "",
             "InvoiceStatus": 3
           }
         ],
-        "InvoiceAmount": 4031,
-        "InvoiceNo": "DW/2627/18360",
+        "InvoiceAmount": 4115,
+        "InvoiceNo": "DW/2627/25774",
         "InvoiceStatus": 3,
-        "InvoiceCreatedOn": "2026-06-16T13:12:54",
+        "InvoiceCreatedOn": "2026-07-13T11:08:33",
         "Remarks": "",
         "IsWebCheckInAllowed": false
       },

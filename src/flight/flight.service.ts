@@ -167,7 +167,11 @@ export class FlightService {
         return this.searchFlights(searchDto, endUserIp); // Retry once with fresh token
       }
 
-      this.logger.error('❌ TBO Search API error', error?.message);
+      this.logger.error('❌ TBO Search API error: ' + error?.message);
+      this.logger.error('Payload sent to TBO: ' + JSON.stringify(payload));
+      if (error?.response) {
+         this.logger.error('TBO Response Data: ' + JSON.stringify(error?.response?.data));
+      }
       throw new HttpException('Failed to fetch flights from TBO API', HttpStatus.BAD_GATEWAY);
     }
   }
