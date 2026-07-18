@@ -1,26 +1,24 @@
 {
   "PreferredCurrency": null,
-  "AgentReferenceNo": "JIYOLIFE-1781594702774",
-  "TraceId": "cd35d3c2-8860-41a5-9c82-c36f4ea832e7",
-  "userId": "6a30eb6e9d240d3c3da9ce2d",
-  "email": "samunderrao2611@gmail.com",
+  "AgentReferenceNo": "JIYOLIFE-1784268431932",
+  "TraceId": "f6c6bcec-d6f1-43d5-b119-103be2a953f6",
+  "userId": "6a1d6b230cfd132b985b612a",
+  "email": "samunder2611@gmail.com",
   "Passengers": [
     {
       "Title": "Mr",
-      "FirstName": "Samundr",
-      "LastName": "Yadav",
+      "FirstName": "sam",
+      "LastName": "yadav",
       "PaxType": 1,
       "DateOfBirth": "1990-01-01T00:00:00",
       "Gender": 1,
-      "PassportNo": "A123478",
-      "PassportExpiry": "2029-10-16T00:00:00",
       "AddressLine1": "123, Test",
       "AddressLine2": "",
       "Fare": {
         "Currency": "INR",
-        "BaseFare": 7602,
-        "Tax": 2105,
-        "YQTax": 0,
+        "BaseFare": 8963,
+        "Tax": 2528,
+        "YQTax": 798,
         "AdditionalTxnFeePub": 0,
         "AdditionalTxnFeeOfrd": 0,
         "OtherCharges": 0
@@ -29,21 +27,17 @@
       "CountryCode": "IN",
       "CountryName": "India",
       "Nationality": "IN",
-      "ContactNo": "7648396583",
-      "Email": "sam23@gmail.com",
+      "ContactNo": "9876543874",
+      "Email": "samunder2611@gmail.com",
       "FFAirlineCode": null,
       "FFNumber": "",
       "Baggage": [],
       "MealDynamic": [],
       "SeatDynamic": [],
-      "PassportIssueDate": "2020-01-01T00:00:00",
-      "DocumentIssuingCountry": "IN",
-      "PassportIssueCountryCode": "IN",
-      "PassportIssueCountry": "IN",
       "CellCountryCode": "+91"
     }
   ],
-  "ResultIndex": "OB3-2",
+  "ResultIndex": "OB95[TBO]YIlxXk8ks/yKFuJB41HIUspYRi4d3oADiXMdEQrm/VrC2m5FEEMo6sx7oD3ffzaT50V+cCwX8c+BMVab+0ZJFdxp7tqtxSqrO8uInyEunuE5nGANwxvZnfn/fmrb4menFioiZz5dGUT5RgOg/9UxopSw8+nXjaFiY/bdWwliQPHG/6GtaAy31oSQ0gB3KOXHW5knVIxU0i4DOngQsutrjStSO4lbJ6dqIU2qZUiErYlQO19ZZZEKhrCgQ7x3NkwQ5FnUZqosO+8cQS9J4pxJl1b3RiB2bDo/cNzOTNupUTb1Zuslz6kbOcWkLsystfRc6XCPYmRQlP99GgHbItVgdW9/jfVbbgFDt9qbteMxFJxX3SoMzI3GUaQyTaR1veATBpvj/bz9kME7bcnRUNEWzIqlY/82GWgq1M5qsdmQcgVa1O4j4X8Lzqqa8+vJX0bim08e1AemlMMQzi7ou/wFrfBJ/HJHuChpTxvo+U60xArJ3upjgobYl7xqjy96UXcfBRrLIaVwscygaLY91dGyBoSmFQ96x4ZxiX9g/mMp1UaCkO+RzAGwexKBpVnZ6JvMwGzPT+MHsaeWitoLJF05c9JnGs38rjIm1QV8qtoFAPbltgcg45bWoq9CkXN+eh1AhlDN2ZqOeyG4qDfvuV8XBaGefx2wP4Q3XKxF+c7F9BGsl5ZMlVwkJVJRawNN/9o5qczGDQk8M3GzOJnDMlk4qvpgN/KMHXglaTLH5iZZilfg9HNh+2VtEEn5dmFotuYdQzcfe7gmjkHBxY/Q+8/bPke4xhGKImwd5EsZiKDqcVt4ZltUNAeUj7kAahsYL7oONbKQJNJJXQAV2BBE4ha3dU3U5AAF4a2K1mBhVthoEkOj94fU9UskcaayURV+IgCeb3D3vkUIlhJbUuCkwN6u5jf3kgB2pzTWxWwmveDkNE/i8TWfQIhNJBNT7oCjpv2K6DGjcxeyjFWbsbOpTyNj+obe4VcXGYMgOAL9N7RuKXaEEudD/e1Ay3EBedmSu22gJSspX6VUj93WQ7gyTKB1VhyDERH7PB7eUmmpqEvckWfMsW0F0lRAaPiTY0/iNBAz9wly0m5t7iRXnVWnpPHqN3PM5Luw5OdQvNQ+WR6OFC4COe9f2OMoD2JxtnsW0FXD/jBjW2Lu4MqKOnuPt5L/1IF+nitQM+KRz4pnrvwHnz+/uAUKso/DjGHVrfPKifWy9mIwSb2rzCehUs7rqPLMiw==",
   "EndUserIp": "103.98.38.139",
-  "TokenId": "84879345-d1d2-419f-85b3-7ee7be29c074"
+  "TokenId": "e581defa-1c9c-4245-b382-82f34d35d1b4"
 }

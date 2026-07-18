@@ -6,68 +6,111 @@
       "ErrorMessage": ""
     },
     "ResponseStatus": 1,
-    "TraceId": "4ff89e0a-c0f1-46bc-842a-305ff4b3c62a",
+    "TraceId": "f6c6bcec-d6f1-43d5-b119-103be2a953f6",
     "Response": {
       "ItineraryChangeList": null,
-      "PNR": "L1P97M",
-      "BookingId": 2158174,
+      "PNR": "87ZZXQ",
+      "BookingId": 2161674,
       "SSRDenied": false,
       "SSRMessage": null,
-      "Status": 1,
       "IsPriceChanged": false,
       "IsTimeChanged": false,
       "FlightItinerary": {
+        "AgentRemarks": "",
         "CommentDetails": null,
-        "FareClassification": "Value#rgb(255,213,128)",
+        "FareClassification": "PublishNDC#lightblue",
         "IsAutoReissuanceAllowed": true,
         "IsPartialVoidAllowed": true,
         "IsSeatsBooked": false,
-        "IssuancePcc": "APIRTOTAAPI",
-        "JourneyType": 1,
-        "SearchCombinationType": 2,
-        "SupplierFareClasses": "Value",
-        "TBOConfNo": "TBF6E5HMI",
+        "IssuancePcc": "DELWI2216",
+        "JourneyType": 2,
+        "SearchCombinationType": 1,
+        "SupplierFareClasses": "",
+        "TBOConfNo": "TBFZ4GTG1",
         "TBOTripID": null,
         "TripIndicator": 1,
         "BookingAllowedForRoamer": true,
-        "BookingId": 2158174,
+        "BookingId": 2161674,
         "IsCouponAppilcable": true,
         "IsManual": false,
-        "PNR": "L1P97M",
-        "AgentReferenceNo": "JIYOLIFE-1783921109580",
+        "PNR": "87ZZXQ",
+        "AgentReferenceNo": "JIYOLIFE-1784268431932",
         "IsDomestic": true,
         "ResultFareType": "RegularFare",
-        "Source": 14,
+        "Source": 77,
         "Origin": "BLR",
-        "Destination": "CCU",
-        "AirlineCode": "IX",
-        "ValidatingAirlineCode": "IX",
-        "AirlineRemark": "",
-        "IsLCC": true,
-        "NonRefundable": false,
-        "FareType": "PUB",
+        "Destination": "HYD",
+        "AirlineCode": "AI",
+        "LastTicketDate": "2026-07-18T15:50:00",
+        "ValidatingAirlineCode": "AI",
+        "AirlineRemark": "We are testing Airline remark node",
+        "IsLCC": false,
+        "NonRefundable": true,
+        "FareType": "RV",
         "CreditNoteNo": null,
         "Fare": {
           "CFARAmount": 0,
           "DCFARAmount": 0,
           "ServiceFeeDisplayType": 0,
           "Currency": "INR",
-          "BaseFare": 2000,
-          "Tax": 1761,
-          "TaxBreakup": [],
-          "YQTax": 749,
+          "BaseFare": 8963,
+          "Tax": 2528,
+          "TaxBreakup": [
+            {
+              "key": "K3",
+              "value": 505
+            },
+            {
+              "key": "YQTax",
+              "value": 798
+            },
+            {
+              "key": "YR",
+              "value": 340
+            },
+            {
+              "key": "INTax",
+              "value": 649
+            },
+            {
+              "key": "TotalTax",
+              "value": 2528
+            },
+            {
+              "key": "OtherTaxes",
+              "value": 236
+            }
+          ],
+          "YQTax": 798,
           "AdditionalTxnFeeOfrd": 0,
           "AdditionalTxnFeePub": 0,
           "PGCharge": 0,
-          "OtherCharges": 354,
-          "ChargeBU": null,
+          "OtherCharges": 0,
+          "ChargeBU": [
+            {
+              "key": "TBOMARKUP",
+              "value": 0
+            },
+            {
+              "key": "GLOBALPROCUREMENTCHARGE",
+              "value": 0
+            },
+            {
+              "key": "OTHERCHARGE",
+              "value": 0
+            },
+            {
+              "key": "CONVENIENCECHARGE",
+              "value": 0
+            }
+          ],
           "Discount": 0,
-          "PublishedFare": 4115,
-          "CommissionEarned": 0,
+          "PublishedFare": 11491,
+          "CommissionEarned": 76.22,
           "PLBEarned": 0,
           "IncentiveEarned": 0,
-          "OfferedFare": 4115,
-          "TdsOnCommission": 0,
+          "OfferedFare": 11445.27,
+          "TdsOnCommission": 30.49,
           "TdsOnPLB": 0,
           "TdsOnIncentive": 0,
           "ServiceFee": 0,
@@ -79,40 +122,30 @@
         "CreditNoteCreatedOn": null,
         "Passenger": [
           {
-            "BarcodeDetails": {
-              "Id": 3462664,
-              "Barcode": [
-                {
-                  "Index": 1,
-                  "Format": "PDF417",
-                  "Content": "M1KUMAR/VINEET         L1P97M BLRCCUIX 1131 203Y00000000 000",
-                  "BarCodeInBase64": null,
-                  "JourneyWayType": 3
-                }
-              ]
-            },
+            "BarcodeDetails": null,
             "DocumentDetails": null,
             "GuardianDetails": null,
             "IsReissued": false,
             "SegmentDetails": [
               {
-                "CabinBaggage": {
-                  "FreeText": "7 KG",
-                  "Unit": "KG",
-                  "Value": "7"
-                },
                 "CheckedInBaggage": {
-                  "FreeText": "15 KG",
-                  "Unit": "KG",
-                  "Value": "15"
+                  "Value": "15 KG"
                 },
+                "FareBasis": "TU1YXSII",
                 "FlightInfoIndex": "1"
+              },
+              {
+                "CheckedInBaggage": {
+                  "Value": "15 KG"
+                },
+                "FareBasis": "TU1YXSII",
+                "FlightInfoIndex": "2"
               }
             ],
-            "PaxId": 3462664,
+            "PaxId": 3466665,
             "Title": "Mr",
-            "FirstName": "vineet",
-            "LastName": "kumar",
+            "FirstName": "sam",
+            "LastName": "yadav",
             "PaxType": 1,
             "DateOfBirth": "1990-01-01T00:00:00",
             "Gender": 1,
@@ -126,35 +159,39 @@
               "DCFARAmount": 0,
               "ServiceFeeDisplayType": 0,
               "Currency": "INR",
-              "BaseFare": 2000,
-              "Tax": 1761,
+              "BaseFare": 8963,
+              "Tax": 2528,
               "TaxBreakup": [
                 {
                   "key": "K3",
-                  "value": 146
-                },
-                {
-                  "key": "YR",
-                  "value": 75
+                  "value": 505
                 },
                 {
                   "key": "YQTax",
-                  "value": 749
+                  "value": 798
+                },
+                {
+                  "key": "YR",
+                  "value": 340
+                },
+                {
+                  "key": "INTax",
+                  "value": 649
                 },
                 {
                   "key": "TotalTax",
-                  "value": 1761
+                  "value": 2528
                 },
                 {
                   "key": "OtherTaxes",
-                  "value": 791
+                  "value": 236
                 }
               ],
-              "YQTax": 749,
+              "YQTax": 798,
               "AdditionalTxnFeeOfrd": 0,
               "AdditionalTxnFeePub": 0,
               "PGCharge": 0,
-              "OtherCharges": 354,
+              "OtherCharges": 0,
               "ChargeBU": [
                 {
                   "key": "TBOMARKUP",
@@ -166,7 +203,7 @@
                 },
                 {
                   "key": "OTHERCHARGE",
-                  "value": 354
+                  "value": 0
                 },
                 {
                   "key": "CONVENIENCECHARGE",
@@ -174,12 +211,12 @@
                 }
               ],
               "Discount": 0,
-              "PublishedFare": 4115,
-              "CommissionEarned": 0,
+              "PublishedFare": 11491,
+              "CommissionEarned": 76.22,
               "PLBEarned": 0,
               "IncentiveEarned": 0,
-              "OfferedFare": 4115,
-              "TdsOnCommission": 0,
+              "OfferedFare": 11445.27,
+              "TdsOnCommission": 30.49,
               "TdsOnPLB": 0,
               "TdsOnIncentive": 0,
               "ServiceFee": 0,
@@ -190,18 +227,17 @@
             },
             "City": "Gurgaon",
             "CountryCode": "IN",
-            "CountryName": "India",
             "Nationality": "IN",
-            "ContactNo": "+91 9876543273",
-            "Email": "vuneet@gmail.com",
+            "ContactNo": "+91 9876543874",
+            "Email": "samunder2611@gmail.com",
             "IsLeadPax": true,
             "FFAirlineCode": null,
-            "FFNumber": "",
+            "FFNumber": null,
             "Ssr": [],
             "Ticket": {
-              "TicketId": 2459509,
-              "TicketNumber": "L1P97M",
-              "IssueDate": "2026-07-13T11:08:33",
+              "TicketId": 2462984,
+              "TicketNumber": "2182538516",
+              "IssueDate": "2026-07-17T05:30:00",
               "ValidatingAirline": "098",
               "Remarks": "",
               "ServiceFeeDisplayType": "ShowInTax",
@@ -211,14 +247,24 @@
             },
             "SegmentAdditionalInfo": [
               {
-                "FareBasis": "GNRA000",
+                "FareBasis": "TU1YXSII",
                 "NVA": "",
                 "NVB": "",
                 "Baggage": "15 KG",
-                "Meal": "",
-                "Seat": "",
-                "SpecialService": "",
-                "CabinBaggage": "7 KG"
+                "Meal": null,
+                "Seat": null,
+                "SpecialService": null,
+                "CabinBaggage": "Not Known"
+              },
+              {
+                "FareBasis": "TU1YXSII",
+                "NVA": "",
+                "NVB": "",
+                "Baggage": "15 KG",
+                "Meal": null,
+                "Seat": null,
+                "SpecialService": null,
+                "CabinBaggage": "Not Known"
               }
             ]
           }
@@ -227,19 +273,19 @@
         "Segments": [
           {
             "Baggage": "15 KG",
-            "CabinBaggage": "7 KG",
+            "CabinBaggage": "Not Known",
             "CabinClass": 2,
             "SupplierFareClass": null,
             "TripIndicator": 1,
             "SegmentIndicator": 1,
             "Airline": {
-              "AirlineCode": "IX",
-              "AirlineName": "Air India Express",
-              "FlightNumber": "1131",
-              "FareClass": "GC",
-              "OperatingCarrier": ""
+              "AirlineCode": "AI",
+              "AirlineName": "Air India",
+              "FlightNumber": "2854",
+              "FareClass": "T",
+              "OperatingCarrier": "AI"
             },
-            "AirlinePNR": "",
+            "AirlinePNR": "87ZNSE",
             "Origin": {
               "Airport": {
                 "AirportCode": "BLR",
@@ -250,76 +296,164 @@
                 "CountryCode": "IN",
                 "CountryName": "India"
               },
-              "DepTime": "2026-07-22T07:05:00"
+              "DepTime": "2026-07-18T17:55:00"
             },
             "Destination": {
               "Airport": {
-                "AirportCode": "CCU",
-                "AirportName": "Netaji Subhash Chandra Bose International Airport",
+                "AirportCode": "BOM",
+                "AirportName": "Chhatrapati Shivaji International Airport",
                 "Terminal": "2",
-                "CityCode": "CCU",
-                "CityName": "Kolkata",
+                "CityCode": "BOM",
+                "CityName": "Mumbai",
                 "CountryCode": "IN",
                 "CountryName": "India"
               },
-              "ArrTime": "2026-07-22T09:35:00"
+              "ArrTime": "2026-07-18T20:05:00"
             },
-            "Duration": 150,
+            "Duration": 0,
             "GroundTime": 0,
             "Mile": 0,
             "StopOver": false,
             "FlightInfoIndex": "1",
             "StopPoint": "",
-            "StopPointArrivalTime": "0001-01-01T00:00:00",
-            "StopPointDepartureTime": "0001-01-01T00:00:00",
-            "Craft": "738",
-            "Remark": "Value",
+            "StopPointArrivalTime": null,
+            "StopPointDepartureTime": null,
+            "Craft": "32N",
+            "Remark": null,
             "IsETicketEligible": true,
             "FlightStatus": "Confirmed",
             "Status": "HK",
-            "FareClassification": {
-              "Color": "rgb(255,213,128)",
-              "Type": "Value"
-            }
+            "FareClassification": null
+          },
+          {
+            "Baggage": "15 KG",
+            "CabinBaggage": "Not Known",
+            "CabinClass": 2,
+            "SupplierFareClass": null,
+            "TripIndicator": 1,
+            "SegmentIndicator": 2,
+            "Airline": {
+              "AirlineCode": "AI",
+              "AirlineName": "Air India",
+              "FlightNumber": "2869",
+              "FareClass": "T",
+              "OperatingCarrier": "AI"
+            },
+            "AirlinePNR": "87ZNSE",
+            "Origin": {
+              "Airport": {
+                "AirportCode": "BOM",
+                "AirportName": "Chhatrapati Shivaji International Airport",
+                "Terminal": "2",
+                "CityCode": "BOM",
+                "CityName": "Mumbai",
+                "CountryCode": "IN",
+                "CountryName": "India"
+              },
+              "DepTime": "2026-07-18T21:25:00"
+            },
+            "Destination": {
+              "Airport": {
+                "AirportCode": "HYD",
+                "AirportName": "Rajiv Gandhi International Airport",
+                "Terminal": "",
+                "CityCode": "HYD",
+                "CityName": "Hyderabad",
+                "CountryCode": "IN",
+                "CountryName": "India"
+              },
+              "ArrTime": "2026-07-18T23:05:00"
+            },
+            "AccumulatedDuration": 310,
+            "Duration": 0,
+            "GroundTime": 80,
+            "Mile": 0,
+            "StopOver": false,
+            "FlightInfoIndex": "2",
+            "StopPoint": "",
+            "StopPointArrivalTime": null,
+            "StopPointDepartureTime": null,
+            "Craft": "32N",
+            "Remark": null,
+            "IsETicketEligible": true,
+            "FlightStatus": "Confirmed",
+            "Status": "HK",
+            "FareClassification": null
           }
         ],
         "FareRules": [
           {
             "Origin": "BLR",
-            "Destination": "CCU",
-            "Airline": "IX",
-            "FareBasisCode": "GNRA000",
-            "FareRuleDetail": "The FareBasisCode is: GNRA000<br /><span><b>IX-I5 Domestic Fare Rules</b></span><br /><br /><table border=\"1\"><tbody><tr><td rowspan=\"2\"><b>Change/Cancel/Meal/Seat/Baggage</b></td><td rowspan=\"2\"></td><td style=\"text-align:center\"><b>Fare Type</b></td></tr><tr><th width=\"200px;\">Xpress Value (EC)</th></tr><tr><td rowspan=\"4\">Baggage</td><td>Check-in Baggage<br />(Adult/Child)</td><td style=\"text-align:center\">15 KG (1 piece)</td></tr><tr><td>Check-in Baggage<br />(Infant)</td><td style=\"text-align:center\">Nil</td></tr><tr><td>Check-in Baggage (Student Fare)</td><td style=\"text-align:center\">25 KG (1 piece)</td></tr><tr><td>Cabin Baggage<br />(Not applicable for Infant)</td><td style=\"text-align:center\">7 KG</td></tr><tr><td>Meal/Seat</td><td></td><td style=\"text-align:center\">Chargeable</td></tr><tr><td rowspan=\"2\" width=\"200px;\">Change Fee <br><b>(Fare Difference is also applicable)</b><br />Per Person Per Sector</b></td><td>0 to 2 Hours prior to the departure</td><th>Not Allowed</th></tr><tr><td>Upto 2 hrs prior to the departure</td><td style=\"text-align:center\">INR 3000/-</td></tr></tr><tr><td rowspan=\"2\" width=\"200px;\">Cancellation Fee<br><b>or Airfare charges (Whichever is lower)</b><br />Per Person Per Sector</td><td>0 to 2 Hours prior to the departure</td><th>Not Allowed</th></tr><tr><td>Upto 2 hrs prior to the departure</td><td style=\"text-align:center\">INR 3500/-</td></tr></tbody></table><br /><b>Note</b>:<br /><ol><li>Subject to change without prior notice.</li><li>We should receive the request at least 4 hours prior to Airline Fare Rules Policy.</li></ol><br /><b>Note: Any booking change/Cancellation is not allowed within 2 hrs from the Departure irrespective of the product book</b><br /><br /><br/> <br/>",
-            "FareRestriction": null,
-            "FareInclusions": [
-              "Cabin Baggage Included",
-              "Check-In baggage Included",
-              "Cancellation fees apply",
-              "Reissue fees apply"
-            ]
+            "Destination": "BOM",
+            "Airline": "AI",
+            "FareBasisCode": "TU1YXSII",
+            "FareRuleDetail": "<b><u>Adult</b></u><br /><br />Cancel before departure: Not Allowed<br />Cancel before departure - No Show: Not Allowed<br />Cancel after departure: Not Allowed<br />Cancel after departure - No Show: Not Allowed<br />Change before departure: Allowed with Restriction<br />Change before departure - No Show: Allowed with Restriction<br />Change after departure: Not Allowed<br />Change after departure - No Show: Not Allowed<br/> <br/>",
+            "FareRestriction": "",
+            "FareFamilyCode": "",
+            "FareRuleIndex": "",
+            "FareInclusions": []
+          },
+          {
+            "Origin": "BOM",
+            "Destination": "HYD",
+            "Airline": "AI",
+            "FareBasisCode": "TU1YXSII",
+            "FareRuleDetail": "<b><u>Adult</b></u><br /><br />Cancel before departure: Not Allowed<br />Cancel before departure - No Show: Not Allowed<br />Cancel after departure: Not Allowed<br />Cancel after departure - No Show: Not Allowed<br />Change before departure: Allowed with Restriction<br />Change before departure - No Show: Allowed with Restriction<br />Change after departure: Allowed with Restriction<br />Change after departure - No Show: Allowed with Restriction<br/> <br/>",
+            "FareRestriction": "",
+            "FareFamilyCode": "",
+            "FareRuleIndex": "",
+            "FareInclusions": []
           }
         ],
-        "PenaltyCharges": {},
+        "MiniFareRules": [
+          {
+            "CFARExcludedDetails": null,
+            "JourneyPoints": "BLR-BOM-HYD",
+            "Type": "Reissue",
+            "From": "",
+            "To": "",
+            "Unit": "",
+            "Details": "INR 6000*",
+            "OnlineReissueAllowed": true,
+            "OnlineRefundAllowed": false
+          },
+          {
+            "CFARExcludedDetails": null,
+            "JourneyPoints": "BLR-BOM-HYD",
+            "Type": "Cancellation",
+            "From": "",
+            "To": "",
+            "Unit": "",
+            "Details": "REFER TO DETAILED FARE RULES",
+            "OnlineReissueAllowed": false,
+            "OnlineRefundAllowed": false
+          }
+        ],
+        "PenaltyCharges": {
+          "ReissueCharge": "",
+          "CancellationCharge": ""
+        },
         "Status": 5,
         "Invoice": [
           {
             "CreditNoteGSTIN": null,
             "GSTIN": null,
-            "InvoiceCreatedOn": "2026-07-13T11:08:33",
-            "InvoiceId": 25774,
-            "InvoiceNo": "DW/2627/25774",
-            "InvoiceAmount": 4115,
+            "InvoiceCreatedOn": "2026-07-17T11:37:38",
+            "InvoiceId": 27601,
+            "InvoiceNo": "DW/2627/27601",
+            "InvoiceAmount": 11445,
             "Remarks": "",
             "InvoiceStatus": 3
           }
         ],
-        "InvoiceAmount": 4115,
-        "InvoiceNo": "DW/2627/25774",
+        "InvoiceAmount": 11445,
+        "InvoiceNo": "DW/2627/27601",
         "InvoiceStatus": 3,
-        "InvoiceCreatedOn": "2026-07-13T11:08:33",
+        "InvoiceCreatedOn": "2026-07-17T11:37:38",
         "Remarks": "",
         "IsWebCheckInAllowed": false
       },
+      "Message": "",
       "TicketStatus": 1
     }
   }

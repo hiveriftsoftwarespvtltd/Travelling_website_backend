@@ -1,43 +1,9 @@
 {
-  "PreferredCurrency": null,
-  "AgentReferenceNo": "JIYOLIFE-1783921109580",
-  "TraceId": "4ff89e0a-c0f1-46bc-842a-305ff4b3c62a",
+  "TraceId": "f6c6bcec-d6f1-43d5-b119-103be2a953f6",
+  "PNR": "87ZZXQ",
+  "BookingId": 2161674,
   "userId": "6a1d6b230cfd132b985b612a",
   "email": "samunder2611@gmail.com",
-  "Passengers": [
-    {
-      "Title": "Mr",
-      "FirstName": "vineet ",
-      "LastName": "kumar",
-      "PaxType": 1,
-      "DateOfBirth": "1990-01-01T00:00:00",
-      "Gender": 1,
-      "AddressLine1": "123, Test",
-      "AddressLine2": "",
-      "Fare": {
-        "Currency": "INR",
-        "BaseFare": 2000,
-        "Tax": 1761,
-        "YQTax": 749,
-        "AdditionalTxnFeePub": 0,
-        "AdditionalTxnFeeOfrd": 0,
-        "OtherCharges": 0
-      },
-      "City": "Gurgaon",
-      "CountryCode": "IN",
-      "CountryName": "India",
-      "Nationality": "IN",
-      "ContactNo": "9876543273",
-      "Email": "vuneet@gmail.com",
-      "FFAirlineCode": null,
-      "FFNumber": "",
-      "Baggage": [],
-      "MealDynamic": [],
-      "SeatDynamic": [],
-      "CellCountryCode": "+91"
-    }
-  ],
-  "ResultIndex": "OB1[TBO]+6avQvnAhsTQDJzOW0MO+DXAEvrhf7ZLd1fmmUXUe87n+Stvytnwht57cqWT/r9O82eiidJx6hF2V1NJEmvOOg8mn8V3fS7w3IVypGvPsGnTR4bDrWFCrDpB7jpUPkMR7QW+a3n1WGmm6iXJSbdY0DYB5mm8bhoc5mUweVzMvaH+ya1Ssu2DoA59YUoUYaf11xYovBpebpUjBfcKznrqQWGHyGZWdiZbRvD0Pvy+tQ4+NFU8VHyBHZEOQGCttEJcgtovjSX9tI0rLRN5TY10Nsqa9x60YVgzU2FHt/JerZlEA7C4+QQsgpGbt/anGeePzD55uBvPbgy15i4ou7w9uMI4+9rWlRn/cMKszpOLFzZ9zqCEGJ174xCq+xtoVR+lKXfH6mJCkvaAmuCh2vIgHKpZWQBF+OiTemq+mYiSMNfOtrhCWHytf28VkpFCWh9Jmi1QCqlc3sYkdDkEr3sFvh02liAN3j7wjBhAhGz6NrIw44d0PIXIOE2/YlLzfvfJj1Gu6Oeog2odxW5nun0WGWBC3j5XgDnGWlQky7sdbVH6fs3La6NDA4dBykKxfdHkaIvq6pbtwxcYDBPA0pHj3WB4C4AlyaKwuWffUaEhGGQPQPc48WM0YJwVERHbU9lqwr9MmwNMS8yvreAPvyupWW4dVrLExmOOHtXMITFqQpQmrphBqbZEOjM7WV4kK9DfBNvS1VHz29hALgiQ8HJtIfmeF9vig2CIv67q13QJlTo4ILNKwx6s/f1JrR+KcsRihSEaS1lx0vCp5bmRkYHgk8JwJ6eMI9kQc7ZiXCuq+TPc6l/DgTCzTIH4YEoGc+PD/Hh9+VVLURt/H3dnQxh9o07b0NGeU4GZumQLoYGG4Zi/0RhuCYZC7OctAxyu+UcJTi/OzJN7N3QmjCDMcySkSu1mjjQzDuKBRPhGAlHxCrp5O+O87EJFB08RblNx3EG2DnJbZ/EvpocUluFfOsvylj+xaJDoMHuPoLzJkdSC2PqqY6Hs4lQZG/fneNBnpF4v",
   "EndUserIp": "103.98.38.139",
-  "TokenId": "a7ad3042-a4d2-4f18-9d37-a428f81cfc63"
+  "TokenId": "e581defa-1c9c-4245-b382-82f34d35d1b4"
 }
