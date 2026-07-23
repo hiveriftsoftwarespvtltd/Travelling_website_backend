@@ -53,6 +53,7 @@ export class HotelController {
     return this.hotelService.sendChangeRequest(body, this.getValidIp(req));
   }
 
+
   @Get('my-bookings')
   async getMyBookings(@Query('userId') userId: string) {
     return this.hotelService.getMyBookings(userId);

@@ -10,14 +10,15 @@ import { HotelBooking, HotelBookingDocument } from './schemas/hotel-booking.sche
 const AUTH_URL = 'http://Sharedapi.tektravels.com/SharedData.svc/rest/Authenticate';
 
 // ─── TBO Hotel API Endpoints ─────────────────────────────────────────────────
-// Dynamic / Booking APIs (require auth token)
-const HOTEL_SEARCH_URL    = 'https://HotelBE.tektravels.com/hotelservice.svc/rest/GetHotelResult';
-const HOTEL_PREBOOK_URL   = 'https://HotelBE.tektravels.com/hotelservice.svc/rest/BlockRoom';
-const HOTEL_ROOMS_URL     = 'https://HotelBE.tektravels.com/hotelservice.svc/rest/GetHotelRoom';
+// Affiliate (Search + PreBook) — no TokenId in body, use Basic Auth from JiyoLife credentials
+const HOTEL_SEARCH_URL    = 'https://affiliate.tektravels.com/HotelAPI/Search';
+const HOTEL_PREBOOK_URL   = 'https://affiliate.tektravels.com/HotelAPI/PreBook';
+// B2B (Book, GetBookingDetail, GenerateVoucher, SendChangeRequest) — require TokenId in body
 const HOTEL_BOOK_URL      = 'https://HotelBE.tektravels.com/hotelservice.svc/rest/Book';
 const HOTEL_BOOKING_DETAIL_URL = 'https://HotelBE.tektravels.com/hotelservice.svc/rest/GetBookingDetail';
 const HOTEL_VOUCHER_URL   = 'https://HotelBE.tektravels.com/hotelservice.svc/rest/GenerateVoucher';
 const HOTEL_CHANGE_REQUEST_URL = 'https://HotelBE.tektravels.com/hotelservice.svc/rest/SendChangeRequest';
+const HOTEL_ROOMS_URL     = 'https://HotelBE.tektravels.com/hotelservice.svc/rest/GetHotelRoom';
 
 // Static / Content APIs (Basic Auth — no token needed)
 const STATIC_BASE_URL       = 'http://api.tbotechnology.in/TBOHolidays_HotelAPI';
@@ -28,13 +29,20 @@ const STATIC_HOTEL_CODES    = `${STATIC_BASE_URL}/hotelcodelist`;
 const STATIC_TBO_HOTEL_CODES = `${STATIC_BASE_URL}/TBOHotelCodeList`;
 
 // ─── TBO Credentials ─────────────────────────────────────────────────────────
+// B2B Auth credentials (used for Authenticate → TokenId flow)
 const AUTH_CREDENTIALS = {
   ClientId: 'ApiIntegrationNew',
   UserName: 'Lifejiyo',
   Password: 'Lifejiyo@123',
 };
 
-// Static API uses Basic Auth
+// Affiliate API uses Basic Auth with JiyoLife credentials
+const AFFILIATE_AUTH = {
+  username: 'Lifejiyo',
+  password: 'Lifejiyo@123',
+};
+
+// Static API uses Basic Auth with TBO test credentials
 const STATIC_API_AUTH = {
   username: 'TBOStaticAPITest',
   password: 'Tbo@11530818',
@@ -103,274 +111,212 @@ export class HotelService implements OnModuleInit {
 
   // ─── 1. Search Hotels ──────────────────────────────────────────────────────
   // POST https://affiliate.tektravels.com/HotelAPI/Search
-  // HotelCodes: comma-separated string of hotel codes from TBOHotelCodeList
-  // GuestNationality: ISO country code e.g. "IN"
-  // PaxRooms: [{Adults, Children, ChildrenAges}]
+  // Affiliate API — uses Basic Auth (JiyoLife credentials), NO TokenId in body
+  // Request: { CheckIn, CheckOut (YYYY-MM-DD), HotelCodes, GuestNationality,
+  //            PaxRooms:[{Adults,Children,ChildrenAges}], ResponseTime, IsDetailedResponse, Filters }
+  // Response: { Status:{Code:200}, HotelResult:[{HotelCode, Currency, Rooms:[{Name[],BookingCode,Inclusion,DayRates,TotalFare,TotalTax,CancelPolicies,MealType,IsRefundable}]}] }
   // ──────────────────────────────────────────────────────────────────────────
   async searchHotels(body: any, endUserIp: string) {
-    const tokenId = await this.getToken(endUserIp);
-
     const sanitizedPaxRooms = (body.PaxRooms || [{ Adults: 1, Children: 0 }]).map(room => {
       const sanitizedRoom: any = { Adults: room.Adults || 1, Children: room.Children || 0 };
       if (sanitizedRoom.Children > 0 && Array.isArray(room.ChildrenAges)) {
         sanitizedRoom.ChildrenAges = room.ChildrenAges;
+      } else {
+        sanitizedRoom.ChildrenAges = [];
       }
       return sanitizedRoom;
     });
 
-    // Parse dates and compute nights
-    let checkInDateStr = body.CheckIn; // Fallback
-    let noOfNights = 1;
-    try {
-      if (body.CheckIn && body.CheckOut) {
-        const [year, month, day] = body.CheckIn.split('-');
-        checkInDateStr = `${day}/${month}/${year}`;
-        const checkInDate = new Date(body.CheckIn);
-        const checkOutDate = new Date(body.CheckOut);
-        noOfNights = Math.max(1, Math.round((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)));
-      }
-    } catch (e) {
-      this.logger.warn(`Failed to parse search dates: CheckIn=${body.CheckIn} CheckOut=${body.CheckOut}`);
-    }
-
-    const payload = {
-      EndUserIp: endUserIp,
-      TokenId: tokenId,
-      CheckInDate: checkInDateStr,
-      NoOfNights: noOfNights,
-      CountryCode: body.CountryCode || 'IN',
-      CityId: Number(body.CityCode || body.CityId || 119805),
+    // Affiliate API payload — dates in YYYY-MM-DD format directly
+    const payload: any = {
+      CheckIn: body.CheckIn,   // YYYY-MM-DD
+      CheckOut: body.CheckOut, // YYYY-MM-DD
       GuestNationality: body.GuestNationality || 'IN',
-      NoOfRooms: sanitizedPaxRooms.length,
-      RoomGuests: sanitizedPaxRooms.map(room => ({
-        NoOfAdults: room.Adults || 1,
-        NoOfChild: room.Children || 0,
-        ChildAge: room.ChildrenAges || null
-      })),
-      MaxRating: body.MaxRating || 5,
-      MinRating: body.MinRating || 0,
-      ReviewScore: body.ReviewScore || null,
-      IsNearBySearchAllowed: body.IsNearBySearchAllowed !== false,
-      HotelCodeList: body.HotelCodes || null,
+      PaxRooms: sanitizedPaxRooms,
+      ResponseTime: 23.0,
+      IsDetailedResponse: true,
+      Filters: {
+        Refundable: false,
+        NoOfRooms: sanitizedPaxRooms.length,
+        MealType: 'All',
+        StarRating: 'All',
+      },
     };
 
-    this.logger.log(`🏨 TBO Hotel Search: CheckInDate=${payload.CheckInDate} Nights=${payload.NoOfNights} CityId=${payload.CityId} HotelCodes=${body.HotelCodes ? 'Specified' : 'All'}`);
+    // HotelCodes filter (comma-separated string)
+    if (body.HotelCodes) {
+      payload.HotelCodes = body.HotelCodes;
+    } else if (body.CityCode || body.CityId) {
+      // Affiliate API requires HotelCodes. Fetch codes for the city and pass up to 150
+      const cityId = String(body.CityCode || body.CityId);
+      try {
+        const hotelCodesRes = await this.getHotelCodesByCity(cityId);
+        const hotels = hotelCodesRes?.Hotels || [];
+        if (hotels.length > 0) {
+          payload.HotelCodes = hotels.slice(0, 150).map((h: any) => h.HotelCode).join(',');
+        } else {
+          throw new HttpException('No hotels found in the given city', HttpStatus.BAD_REQUEST);
+        }
+      } catch (err) {
+        if (err instanceof HttpException) throw err;
+        this.logger.warn(`Failed to fetch hotel codes for city ${cityId}`);
+        throw new HttpException('Failed to resolve hotels for this city', HttpStatus.BAD_REQUEST);
+      }
+    } else {
+      throw new HttpException('Either HotelCodes or CityCode is required', HttpStatus.BAD_REQUEST);
+    }
+
+    this.logger.log(`🏨 Affiliate Hotel Search: CheckIn=${payload.CheckIn} CheckOut=${payload.CheckOut} HotelCodes=${payload.HotelCodes ? payload.HotelCodes.substring(0, 50) + '...' : 'none'}`);
 
     try {
       const response = await axios.post(HOTEL_SEARCH_URL, payload, {
+        auth: AFFILIATE_AUTH, // Basic Auth with JiyoLife credentials
         headers: { 'Content-Type': 'application/json' },
         timeout: 45000,
       });
 
       const data = response.data;
-      const searchResult = data?.HotelSearchResult;
-      
-      if (!searchResult || searchResult.ResponseStatus !== 1) {
-        const errMsg = searchResult?.Error?.ErrorMessage || 'Hotel search failed';
-        this.logger.warn(`⚠️ TBO Hotel Search: ${errMsg}`);
-
-        // Check for token expiry
-        if (errMsg.toLowerCase().includes('token')) {
-          this.clearToken();
-          return this.searchHotels(body, endUserIp);
-        }
-        
+      // Affiliate response: { Status: {Code:200, Description:"Successful"}, HotelResult: [...] }
+      if (!data || data.Status?.Code !== 200) {
+        const errMsg = data?.Status?.Description || 'Hotel search failed';
+        this.logger.warn(`⚠️ Affiliate Hotel Search: ${errMsg}`);
         return {
-          GetHotelResultResponse: {
-            ResponseStatus: searchResult?.ResponseStatus || 3,
-            Error: searchResult?.Error || { ErrorCode: 3, ErrorMessage: errMsg },
-            TraceId: searchResult?.TraceId || null,
-            HotelResults: []
-          }
+          Status: data?.Status || { Code: 400, Description: errMsg },
+          HotelResult: []
         };
       }
 
-      const count = searchResult?.HotelResults?.length ?? 0;
-      this.logger.log(`✅ Hotel Search found ${count} hotels`);
+      const count = data?.HotelResult?.length ?? 0;
+      this.logger.log(`✅ Affiliate Hotel Search found ${count} hotels`);
 
-      // Map response to the format expected by the frontend
-      return {
-        GetHotelResultResponse: {
-          ResponseStatus: searchResult.ResponseStatus,
-          Error: searchResult.Error,
-          TraceId: searchResult.TraceId,
-          HotelResults: (searchResult.HotelResults || []).map(h => ({
-            ...h,
-            MinPrice: h.Price?.PublishedPrice ?? h.MinPrice, // fallback to MinPrice
-          })),
-          CheckInDate: searchResult.CheckInDate,
-          CheckOutDate: searchResult.CheckOutDate,
+      // ─── Augment with Static Data (HotelName, Image, Rating, etc.) ────────
+      if (count > 0) {
+        try {
+          // Take first 150 hotels to avoid overly massive static API requests
+          const hotelCodesToFetch = data.HotelResult.slice(0, 150).map((h: any) => h.HotelCode).join(',');
+          const staticDataRes = await this.getHotelDetails(hotelCodesToFetch);
+          
+          if (staticDataRes?.HotelDetails) {
+            const staticMap = new Map();
+            staticDataRes.HotelDetails.forEach((sd: any) => {
+              staticMap.set(String(sd.HotelCode), sd);
+            });
+
+            data.HotelResult = data.HotelResult.map((h: any) => {
+              const staticInfo = staticMap.get(String(h.HotelCode));
+              if (staticInfo) {
+                return {
+                  ...h,
+                  HotelName: staticInfo.HotelName,
+                  HotelPicture: staticInfo.Image || staticInfo.HotelPicture,
+                  HotelRating: staticInfo.StarRating,
+                  HotelAddress: staticInfo.Address,
+                  HotelFacilities: staticInfo.HotelFacilities,
+                };
+              }
+              return h;
+            });
+            this.logger.log(`✅ Augmented search results with static data`);
+          }
+        } catch (e) {
+          this.logger.warn(`⚠️ Failed to augment static data for search results: ${e.message}`);
         }
-      };
+      }
+
+      // Return Affiliate response directly — frontend will handle HotelResult[] format
+      return data;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      this.logger.error('❌ TBO Hotel Search error', error?.message);
-      throw new HttpException('Failed to search hotels from TBO API', HttpStatus.BAD_GATEWAY);
+      this.logger.error('❌ Affiliate Hotel Search error', error?.message);
+      throw new HttpException('Failed to search hotels from TBO Affiliate API', HttpStatus.BAD_GATEWAY);
     }
   }
 
   // ─── 2. Pre-Book Hotel ─────────────────────────────────────────────────────
   // POST https://affiliate.tektravels.com/HotelAPI/PreBook
-  // BookingCode: from Search response (HotelResult.Rooms[0].BookingCode)
-  // PaymentMode: "Limit" for credit-limit billing
+  // Affiliate API — uses Basic Auth (JiyoLife credentials), NO TokenId in body
+  // Request: { BookingCode: "...", PaymentMode: "Limit" }
+  // Response: { Status:{Code:200}, HotelResult:[{HotelCode, Currency, Rooms:[{BookingCode,NetAmount,NetTax,TotalFare,TotalTax,CancelPolicies,Amenities,PriceBreakUp}], RateConditions[], ValidationInfo }] }
   // ──────────────────────────────────────────────────────────────────────────
   async preBookHotel(body: any, endUserIp: string) {
-    const tokenId = await this.getToken(endUserIp);
+    if (!body.BookingCode) {
+      throw new HttpException('BookingCode is required for PreBook', HttpStatus.BAD_REQUEST);
+    }
 
-    // B2B BlockRoom payload expects a HotelBookRequest type
-    // If NoOfRooms or HotelRoomsDetails is not provided, we fall back to a single dummy passenger
-    const noOfRooms = body.NoOfRooms || 1;
-    const roomGuests = body.RoomGuests || [{ NoOfAdults: 2, NoOfChild: 0, ChildAge: null }];
-
-    const dummyPassengerList = Array.from({ length: roomGuests[0]?.NoOfAdults || 2 }, (_, idx) => ({
-      Title: 'Mr',
-      FirstName: 'Guest',
-      LastName: `Lead${idx + 1}`,
-      PaxType: 1, // All dummy guests here are adults
-      LeadPassenger: idx === 0,
-      Age: 30,
-      Email: 'guest@example.com',
-      Phoneno: '9999999999',
-      CountryCode: 'IN',
-      CountryName: 'India'
-    }));
-
-    const hotelRoomsDetails = body.HotelRoomsDetails || [
-      {
-        RoomIndex: Number(body.RoomIndex || 7), // fallback to standard Goa test room RoomIndex 7
-        RoomTypeCode: body.RoomTypeCode || '',
-        RoomTypeName: body.RoomTypeName || 'Standard Room',
-        RatePlanCode: body.BookingCode || '',
-        BedTypeCode: null,
-        SmokingPreference: 0,
-        Supplements: null,
-        Price: body.Price || null,
-        HotelPassenger: dummyPassengerList
-      }
-    ];
-
+    // Affiliate PreBook payload — only BookingCode + PaymentMode
     const payload = {
-      TraceId: body.TraceId,
-      ResultIndex: Number(body.ResultIndex || 1),
-      HotelCode: body.HotelCode || '',
       BookingCode: body.BookingCode,
-      IsVoucherBooking: body.IsVoucherBooking !== false, // default true to avoid cancellation penalty WCF errors
-      GuestNationality: body.GuestNationality || 'IN',
-      EndUserIp: endUserIp,
-      TokenId: tokenId,
-      RequestedBookingMode: body.RequestedBookingMode ?? 5,
-      NoOfRooms: noOfRooms,
-      NetAmount: body.NetAmount || 0,
-      HotelRoomsDetails: hotelRoomsDetails,
+      PaymentMode: 'Limit',
     };
 
-    this.logger.log(`🛎️ TBO Hotel BlockRoom (PreBook): HotelCode=${payload.HotelCode} TraceId=${payload.TraceId} RoomIndex=${hotelRoomsDetails[0]?.RoomIndex}`);
+    this.logger.log(`🛎️ Affiliate Hotel PreBook: BookingCode=${payload.BookingCode}`);
 
     try {
       const response = await axios.post(HOTEL_PREBOOK_URL, payload, {
+        auth: AFFILIATE_AUTH, // Basic Auth with JiyoLife credentials
         headers: { 'Content-Type': 'application/json' },
         timeout: 45000,
       });
 
-      let blockResult = response.data.BlockRoomResult || response.data.details?.BlockRoomResult;
-
-      // 🔴 MOCK SUCCESS FOR TEST ENVIRONMENT IF TBO SUPPLIER REJECTS DUMMY BOOKING
-      if (blockResult && blockResult.ResponseStatus === 2 && blockResult.Error?.ErrorCode === 2) {
-        this.logger.warn(`TBO Supplier rejected dummy booking. Mocking success for UI demonstration.`);
-        blockResult = {
-          ResponseStatus: 1,
-          Error: { ErrorCode: 0, ErrorMessage: "" },
-          TraceId: payload.TraceId,
-          Status: 1,
-          HotelBookingStatus: 'Confirmed',
-          ConfirmationNo: `TBO-TEST-${Math.floor(Math.random() * 100000)}`,
-          BookingRefNo: `BRN-${Math.floor(Math.random() * 100000)}`,
-          BookingId: Math.floor(Math.random() * 1000000),
-          IsPriceChanged: false,
-          IsCancellationPolicyChanged: false
-        };
-        response.data = { BlockRoomResult: blockResult };
-      }
-
-      if (!blockResult || blockResult.ResponseStatus !== 1) {
-        const errMsg = blockResult?.Error?.ErrorMessage || 'Hotel pre-book/block failed';
-        this.logger.warn(`⚠️ TBO Hotel BlockRoom failed: ${errMsg}`);
-        if (errMsg.toLowerCase().includes('token')) {
-          this.clearToken();
-          return this.preBookHotel(body, endUserIp);
-        }
+      const data = response.data;
+      // Affiliate PreBook response: { Status:{Code:200}, HotelResult:[{HotelCode, Currency, Rooms:[...], RateConditions, ValidationInfo}] }
+      if (!data || data.Status?.Code !== 200) {
+        const errMsg = data?.Status?.Description || 'Hotel pre-book failed';
+        this.logger.warn(`⚠️ Affiliate Hotel PreBook failed: ${errMsg}`);
         throw new HttpException(errMsg, HttpStatus.BAD_REQUEST);
       }
 
-      this.logger.log(`✅ TBO Hotel BlockRoom (PreBook) success`);
-      
-      // Map to the shape expected by the frontend
-      return {
-        PreBookResult: {
-          Status: blockResult.Status || { Code: 200, Description: 'Success' },
-          HotelResult: {
-            HotelCode: blockResult.HotelCode || payload.HotelCode,
-            HotelName: blockResult.HotelName,
-            Rooms: (blockResult.HotelRoomsDetails || []).map(r => ({
-              BookingCode: r.BookingCode || r.RatePlanCode,
-              RatePlanCode: r.RatePlanCode,
-              RoomTypeCode: r.RoomTypeCode,
-              RoomTypeName: r.RoomTypeName,
-              RoomIndex: r.RoomIndex,
-              Price: r.Price,
-              TotalFare: r.Price?.PublishedPrice ?? 0,
-              CancellationPolicies: r.CancellationPolicies || []
-            }))
-          }
-        }
-      };
+      this.logger.log(`✅ Affiliate Hotel PreBook success`);
+
+      // Return Affiliate response directly — frontend will parse HotelResult[0].Rooms[0].NetAmount etc.
+      return data;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      this.logger.error('❌ TBO Hotel PreBook error', error?.message);
-      throw new HttpException('Failed to pre-book hotel with TBO API', HttpStatus.BAD_GATEWAY);
+      this.logger.error('❌ Affiliate Hotel PreBook error', error?.message);
+      throw new HttpException('Failed to pre-book hotel with TBO Affiliate API', HttpStatus.BAD_GATEWAY);
     }
   }
 
   // ─── 3. Book Hotel ─────────────────────────────────────────────────────────
   // POST https://HotelBE.tektravels.com/hotelservice.svc/rest/book
-  // Full passenger details required
+  // BookingCode from Affiliate PreBook must be at ROOT level (not inside HotelRoomsDetails)
+  // NetAmount from Affiliate PreBook response (HotelResult[0].Rooms[0].NetAmount)
   // ──────────────────────────────────────────────────────────────────────────
   async bookHotel(body: any, endUserIp: string) {
     const tokenId = await this.getToken(endUserIp);
     const clientRef = body.ClientReferenceNumber || `REF-${Date.now()}`;
 
     const payload = {
+      BookingCode: body.BookingCode,  // ← CRITICAL: must be at root level for Affiliate BookingCodes
       ClientReferenceNo: Math.floor(Date.now() / 1000), // MUST BE INT32
-      TraceId: body.TraceId,
-      ResultIndex: Number(body.ResultIndex || 1),
-      HotelCode: body.HotelCode || '',
-      RequestedBookingMode: body.RequestedBookingMode || 5,
       IsVoucherBooking: body.IsVoucherBooking ?? true,
-      IspackageFare: body.IsPackageFare ?? false,
       GuestNationality: body.GuestNationality || 'IN',
       EndUserIp: endUserIp,
       TokenId: tokenId,
-      NoOfRooms: body.NoOfRooms || body.HotelRoomsDetails?.length || 1,
+      RequestedBookingMode: body.RequestedBookingMode || 5,
+      NetAmount: body.NetAmount || 0, // NetAmount from Affiliate PreBook response
+      ClientReferenceId: clientRef,
       HotelRoomsDetails: (body.HotelRoomsDetails || []).map(r => ({
-        RoomIndex: r.RoomIndex,
-        RoomTypeCode: r.RoomTypeCode,
-        RoomTypeName: r.RoomTypeName,
-        RatePlanCode: r.RatePlanCode,
-        Price: r.Price,
-        BedTypeCode: r.BedTypeCode || null,
-        SmokingPreference: r.SmokingPreference || 0,
-        Supplements: r.Supplements || null,
         HotelPassenger: (r.HotelPassenger || []).map(p => ({
           Title: p.Title || 'Mr',
           FirstName: typeof p.FirstName === 'string' ? p.FirstName.trim() : p.FirstName,
+          MiddleName: p.MiddleName || '',
           LastName: typeof p.LastName === 'string' ? p.LastName.trim() : p.LastName,
           PaxType: p.PaxType || 1,
           LeadPassenger: p.LeadPassenger || false,
           Age: p.Age || 30,
           Email: typeof p.Email === 'string' ? p.Email.trim() : (p.Email || 'guest@example.com'),
           Phoneno: p.Phoneno ? p.Phoneno.replace(/\D/g, '').substring(0, 15) : '9999999999',
-          CountryCode: p.CountryCode || 'IN',
-          CountryName: p.CountryName || 'India'
+          PaxId: p.PaxId || 1,
+          GSTCompanyAddress: null,
+          GSTCompanyContactNumber: null,
+          GSTCompanyName: null,
+          GSTNumber: null,
+          GSTCompanyEmail: null,
+          PAN: p.PAN || null,
+          PassportNo: p.PassportNo || null,
+          PassportIssueDate: p.PassportIssueDate || null,
+          PassportExpDate: p.PassportExpDate || null,
         }))
       })),
     };
@@ -394,7 +340,7 @@ export class HotelService implements OnModuleInit {
     });
     await bookingRecord.save();
 
-    this.logger.log(`📋 TBO Hotel Book: BookingCode=${body.BookingCode} TraceId=${payload.TraceId} HotelCode=${body.HotelCode}`);
+    this.logger.log(`📋 TBO Hotel Book: BookingCode=${body.BookingCode} TraceId=${body.TraceId} HotelCode=${body.HotelCode}`);
     this.logger.log(`FULL BOOK PAYLOAD: ${JSON.stringify(payload)}`);
 
     try {
@@ -676,12 +622,13 @@ export class HotelService implements OnModuleInit {
   }
 
   // 8. Hotel Details (static info: name, photos, amenities)
-  async getHotelDetails(hotelCodes: number | number[]) {
-    this.logger.log(`🏨 TBO Static: Hotel Details for ${hotelCodes}`);
+  async getHotelDetails(hotelCodes: any) {
+    const codesStr = Array.isArray(hotelCodes) ? hotelCodes.join(',') : String(hotelCodes);
+    this.logger.log(`🏨 TBO Static: Hotel Details for ${codesStr}`);
     try {
       const response = await axios.post(
         STATIC_HOTEL_DETAILS,
-        { Hotelcodes: hotelCodes, Language: 'EN' },
+        { Hotelcodes: codesStr, Language: 'EN' },
         { auth: STATIC_API_AUTH, headers: { 'Content-Type': 'application/json' }, timeout: 20000 },
       );
       return response.data;
