@@ -535,12 +535,32 @@ export class FlightService {
       TokenId: tokenId,
     };
 
+    // TBO Validation Rule: If a minor (PaxType 2 or 3) needs a PAN but is using Guardian PAN, 
+    // it must be sent in GuardianDetails instead of directly on the minor.
+    if (payload.Passengers && Array.isArray(payload.Passengers)) {
+      const leadAdult = payload.Passengers.find(p => p.PaxType === 1) || { Title: 'Mr', FirstName: 'Guardian', LastName: 'Unknown' };
+      
+      payload.Passengers = payload.Passengers.map(pax => {
+        if (pax.PaxType !== 1 && pax.PAN) {
+          // It's a minor using a Guardian PAN
+          pax.GuardianDetails = {
+            Title: leadAdult.Title || 'Mr',
+            FirstName: leadAdult.FirstName || 'Guardian',
+            LastName: leadAdult.LastName || 'Unknown',
+            PAN: pax.PAN
+          };
+          delete pax.PAN; // Remove PAN from the minor's root to avoid TBO validation error
+        }
+        return pax;
+      });
+    }
+
     this.logger.log(`🎫 TBO Book Request for TraceId: ${reqBody.TraceId}`);
 
     try {
       const response = await axios.post(BOOK_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
-        timeout: 45000, // Booking can take a bit longer
+        timeout: 300000, // TBO Book/Ticket can take up to 300 seconds per docs
       });
 
       const data = response.data;
@@ -632,7 +652,7 @@ export class FlightService {
     try {
       const response = await axios.post(TICKET_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
-        timeout: 45000, 
+        timeout: 300000, // TBO Book/Ticket can take up to 300 seconds per docs
       });
 
       const data = response.data;

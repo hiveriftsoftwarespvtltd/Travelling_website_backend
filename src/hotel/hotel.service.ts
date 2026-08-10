@@ -2,6 +2,7 @@ import { Injectable, HttpException, HttpStatus, Logger, OnModuleInit } from '@ne
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import axios from 'axios';
+import * as fs from 'fs';
 import { HotelCity, HotelCityDocument } from './schemas/hotel-city.schema';
 import { HotelProperty, HotelPropertyDocument } from './schemas/hotel-property.schema';
 import { HotelBooking, HotelBookingDocument } from './schemas/hotel-booking.schema';
@@ -151,10 +152,16 @@ export class HotelService implements OnModuleInit {
       const cityId = String(body.CityCode || body.CityId);
       try {
         const hotelCodesRes = await this.getHotelCodesByCity(cityId);
+        
+        if (hotelCodesRes?.Status?.Code && hotelCodesRes.Status.Code !== 200) {
+           throw new HttpException(`TBO Static Error: ${hotelCodesRes.Status.Description}`, HttpStatus.BAD_REQUEST);
+        }
+
         const hotels = hotelCodesRes?.Hotels || [];
         if (hotels.length > 0) {
           payload.HotelCodes = hotels.slice(0, 150).map((h: any) => h.HotelCode).join(',');
         } else {
+          fs.appendFileSync('search_debug.log', `[${new Date().toISOString()}] No hotels found in city ${cityId}\nBody: ${JSON.stringify(body)}\nAPI Response: ${JSON.stringify(hotelCodesRes)}\n\n`);
           throw new HttpException('No hotels found in the given city', HttpStatus.BAD_REQUEST);
         }
       } catch (err) {
@@ -180,6 +187,7 @@ export class HotelService implements OnModuleInit {
       if (!data || data.Status?.Code !== 200) {
         const errMsg = data?.Status?.Description || 'Hotel search failed';
         this.logger.warn(`⚠️ Affiliate Hotel Search: ${errMsg}`);
+        fs.appendFileSync('search_debug.log', `[${new Date().toISOString()}] Affiliate Search Failed: ${errMsg}\nPayload: ${JSON.stringify(payload)}\nResponse: ${JSON.stringify(data)}\n\n`);
         return {
           Status: data?.Status || { Code: 400, Description: errMsg },
           HotelResult: []
