@@ -1,9 +1,49 @@
 {
-  "TraceId": "f6c6bcec-d6f1-43d5-b119-103be2a953f6",
-  "PNR": "87ZZXQ",
-  "BookingId": 2161674,
+  "PreferredCurrency": null,
+  "AgentReferenceNo": "JIYOLIFE-1786341987207",
+  "TraceId": "72ab9f44-2237-470d-99ba-ea5452b8c26f",
   "userId": "6a1d6b230cfd132b985b612a",
   "email": "samunder2611@gmail.com",
+  "Passengers": [
+    {
+      "Title": "Mr",
+      "FirstName": "sam",
+      "LastName": "sam",
+      "PaxType": 1,
+      "DateOfBirth": "1990-01-01T00:00:00",
+      "Gender": 1,
+      "PassportNo": "A1234567",
+      "PassportExpiry": "2030-10-15T00:00:00",
+      "AddressLine1": "123, Test",
+      "AddressLine2": "",
+      "Fare": {
+        "Currency": "INR",
+        "BaseFare": 7898,
+        "Tax": 2512,
+        "YQTax": 1200,
+        "AdditionalTxnFeePub": 0,
+        "AdditionalTxnFeeOfrd": 0,
+        "OtherCharges": 0
+      },
+      "City": "Gurgaon",
+      "CountryCode": "IN",
+      "CountryName": "India",
+      "Nationality": "IN",
+      "ContactNo": "83333872832",
+      "Email": "samunde@gmail.com",
+      "FFAirlineCode": null,
+      "FFNumber": "",
+      "Baggage": [],
+      "MealDynamic": [],
+      "SeatDynamic": [],
+      "PassportIssueDate": "2020-01-01T00:00:00",
+      "DocumentIssuingCountry": "IN",
+      "PassportIssueCountryCode": "IN",
+      "PassportIssueCountry": "IN",
+      "CellCountryCode": "+91"
+    }
+  ],
+  "ResultIndex": "OB140[TBO]0JK3TjXF3ymV+5x/0Q9Z/90c7pmJdrbWiZDb6xnYay9+KHmdw1zXL6l3dzP22LkRWQkRyQgBAO9HTAT0WDpN+sWuIkSUqDedVtNe2xNUcOCDbaPlfqmpz5bFcqwymol8P+RdLKWBN6mwnRVIU6hqtCaUHS78kibjyPRKxNfAReqQZvBT1ypUFzoNxUOAzP0Mhej/7J+jQ6MkOGITVrVUH39qa0Ky1dZA610h2EpsLZgD4XQm1TJpuYeQBmospFxv3SAQvtv9dw+8fxjOGe8VrO7XYPkvv4fZrsmfZhJO7jnd5iDpYSn3eQdySJeHQ29zxU/4ymR+YYzGJfSv8Xae8sLsRjErROB4QnhQbvH262FtuaQ2aPKTsRPuljv0S9RySRtV453v/c+qF0OcyHhQZXIcWTAExmFFUZaQk5i88M2VsnedViCT/OWNH4ItJ6o7hRPULtc3eGmB3CX/U0YlMbHAzs58dM4NMPN1v02tGnUOmLOWX+BZihQIyLo59mIySV90gizeJqnxljeVzLRa/0P4RUfltM7LAlseCySMFY+iPRR8cpMaA+xSXcpu9eBTN1G46DbewfHmTknDaZnjrbs6MyKbtBTwVaUdxinq9L6vbQ+5/3X4zGk0iDVHYoMPU4cvRQ7ZJnIksscu2IBXUnVzyzCyp2wphYB1y7mtZFKaALn+9DY87A90yH8HOtkhK7T9j2POxNbiOxjRDXRmuoayq8CObMLiH99U79B7FjNPmDFrq4s0D0fDlIFZKHWaeTYrqJgqZyCDPFwsJ8m+uyFBIveLN0pVds163iypNU1fwJHZ/gYV47z/mf3BoRnHZGej0s+l09By++nS5tzj8FFnPu/bmmTTh7ZfmPFZ0xK1oyUMmdBGEqf3AZWuQYJ0DldGGanQHErk5grsHtwGOk5OnnQ85xFTThQHOW3SWn0enKY1JL8KC2FyWBDMXAxz2WVHHm9msCJzfOE1eMEhwOZrSDTrcsvb5pa4ZAY1JmIt9cK38uWfg+S4QbtfWAmtmFu5Za+rxEtkyJijWwVcSA==",
   "EndUserIp": "103.98.38.139",
-  "TokenId": "e581defa-1c9c-4245-b382-82f34d35d1b4"
+  "TokenId": "e3de2dfa-a726-4916-9d31-9237a3090b4b"
 }

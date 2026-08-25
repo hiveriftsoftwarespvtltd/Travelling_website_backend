@@ -6,86 +6,91 @@
       "ErrorMessage": ""
     },
     "ResponseStatus": 1,
-    "TraceId": "f6c6bcec-d6f1-43d5-b119-103be2a953f6",
+    "TraceId": "72ab9f44-2237-470d-99ba-ea5452b8c26f",
     "Response": {
-      "ItineraryChangeList": null,
-      "PNR": "87ZZXQ",
-      "BookingId": 2161674,
+      "ItineraryChangeList": [],
+      "PNR": "OE8B2K",
+      "BookingId": 2173586,
       "SSRDenied": false,
       "SSRMessage": null,
+      "Status": 1,
       "IsPriceChanged": false,
       "IsTimeChanged": false,
       "FlightItinerary": {
-        "AgentRemarks": "",
         "CommentDetails": null,
-        "FareClassification": "PublishNDC#lightblue",
+        "FareClassification": "SME Fare#rgb(182,215,228)",
         "IsAutoReissuanceAllowed": true,
         "IsPartialVoidAllowed": true,
         "IsSeatsBooked": false,
-        "IssuancePcc": "DELWI2216",
-        "JourneyType": 2,
-        "SearchCombinationType": 1,
-        "SupplierFareClasses": "",
-        "TBOConfNo": "TBFZ4GTG1",
+        "IssuancePcc": "APITESTID",
+        "JourneyType": 1,
+        "SearchCombinationType": 2,
+        "SupplierFareClasses": "SME Fare",
+        "TBOConfNo": "TBFDBK42T",
         "TBOTripID": null,
         "TripIndicator": 1,
         "BookingAllowedForRoamer": true,
-        "BookingId": 2161674,
+        "BookingId": 2173586,
         "IsCouponAppilcable": true,
         "IsManual": false,
-        "PNR": "87ZZXQ",
-        "AgentReferenceNo": "JIYOLIFE-1784268431932",
-        "IsDomestic": true,
+        "PNR": "OE8B2K",
+        "AgentReferenceNo": "JIYOLIFE-1786341987207",
+        "IsDomestic": false,
         "ResultFareType": "RegularFare",
-        "Source": 77,
-        "Origin": "BLR",
-        "Destination": "HYD",
-        "AirlineCode": "AI",
-        "LastTicketDate": "2026-07-18T15:50:00",
-        "ValidatingAirlineCode": "AI",
-        "AirlineRemark": "We are testing Airline remark node",
-        "IsLCC": false,
-        "NonRefundable": true,
-        "FareType": "RV",
+        "Source": 31,
+        "Origin": "DEL",
+        "Destination": "DXB",
+        "AirlineCode": "SG",
+        "LastTicketDate": "9999-12-31T05:25:00",
+        "ValidatingAirlineCode": "SG",
+        "AirlineRemark": "Sg sp SGS",
+        "AirlineTollFreeNo": "9876543210",
+        "IsLCC": true,
+        "NonRefundable": false,
+        "FareType": "PUB",
         "CreditNoteNo": null,
         "Fare": {
           "CFARAmount": 0,
           "DCFARAmount": 0,
           "ServiceFeeDisplayType": 0,
           "Currency": "INR",
-          "BaseFare": 8963,
-          "Tax": 2528,
+          "BaseFare": 7898,
+          "Tax": 2512,
           "TaxBreakup": [
             {
               "key": "K3",
-              "value": 505
+              "value": 460
             },
             {
-              "key": "YQTax",
-              "value": 798
+              "key": "PSF",
+              "value": 91
+            },
+            {
+              "key": "UDF",
+              "value": 54
             },
             {
               "key": "YR",
-              "value": 340
+              "value": 100
             },
             {
-              "key": "INTax",
-              "value": 649
+              "key": "YQTax",
+              "value": 1200
             },
             {
               "key": "TotalTax",
-              "value": 2528
+              "value": 2512
             },
             {
               "key": "OtherTaxes",
-              "value": 236
+              "value": 607
             }
           ],
-          "YQTax": 798,
+          "YQTax": 1200,
           "AdditionalTxnFeeOfrd": 0,
           "AdditionalTxnFeePub": 0,
           "PGCharge": 0,
-          "OtherCharges": 0,
+          "OtherCharges": 59,
           "ChargeBU": [
             {
               "key": "TBOMARKUP",
@@ -97,7 +102,7 @@
             },
             {
               "key": "OTHERCHARGE",
-              "value": 0
+              "value": 59
             },
             {
               "key": "CONVENIENCECHARGE",
@@ -105,12 +110,12 @@
             }
           ],
           "Discount": 0,
-          "PublishedFare": 11491,
-          "CommissionEarned": 76.22,
+          "PublishedFare": 10469,
+          "CommissionEarned": 0,
           "PLBEarned": 0,
           "IncentiveEarned": 0,
-          "OfferedFare": 11445.27,
-          "TdsOnCommission": 30.49,
+          "OfferedFare": 10469,
+          "TdsOnCommission": 0,
           "TdsOnPLB": 0,
           "TdsOnIncentive": 0,
           "ServiceFee": 0,
@@ -122,76 +127,102 @@
         "CreditNoteCreatedOn": null,
         "Passenger": [
           {
-            "BarcodeDetails": null,
-            "DocumentDetails": null,
+            "BarcodeDetails": {
+              "Id": 3481086,
+              "Barcode": [
+                {
+                  "Index": 1,
+                  "Format": "PDF417",
+                  "Content": "M1SAM/SAM              OE8B2K DELDXBSG 0011 239Y00000000 000",
+                  "BarCodeInBase64": null,
+                  "JourneyWayType": 3
+                }
+              ]
+            },
+            "DocumentDetails": [
+              {
+                "DocumentExpiryDate": "2030-10-15",
+                "DocumentIssueDate": "2020-01-01",
+                "DocumentIssuingCountry": "IN",
+                "DocumentNumber": "A1234567",
+                "DocumentTypeId": "Passport",
+                "PaxId": 0,
+                "ResultFareType": 0
+              }
+            ],
             "GuardianDetails": null,
             "IsReissued": false,
             "SegmentDetails": [
               {
-                "CheckedInBaggage": {
-                  "Value": "15 KG"
+                "CabinBaggage": {
+                  "FreeText": "7 KG",
+                  "NoOfPiece": "1",
+                  "Unit": "KG",
+                  "Value": "7"
                 },
-                "FareBasis": "TU1YXSII",
+                "CheckedInBaggage": {
+                  "FreeText": "30 KG",
+                  "Unit": "KG",
+                  "Value": "30"
+                },
                 "FlightInfoIndex": "1"
-              },
-              {
-                "CheckedInBaggage": {
-                  "Value": "15 KG"
-                },
-                "FareBasis": "TU1YXSII",
-                "FlightInfoIndex": "2"
               }
             ],
-            "PaxId": 3466665,
+            "PaxId": 3481086,
             "Title": "Mr",
             "FirstName": "sam",
-            "LastName": "yadav",
+            "LastName": "sam",
             "PaxType": 1,
             "DateOfBirth": "1990-01-01T00:00:00",
             "Gender": 1,
             "IsPANRequired": false,
             "IsPassportRequired": false,
             "PAN": "",
-            "PassportNo": "",
+            "PassportNo": "A1234567",
+            "PassportExpiry": "2030-10-15T00:00:00",
             "AddressLine1": "123, Test",
             "Fare": {
               "CFARAmount": 0,
               "DCFARAmount": 0,
               "ServiceFeeDisplayType": 0,
               "Currency": "INR",
-              "BaseFare": 8963,
-              "Tax": 2528,
+              "BaseFare": 7898,
+              "Tax": 2512,
               "TaxBreakup": [
                 {
                   "key": "K3",
-                  "value": 505
+                  "value": 460
                 },
                 {
-                  "key": "YQTax",
-                  "value": 798
+                  "key": "PSF",
+                  "value": 91
+                },
+                {
+                  "key": "UDF",
+                  "value": 54
                 },
                 {
                   "key": "YR",
-                  "value": 340
+                  "value": 100
                 },
                 {
-                  "key": "INTax",
-                  "value": 649
+                  "key": "YQTax",
+                  "value": 1200
                 },
                 {
                   "key": "TotalTax",
-                  "value": 2528
+                  "value": 2512
                 },
                 {
                   "key": "OtherTaxes",
-                  "value": 236
+                  "value": 607
                 }
               ],
-              "YQTax": 798,
+              "YQTax": 1200,
               "AdditionalTxnFeeOfrd": 0,
               "AdditionalTxnFeePub": 0,
               "PGCharge": 0,
-              "OtherCharges": 0,
+              "OtherCharges": 59,
               "ChargeBU": [
                 {
                   "key": "TBOMARKUP",
@@ -203,7 +234,7 @@
                 },
                 {
                   "key": "OTHERCHARGE",
-                  "value": 0
+                  "value": 59
                 },
                 {
                   "key": "CONVENIENCECHARGE",
@@ -211,12 +242,12 @@
                 }
               ],
               "Discount": 0,
-              "PublishedFare": 11491,
-              "CommissionEarned": 76.22,
+              "PublishedFare": 10469,
+              "CommissionEarned": 0,
               "PLBEarned": 0,
               "IncentiveEarned": 0,
-              "OfferedFare": 11445.27,
-              "TdsOnCommission": 30.49,
+              "OfferedFare": 10469,
+              "TdsOnCommission": 0,
               "TdsOnPLB": 0,
               "TdsOnIncentive": 0,
               "ServiceFee": 0,
@@ -227,44 +258,40 @@
             },
             "City": "Gurgaon",
             "CountryCode": "IN",
+            "CountryName": "India",
             "Nationality": "IN",
-            "ContactNo": "+91 9876543874",
-            "Email": "samunder2611@gmail.com",
+            "ContactNo": "+91 83333872832",
+            "Email": "samunde@gmail.com",
             "IsLeadPax": true,
             "FFAirlineCode": null,
-            "FFNumber": null,
+            "FFNumber": "",
             "Ssr": [],
             "Ticket": {
-              "TicketId": 2462984,
-              "TicketNumber": "2182538516",
-              "IssueDate": "2026-07-17T05:30:00",
-              "ValidatingAirline": "098",
+              "TicketId": 2475333,
+              "TicketNumber": "OE8B2K",
+              "IssueDate": "2026-08-10T11:36:28",
+              "ValidatingAirline": "001",
               "Remarks": "",
               "ServiceFeeDisplayType": "ShowInTax",
               "Status": "OK",
               "ConjunctionNumber": "",
               "TicketType": "N"
             },
+            "GSTCompanyAddress": "",
+            "GSTCompanyContactNumber": "",
+            "GSTCompanyEmail": "",
+            "GSTCompanyName": "",
+            "GSTNumber": "",
             "SegmentAdditionalInfo": [
               {
-                "FareBasis": "TU1YXSII",
+                "FareBasis": "USME",
                 "NVA": "",
                 "NVB": "",
-                "Baggage": "15 KG",
-                "Meal": null,
-                "Seat": null,
-                "SpecialService": null,
-                "CabinBaggage": "Not Known"
-              },
-              {
-                "FareBasis": "TU1YXSII",
-                "NVA": "",
-                "NVB": "",
-                "Baggage": "15 KG",
-                "Meal": null,
-                "Seat": null,
-                "SpecialService": null,
-                "CabinBaggage": "Not Known"
+                "Baggage": "30 KG",
+                "Meal": "",
+                "Seat": "",
+                "SpecialService": "",
+                "CabinBaggage": "7KG (7 KG X 1 pcs)"
               }
             ]
           }
@@ -272,188 +299,95 @@
         "CancellationCharges": null,
         "Segments": [
           {
-            "Baggage": "15 KG",
-            "CabinBaggage": "Not Known",
+            "Baggage": "30 KG",
+            "CabinBaggage": "7KG (7 KG X 1 pcs)",
             "CabinClass": 2,
             "SupplierFareClass": null,
             "TripIndicator": 1,
             "SegmentIndicator": 1,
             "Airline": {
-              "AirlineCode": "AI",
-              "AirlineName": "Air India",
-              "FlightNumber": "2854",
-              "FareClass": "T",
-              "OperatingCarrier": "AI"
+              "AirlineCode": "SG",
+              "AirlineName": "SpiceJet",
+              "FlightNumber": "11",
+              "FareClass": "SA",
+              "OperatingCarrier": ""
             },
-            "AirlinePNR": "87ZNSE",
+            "AirlinePNR": "",
             "Origin": {
               "Airport": {
-                "AirportCode": "BLR",
-                "AirportName": "Kempegowda International Airport",
-                "Terminal": "2",
-                "CityCode": "BLR",
-                "CityName": "Bangalore",
+                "AirportCode": "DEL",
+                "AirportName": "Indira Gandhi Airport",
+                "Terminal": "3",
+                "CityCode": "DEL",
+                "CityName": "Delhi",
                 "CountryCode": "IN",
                 "CountryName": "India"
               },
-              "DepTime": "2026-07-18T17:55:00"
+              "DepTime": "2026-08-27T07:45:00"
             },
             "Destination": {
               "Airport": {
-                "AirportCode": "BOM",
-                "AirportName": "Chhatrapati Shivaji International Airport",
-                "Terminal": "2",
-                "CityCode": "BOM",
-                "CityName": "Mumbai",
-                "CountryCode": "IN",
-                "CountryName": "India"
+                "AirportCode": "DXB",
+                "AirportName": "Dubai",
+                "Terminal": "1",
+                "CityCode": "DXB",
+                "CityName": "Dubai",
+                "CountryCode": "AE",
+                "CountryName": "United Arab Emirates"
               },
-              "ArrTime": "2026-07-18T20:05:00"
+              "ArrTime": "2026-08-27T10:10:00"
             },
-            "Duration": 0,
+            "Duration": 235,
             "GroundTime": 0,
             "Mile": 0,
             "StopOver": false,
             "FlightInfoIndex": "1",
             "StopPoint": "",
-            "StopPointArrivalTime": null,
-            "StopPointDepartureTime": null,
-            "Craft": "32N",
-            "Remark": null,
+            "StopPointArrivalTime": "0001-01-01T00:00:00",
+            "StopPointDepartureTime": "0001-01-01T00:00:00",
+            "Craft": "7M8",
+            "Remark": "SME Fare",
             "IsETicketEligible": true,
             "FlightStatus": "Confirmed",
             "Status": "HK",
-            "FareClassification": null
-          },
-          {
-            "Baggage": "15 KG",
-            "CabinBaggage": "Not Known",
-            "CabinClass": 2,
-            "SupplierFareClass": null,
-            "TripIndicator": 1,
-            "SegmentIndicator": 2,
-            "Airline": {
-              "AirlineCode": "AI",
-              "AirlineName": "Air India",
-              "FlightNumber": "2869",
-              "FareClass": "T",
-              "OperatingCarrier": "AI"
-            },
-            "AirlinePNR": "87ZNSE",
-            "Origin": {
-              "Airport": {
-                "AirportCode": "BOM",
-                "AirportName": "Chhatrapati Shivaji International Airport",
-                "Terminal": "2",
-                "CityCode": "BOM",
-                "CityName": "Mumbai",
-                "CountryCode": "IN",
-                "CountryName": "India"
-              },
-              "DepTime": "2026-07-18T21:25:00"
-            },
-            "Destination": {
-              "Airport": {
-                "AirportCode": "HYD",
-                "AirportName": "Rajiv Gandhi International Airport",
-                "Terminal": "",
-                "CityCode": "HYD",
-                "CityName": "Hyderabad",
-                "CountryCode": "IN",
-                "CountryName": "India"
-              },
-              "ArrTime": "2026-07-18T23:05:00"
-            },
-            "AccumulatedDuration": 310,
-            "Duration": 0,
-            "GroundTime": 80,
-            "Mile": 0,
-            "StopOver": false,
-            "FlightInfoIndex": "2",
-            "StopPoint": "",
-            "StopPointArrivalTime": null,
-            "StopPointDepartureTime": null,
-            "Craft": "32N",
-            "Remark": null,
-            "IsETicketEligible": true,
-            "FlightStatus": "Confirmed",
-            "Status": "HK",
-            "FareClassification": null
+            "FareClassification": {
+              "Color": "rgb(182,215,228)",
+              "Type": "SME Fare"
+            }
           }
         ],
         "FareRules": [
           {
-            "Origin": "BLR",
-            "Destination": "BOM",
-            "Airline": "AI",
-            "FareBasisCode": "TU1YXSII",
-            "FareRuleDetail": "<b><u>Adult</b></u><br /><br />Cancel before departure: Not Allowed<br />Cancel before departure - No Show: Not Allowed<br />Cancel after departure: Not Allowed<br />Cancel after departure - No Show: Not Allowed<br />Change before departure: Allowed with Restriction<br />Change before departure - No Show: Allowed with Restriction<br />Change after departure: Not Allowed<br />Change after departure - No Show: Not Allowed<br/> <br/>",
-            "FareRestriction": "",
-            "FareFamilyCode": "",
-            "FareRuleIndex": "",
-            "FareInclusions": []
-          },
-          {
-            "Origin": "BOM",
-            "Destination": "HYD",
-            "Airline": "AI",
-            "FareBasisCode": "TU1YXSII",
-            "FareRuleDetail": "<b><u>Adult</b></u><br /><br />Cancel before departure: Not Allowed<br />Cancel before departure - No Show: Not Allowed<br />Cancel after departure: Not Allowed<br />Cancel after departure - No Show: Not Allowed<br />Change before departure: Allowed with Restriction<br />Change before departure - No Show: Allowed with Restriction<br />Change after departure: Allowed with Restriction<br />Change after departure - No Show: Allowed with Restriction<br/> <br/>",
-            "FareRestriction": "",
-            "FareFamilyCode": "",
-            "FareRuleIndex": "",
+            "Origin": "DEL",
+            "Destination": "DXB",
+            "Airline": "SG",
+            "FareBasisCode": "USME",
+            "FareRuleDetail": "The FareBasisCode is: USME<br /> \r\n\r\n Changes and cancellations are permitted as per applicable rules and charges.\r <br/> <br/>",
+            "FareRestriction": null,
             "FareInclusions": []
           }
         ],
-        "MiniFareRules": [
-          {
-            "CFARExcludedDetails": null,
-            "JourneyPoints": "BLR-BOM-HYD",
-            "Type": "Reissue",
-            "From": "",
-            "To": "",
-            "Unit": "",
-            "Details": "INR 6000*",
-            "OnlineReissueAllowed": true,
-            "OnlineRefundAllowed": false
-          },
-          {
-            "CFARExcludedDetails": null,
-            "JourneyPoints": "BLR-BOM-HYD",
-            "Type": "Cancellation",
-            "From": "",
-            "To": "",
-            "Unit": "",
-            "Details": "REFER TO DETAILED FARE RULES",
-            "OnlineReissueAllowed": false,
-            "OnlineRefundAllowed": false
-          }
-        ],
-        "PenaltyCharges": {
-          "ReissueCharge": "",
-          "CancellationCharge": ""
-        },
+        "PenaltyCharges": {},
         "Status": 5,
         "Invoice": [
           {
             "CreditNoteGSTIN": null,
             "GSTIN": null,
-            "InvoiceCreatedOn": "2026-07-17T11:37:38",
-            "InvoiceId": 27601,
-            "InvoiceNo": "DW/2627/27601",
-            "InvoiceAmount": 11445,
+            "InvoiceCreatedOn": "2026-08-10T11:36:29",
+            "InvoiceId": 11746,
+            "InvoiceNo": "IW/2627/11746",
+            "InvoiceAmount": 10469,
             "Remarks": "",
             "InvoiceStatus": 3
           }
         ],
-        "InvoiceAmount": 11445,
-        "InvoiceNo": "DW/2627/27601",
+        "InvoiceAmount": 10469,
+        "InvoiceNo": "IW/2627/11746",
         "InvoiceStatus": 3,
-        "InvoiceCreatedOn": "2026-07-17T11:37:38",
+        "InvoiceCreatedOn": "2026-08-10T11:36:29",
         "Remarks": "",
         "IsWebCheckInAllowed": false
       },
-      "Message": "",
       "TicketStatus": 1
     }
   }
