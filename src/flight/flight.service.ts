@@ -6,26 +6,28 @@ import { FlightSearchDto } from './dto/flight-search.dto';
 import { FlightBooking } from './schemas/flight-booking.schema';
 import { Cancellation } from './schemas/cancellation.schema';
 
-// ─── TBO API Endpoints (from TBO Documentation) ────────────────────────────
-const AUTH_URL = 'http://Sharedapi.tektravels.com/SharedData.svc/rest/Authenticate';
-const SEARCH_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/Search';
-const FARE_UPSELL_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/FareUpsell';
-const FARE_RULE_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/FareRule';
-const FARE_QUOTE_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/FareQuote';
-const SSR_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/SSR';
-const BOOK_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/Book';
-const TICKET_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/Ticket';
-const GET_BOOKING_DETAILS_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/GetBookingDetails';
-const RELEASE_PNR_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/ReleasePNRRequest';
-const SEND_CHANGE_REQUEST_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/SendChangeRequest';
-const GET_CHANGE_REQUEST_STATUS_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/GetChangeRequestStatus';
-const GET_CANCELLATION_CHARGES_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/GetCancellationCharges';
-
-// ─── TBO Credentials (Backend only — never expose to frontend) ──────────────
-const AUTH_CREDENTIALS = {
-  ClientId: 'ApiIntegrationNew',
-  UserName: 'Lifejiyo',
-  Password: 'Lifejiyo@123',
+// ─── TBO API Endpoints & Credentials ──────────────────────────────
+const TBO = {
+  get AUTH_URL() { return `${process.env.TBO_AUTH_BASE_URL || 'http://Sharedapi.tektravels.com/SharedData.svc/rest'}/Authenticate`; },
+  get SEARCH_URL() { return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/Search`; },
+  get FARE_UPSELL_URL() { return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/FareUpsell`; },
+  get FARE_RULE_URL() { return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/FareRule`; },
+  get FARE_QUOTE_URL() { return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/FareQuote`; },
+  get SSR_URL() { return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/SSR`; },
+  get BOOK_URL() { return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/Book`; },
+  get TICKET_URL() { return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/Ticket`; },
+  get GET_BOOKING_DETAILS_URL() { return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/GetBookingDetails`; },
+  get RELEASE_PNR_URL() { return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/ReleasePNRRequest`; },
+  get SEND_CHANGE_REQUEST_URL() { return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/SendChangeRequest`; },
+  get GET_CHANGE_REQUEST_STATUS_URL() { return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/GetChangeRequestStatus`; },
+  get GET_CANCELLATION_CHARGES_URL() { return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/GetCancellationCharges`; },
+  get CALENDAR_URL() { return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/GetCalendarFare`; },
+  get UPDATE_CALENDAR_URL() { return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/UpdateCalendarFareOfDay`; },
+  get AUTH_CREDENTIALS() { return {
+    ClientId: process.env.TBO_CLIENT_ID || 'ApiIntegrationNew',
+    UserName: process.env.TBO_USERNAME || 'Lifejiyo',
+    Password: process.env.TBO_PASSWORD || 'Lifejiyo@123',
+  }; }
 };
 
 // ─── TBO Error Codes ────────────────────────────────────────────────────────
@@ -57,11 +59,12 @@ export class FlightService {
     }
 
     this.logger.log(`🔐 Fetching new TBO auth token for IP: ${endUserIp}`);
+    this.logger.log(`🔑 Using TBO Credentials: ClientId=${TBO.AUTH_CREDENTIALS.ClientId}, UserName=${TBO.AUTH_CREDENTIALS.UserName}`);
     try {
       const response = await axios.post(
-        AUTH_URL,
+        TBO.AUTH_URL,
         {
-          ...AUTH_CREDENTIALS,
+          ...TBO.AUTH_CREDENTIALS,
           EndUserIp: endUserIp,  // Real user IP from request
         },
         {
@@ -120,7 +123,7 @@ export class FlightService {
     );
 
     try {
-      const response = await axios.post(SEARCH_URL, payload, {
+      const response = await axios.post(TBO.SEARCH_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 45000, // TBO search can take up to 30-45 seconds
       });
@@ -197,14 +200,14 @@ export class FlightService {
       Sources: searchDto.Sources ?? null,
     };
 
-    const CALENDAR_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/GetCalendarFare';
+    
 
     this.logger.log(
       `📅 TBO Calendar Fare Search: ${searchDto.Segments[0]?.Origin} → ${searchDto.Segments[0]?.Destination}`,
     );
 
     try {
-      const response = await axios.post(CALENDAR_URL, payload, {
+      const response = await axios.post(TBO.CALENDAR_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 20000,
       });
@@ -270,14 +273,14 @@ export class FlightService {
       Sources: searchDto.Sources ?? null,
     };
 
-    const UPDATE_CALENDAR_URL = 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest/UpdateCalendarFareOfDay';
+    
 
     this.logger.log(
       `📅 TBO Update Calendar Fare of Day: ${searchDto.Segments[0]?.Origin} → ${searchDto.Segments[0]?.Destination} on ${searchDto.Segments[0]?.PreferredDepartureTime}`,
     );
 
     try {
-      const response = await axios.post(UPDATE_CALENDAR_URL, payload, {
+      const response = await axios.post(TBO.UPDATE_CALENDAR_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 25000,
       });
@@ -333,7 +336,7 @@ export class FlightService {
     this.logger.log(`📈 TBO Fare Upsell Request for ResultIndex: ${reqBody.ResultIndex}`);
 
     try {
-      const response = await axios.post(FARE_UPSELL_URL, payload, {
+      const response = await axios.post(TBO.FARE_UPSELL_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 15000,
       });
@@ -388,7 +391,7 @@ export class FlightService {
     this.logger.log(`📜 TBO Fare Rule Request for ResultIndex: ${reqBody.ResultIndex}`);
 
     try {
-      const response = await axios.post(FARE_RULE_URL, payload, {
+      const response = await axios.post(TBO.FARE_RULE_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 15000,
       });
@@ -437,7 +440,7 @@ export class FlightService {
     this.logger.log(`🛡️ TBO Fare Quote Request for ResultIndex: ${reqBody.ResultIndex}`);
 
     try {
-      const response = await axios.post(FARE_QUOTE_URL, payload, {
+      const response = await axios.post(TBO.FARE_QUOTE_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 25000,
       });
@@ -489,7 +492,7 @@ export class FlightService {
     this.logger.log(`🍽️ TBO SSR Request for ResultIndex: ${reqBody.ResultIndex}`);
 
     try {
-      const response = await axios.post(SSR_URL, payload, {
+      const response = await axios.post(TBO.SSR_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 20000,
       });
@@ -558,7 +561,7 @@ export class FlightService {
     this.logger.log(`🎫 TBO Book Request for TraceId: ${reqBody.TraceId}`);
 
     try {
-      const response = await axios.post(BOOK_URL, payload, {
+      const response = await axios.post(TBO.BOOK_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 300000, // TBO Book/Ticket can take up to 300 seconds per docs
       });
@@ -650,7 +653,7 @@ export class FlightService {
     this.logger.log(`🎫 TBO Ticket Request for TraceId: ${reqBody.TraceId}`);
 
     try {
-      const response = await axios.post(TICKET_URL, payload, {
+      const response = await axios.post(TBO.TICKET_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 300000, // TBO Book/Ticket can take up to 300 seconds per docs
       });
@@ -757,7 +760,7 @@ export class FlightService {
     this.logger.log(`🔍 TBO Get Booking Details Request | PNR: ${reqBody.PNR || 'N/A'}, BookingId: ${reqBody.BookingId || 'N/A'}, TraceId: ${reqBody.TraceId || 'N/A'}`);
 
     try {
-      const response = await axios.post(GET_BOOKING_DETAILS_URL, payload, {
+      const response = await axios.post(TBO.GET_BOOKING_DETAILS_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 25000,
       });
@@ -815,7 +818,7 @@ export class FlightService {
     this.logger.log(`🗑️ TBO Release PNR Request for BookingId: ${reqBody.BookingId}`);
 
     try {
-      const response = await axios.post(RELEASE_PNR_URL, payload, {
+      const response = await axios.post(TBO.RELEASE_PNR_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 25000,
       });
@@ -888,7 +891,7 @@ export class FlightService {
     this.logger.log(`🔄 TBO Send Change Request for BookingId: ${reqBody.BookingId}, RequestType: ${reqBody.RequestType}`);
 
     try {
-      const response = await axios.post(SEND_CHANGE_REQUEST_URL, payload, {
+      const response = await axios.post(TBO.SEND_CHANGE_REQUEST_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 25000,
       });
@@ -973,7 +976,7 @@ export class FlightService {
     this.logger.log(`🔍 TBO Get Change Request Status for ID: ${reqBody.ChangeRequestId}`);
 
     try {
-      const response = await axios.post(GET_CHANGE_REQUEST_STATUS_URL, payload, {
+      const response = await axios.post(TBO.GET_CHANGE_REQUEST_STATUS_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 25000,
       });
@@ -1072,7 +1075,7 @@ export class FlightService {
     this.logger.log(`💵 TBO Get Cancellation Charges for BookingId: ${reqBody.BookingId}`);
 
     try {
-      const response = await axios.post(GET_CANCELLATION_CHARGES_URL, payload, {
+      const response = await axios.post(TBO.GET_CANCELLATION_CHARGES_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 25000,
       });
