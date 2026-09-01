@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
+import { Injectable, OnModuleInit, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Gallery, GalleryDocument } from './gallery.schema';
@@ -33,7 +33,19 @@ export class GalleryService implements OnModuleInit {
   }
 
   async create(galleryDto: GalleryDto): Promise<Gallery> {
+    const count = await this.galleryModel.countDocuments();
+    if (count >= 7) {
+      throw new BadRequestException('Gallery limit reached. Maximum 7 images allowed.');
+    }
     return this.galleryModel.create(galleryDto);
+  }
+
+  async update(id: string, galleryDto: GalleryDto): Promise<Gallery> {
+    const updated = await this.galleryModel.findByIdAndUpdate(id, galleryDto, { new: true }).exec();
+    if (!updated) {
+      throw new NotFoundException(`Gallery item with ID ${id} not found`);
+    }
+    return updated;
   }
 
   async remove(id: string): Promise<Gallery> {

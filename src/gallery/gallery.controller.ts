@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { GalleryService } from './gallery.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { GalleryDto } from './dto/gallery.dto';
@@ -22,5 +22,11 @@ export class GalleryController {
   @UseGuards(JwtAuthGuard)
   async deleteGallery(@Param('id') id: string) {
     return this.galleryService.remove(id);
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  async updateGallery(@Param('id') id: string, @Body() galleryDto: GalleryDto) {
+    return this.galleryService.update(id, galleryDto);
   }
 }

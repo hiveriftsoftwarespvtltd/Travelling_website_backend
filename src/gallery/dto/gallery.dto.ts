@@ -8,4 +8,16 @@ export class GalleryDto {
   @IsString()
   @IsOptional()
   title?: string;
+
+  @IsString()
+  @IsOptional()
+  caption?: string;
+
+  @IsString()
+  @IsOptional()
+  destination?: string;
+
+  @IsString()
+  @IsOptional()
+  status?: string;
 }
