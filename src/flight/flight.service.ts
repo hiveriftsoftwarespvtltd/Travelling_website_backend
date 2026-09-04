@@ -935,6 +935,13 @@ export class FlightService {
             },
             { upsert: true, new: true }
           );
+          
+          // Update the main booking document to reflect the cancellation/processing status
+          await this.flightBookingModel.findOneAndUpdate(
+            { bookingId: String(reqBody.BookingId) },
+            { status: 'Processing' }
+          );
+          
           this.logger.log(`💾 Saved/Updated Cancellation in DB: ${responseData.ChangeRequestId}`);
         }
       } catch (dbError) {

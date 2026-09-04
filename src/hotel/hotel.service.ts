@@ -217,9 +217,9 @@ export class HotelService implements OnModuleInit {
                 return {
                   ...h,
                   HotelName: staticInfo.HotelName,
-                  HotelPicture: staticInfo.Image || staticInfo.HotelPicture,
-                  HotelRating: staticInfo.StarRating,
-                  HotelAddress: staticInfo.Address,
+                  HotelPicture: staticInfo.Image || staticInfo.HotelPicture || h.HotelPicture,
+                  HotelRating: staticInfo.StarRating || staticInfo.HotelRating || h.HotelRating || h.StarRating,
+                  HotelAddress: staticInfo.Address || h.HotelAddress,
                   HotelFacilities: staticInfo.HotelFacilities,
                 };
               }
