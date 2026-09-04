@@ -19,6 +19,7 @@ const HOTEL_BOOK_URL      = 'https://HotelBE.tektravels.com/hotelservice.svc/res
 const HOTEL_BOOKING_DETAIL_URL = 'https://HotelBE.tektravels.com/hotelservice.svc/rest/GetBookingDetail';
 const HOTEL_VOUCHER_URL   = 'https://HotelBE.tektravels.com/hotelservice.svc/rest/GenerateVoucher';
 const HOTEL_CHANGE_REQUEST_URL = 'https://HotelBE.tektravels.com/hotelservice.svc/rest/SendChangeRequest';
+const HOTEL_CHANGE_REQUEST_STATUS_URL = 'https://HotelBE.tektravels.com/hotelservice.svc/rest/GetChangeRequestStatus';
 const HOTEL_ROOMS_URL     = 'https://HotelBE.tektravels.com/hotelservice.svc/rest/GetHotelRoom';
 
 // Static / Content APIs (Basic Auth — no token needed)
@@ -304,7 +305,19 @@ export class HotelService implements OnModuleInit {
       RequestedBookingMode: body.RequestedBookingMode || 5,
       NetAmount: body.NetAmount || 0, // NetAmount from Affiliate PreBook response
       ClientReferenceId: clientRef,
+      ...(body.IsCorporate ? { IsCorporate: true } : {}),
+      ...(body.IsPackageFare ? { IsPackageFare: true } : {}),
+      ...(body.ArrivalTransport ? { ArrivalTransport: body.ArrivalTransport } : {}),
+      ...(body.DepartureTransport ? { DepartureTransport: body.DepartureTransport } : {}),
       HotelRoomsDetails: (body.HotelRoomsDetails || []).map(r => ({
+        RoomIndex: r.RoomIndex,
+        RoomTypeCode: r.RoomTypeCode,
+        RoomTypeName: r.RoomTypeName,
+        RatePlanCode: r.RatePlanCode,
+        BedTypeCode: r.BedTypeCode || null,
+        SmokingPreference: r.SmokingPreference || 0,
+        Supplements: r.Supplements || null,
+        Price: r.Price,
         HotelPassenger: (r.HotelPassenger || []).map(p => ({
           Title: p.Title || 'Mr',
           FirstName: typeof p.FirstName === 'string' ? p.FirstName.trim() : p.FirstName,
@@ -316,11 +329,11 @@ export class HotelService implements OnModuleInit {
           Email: typeof p.Email === 'string' ? p.Email.trim() : (p.Email || 'guest@example.com'),
           Phoneno: p.Phoneno ? p.Phoneno.replace(/\D/g, '').substring(0, 15) : '9999999999',
           PaxId: p.PaxId || 1,
-          GSTCompanyAddress: null,
-          GSTCompanyContactNumber: null,
-          GSTCompanyName: null,
-          GSTNumber: null,
-          GSTCompanyEmail: null,
+          GSTCompanyAddress: p.GSTCompanyAddress || null,
+          GSTCompanyContactNumber: p.GSTCompanyContactNumber || null,
+          GSTCompanyName: p.GSTCompanyName || null,
+          GSTNumber: p.GSTNumber || null,
+          GSTCompanyEmail: p.GSTCompanyEmail || null,
           PAN: p.PAN || null,
           PassportNo: p.PassportNo || null,
           PassportIssueDate: p.PassportIssueDate || null,
@@ -593,6 +606,41 @@ export class HotelService implements OnModuleInit {
       if (error instanceof HttpException) throw error;
       this.logger.error('❌ TBO Hotel Change Request error', error?.message);
       throw new HttpException('Failed to send hotel change request', HttpStatus.BAD_GATEWAY);
+    }
+  }
+
+  // ─── 7. Get Change Request Status ───────────────────────────────────────────
+  async getChangeRequestStatus(body: any, endUserIp: string) {
+    const tokenId = await this.getToken(endUserIp);
+
+    const payload = {
+      ChangeRequestId: body.ChangeRequestId,
+      EndUserIp: endUserIp,
+      TokenId: tokenId,
+    };
+
+    this.logger.log(`🔍 TBO Hotel Change Request Status: ChangeRequestId=${body.ChangeRequestId}`);
+
+    try {
+      const response = await axios.post(HOTEL_CHANGE_REQUEST_STATUS_URL, payload, {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 25000,
+      });
+      const data = response.data;
+      const statusCode = data?.Status?.Code ?? data?.HotelChangeRequestStatusResult?.Status?.Code;
+      
+      if (statusCode !== 200 && statusCode !== 1) {
+        const errMsg = data?.Status?.Description || data?.HotelChangeRequestStatusResult?.Status?.Description || 'Get change request status failed';
+        this.logger.warn(`⚠️ TBO Hotel Change Request Status failed: ${errMsg}`);
+        throw new HttpException(errMsg, HttpStatus.BAD_REQUEST);
+      }
+
+      this.logger.log(`✅ TBO Hotel Change Request Status success`);
+      return data;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      this.logger.error('❌ TBO Hotel Change Request Status error', error?.message);
+      throw new HttpException('Failed to get change request status', HttpStatus.BAD_GATEWAY);
     }
   }
 

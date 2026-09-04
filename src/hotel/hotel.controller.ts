@@ -53,6 +53,11 @@ export class HotelController {
     return this.hotelService.sendChangeRequest(body, this.getValidIp(req));
   }
 
+  @Post('change-request-status')
+  async getChangeRequestStatus(@Body() body: any, @Req() req: Request) {
+    return this.hotelService.getChangeRequestStatus(body, this.getValidIp(req));
+  }
+
 
   @Get('my-bookings')
   async getMyBookings(@Query('userId') userId: string) {
