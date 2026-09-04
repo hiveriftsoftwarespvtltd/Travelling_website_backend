@@ -160,7 +160,8 @@ export class HotelService implements OnModuleInit {
 
         const hotels = hotelCodesRes?.Hotels || [];
         if (hotels.length > 0) {
-          payload.HotelCodes = hotels.slice(0, 150).map((h: any) => h.HotelCode).join(',');
+          // Limit to max 100 hotel codes per request as recommended by TBO
+          payload.HotelCodes = hotels.slice(0, 100).map((h: any) => h.HotelCode).join(',');
         } else {
           fs.appendFileSync('search_debug.log', `[${new Date().toISOString()}] No hotels found in city ${cityId}\nBody: ${JSON.stringify(body)}\nAPI Response: ${JSON.stringify(hotelCodesRes)}\n\n`);
           throw new HttpException('No hotels found in the given city', HttpStatus.BAD_REQUEST);
@@ -201,8 +202,8 @@ export class HotelService implements OnModuleInit {
       // ─── Augment with Static Data (HotelName, Image, Rating, etc.) ────────
       if (count > 0) {
         try {
-          // Take first 150 hotels to avoid overly massive static API requests
-          const hotelCodesToFetch = data.HotelResult.slice(0, 150).map((h: any) => h.HotelCode).join(',');
+          // Fetch static data for up to 100 hotels (TBO max limit)
+          const hotelCodesToFetch = data.HotelResult.slice(0, 100).map((h: any) => h.HotelCode).join(',');
           const staticDataRes = await this.getHotelDetails(hotelCodesToFetch);
           
           if (staticDataRes?.HotelDetails) {
@@ -293,7 +294,7 @@ export class HotelService implements OnModuleInit {
   // ──────────────────────────────────────────────────────────────────────────
   async bookHotel(body: any, endUserIp: string) {
     const tokenId = await this.getToken(endUserIp);
-    const clientRef = body.ClientReferenceNumber || `REF-${Date.now()}`;
+    const clientRef = body.ClientReferenceNumber || `REF-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
     const payload = {
       BookingCode: body.BookingCode,  // ← CRITICAL: must be at root level for Affiliate BookingCodes
