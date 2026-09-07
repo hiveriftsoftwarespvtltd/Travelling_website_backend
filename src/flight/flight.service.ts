@@ -172,10 +172,16 @@ export class FlightService {
 
       this.logger.error('❌ TBO Search API error: ' + error?.message);
       this.logger.error('Payload sent to TBO: ' + JSON.stringify(payload));
+      
+      let errorDetail = 'Unknown Error';
       if (error?.response) {
          this.logger.error('TBO Response Data: ' + JSON.stringify(error?.response?.data));
+         errorDetail = JSON.stringify(error?.response?.data);
+      } else {
+         errorDetail = error?.message || 'Network Error / Timeout';
       }
-      throw new HttpException('Failed to fetch flights from TBO API', HttpStatus.BAD_GATEWAY);
+      
+      throw new HttpException(`Failed to fetch flights from TBO API. Details: ${errorDetail}`, HttpStatus.BAD_GATEWAY);
     }
   }
 

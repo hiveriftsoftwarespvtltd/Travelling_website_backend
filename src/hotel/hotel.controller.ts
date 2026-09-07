@@ -95,4 +95,11 @@ export class HotelController {
   async getSearchSuggestions(@Query('q') q: string) {
     return this.hotelService.getSearchSuggestions(q);
   }
+
+  @Post('seed-all-cities')
+  async seedAllCities() {
+    // This runs asynchronously in the background
+    this.hotelService.seedAllCities().catch(err => console.error('Background seed failed', err));
+    return { status: 'success', message: 'Global city seeding started in the background.' };
+  }
 }

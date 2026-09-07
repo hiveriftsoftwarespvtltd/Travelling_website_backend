@@ -302,7 +302,6 @@ export class HotelService implements OnModuleInit {
       IsVoucherBooking: body.IsVoucherBooking ?? true,
       GuestNationality: body.GuestNationality || 'IN',
       EndUserIp: endUserIp,
-      TokenId: tokenId,
       RequestedBookingMode: body.RequestedBookingMode || 5,
       NetAmount: body.NetAmount || 0, // NetAmount from Affiliate PreBook response
       ClientReferenceId: clientRef,
@@ -367,8 +366,9 @@ export class HotelService implements OnModuleInit {
 
     try {
       const response = await axios.post(HOTEL_BOOK_URL, payload, {
+        auth: AFFILIATE_AUTH,
         headers: { 'Content-Type': 'application/json' },
-        timeout: 60000,
+        timeout: 120000,
       });
 
       const data = response.data;
@@ -747,6 +747,48 @@ export class HotelService implements OnModuleInit {
     // Run seed asynchronously so it doesn't block app startup
     this.seedStaticData().catch(err => this.logger.error('Failed to seed hotel static data', err));
   }
+
+  async seedAllCities() {
+    this.logger.log('🌍 Started Background Seeding of ALL Global Cities from TBO...');
+    try {
+      const countryData = await this.getCountryList();
+      const countries = countryData?.CountryList || [];
+      this.logger.log(`Found ${countries.length} countries to seed.`);
+
+      for (let i = 0; i < countries.length; i++) {
+        const countryCode = countries[i].Code;
+        this.logger.log(`[${i+1}/${countries.length}] Fetching cities for ${countryCode}...`);
+        
+        try {
+          const cityData = await this.getCityList(countryCode);
+          const cities = cityData?.CityList || [];
+          
+          if (cities.length > 0) {
+            const bulkOps = cities.map(city => ({
+              updateOne: {
+                filter: { CityCode: city.Code },
+                update: {
+                  $set: { CityCode: city.Code, CityName: city.Name, CountryCode: countryCode }
+                },
+                upsert: true
+              }
+            }));
+            await this.cityModel.bulkWrite(bulkOps);
+            this.logger.log(`✅ Saved ${cities.length} cities for ${countryCode}`);
+          }
+        } catch (err) {
+          this.logger.error(`❌ Failed to fetch/save cities for ${countryCode}: ${err.message}`);
+        }
+
+        // Wait 1.5 seconds before next request to avoid rate limit
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+      this.logger.log('🎉 Global City Seeding Completed Successfully!');
+    } catch (err) {
+      this.logger.error('Failed global seeding process:', err);
+    }
+  }
+
 
   private async seedStaticData() {
     const cityCount = await this.cityModel.countDocuments();
