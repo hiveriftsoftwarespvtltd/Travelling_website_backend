@@ -1145,13 +1145,18 @@ export class FlightService {
     try {
       this.logger.log(`getMyBookings reqBody: ${JSON.stringify(reqBody)}`);
 
-      // Only filter by userId — email fallback removed to prevent cross-user data leaks
-      if (!reqBody.userId) {
-        this.logger.log(`getMyBookings: No userId provided, returning []`);
+      // Allow filtering by userId, email, or phone
+      const filter: any = {};
+      if (reqBody.userId) filter.userId = reqBody.userId;
+      else if (reqBody.email) filter.email = reqBody.email;
+      else if (reqBody.phone) filter.phone = reqBody.phone;
+
+      if (Object.keys(filter).length === 0) {
+        this.logger.log(`getMyBookings: No valid identifier provided, returning []`);
         return { success: true, data: [] };
       }
 
-      const query: any = { userId: reqBody.userId };
+      const query: any = filter;
       this.logger.log(`getMyBookings query: ${JSON.stringify(query)}`);
       const bookings = await this.flightBookingModel.find(query).sort({ createdAt: -1 }).exec();
       this.logger.log(`getMyBookings found ${bookings.length} flights`);

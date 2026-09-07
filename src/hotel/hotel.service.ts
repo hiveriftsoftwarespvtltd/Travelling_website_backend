@@ -273,7 +273,7 @@ export class HotelService implements OnModuleInit {
       if (!data || data.Status?.Code !== 200) {
         const errMsg = data?.Status?.Description || 'Hotel pre-book failed';
         this.logger.warn(`⚠️ Affiliate Hotel PreBook failed: ${errMsg}`);
-        throw new HttpException(errMsg, HttpStatus.BAD_REQUEST);
+        throw new HttpException({message: errMsg, raw: data}, HttpStatus.BAD_REQUEST);
       }
 
       this.logger.log(`✅ Affiliate Hotel PreBook success`);
@@ -349,7 +349,7 @@ export class HotelService implements OnModuleInit {
       razorpayOrderId: body.razorpayOrderId,
       razorpayPaymentId: body.razorpayPaymentId,
       status: 'BOOKING_IN_PROGRESS',
-      hotelDetails: body.hotelDetails || {}, 
+      hotelDetails: { ...(body.hotelDetails || {}), CheckInDate: body.checkInDate, CheckOutDate: body.checkOutDate },
       roomDetails: body.roomDetails || {}, 
       guestDetails: body.HotelRoomsDetails, 
       fareDetails: { NetAmount: body.NetAmount },
@@ -365,15 +365,18 @@ export class HotelService implements OnModuleInit {
     this.logger.log(`FULL BOOK PAYLOAD: ${JSON.stringify(payload)}`);
 
     try {
+      const authHeader = 'Basic ' + Buffer.from(AFFILIATE_AUTH.username + ':' + AFFILIATE_AUTH.password).toString('base64');
       const response = await axios.post(HOTEL_BOOK_URL, payload, {
-        auth: AFFILIATE_AUTH,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': authHeader
+        },
         timeout: 120000,
       });
 
       const data = response.data;
       const bookResult = data?.BookResult || data;
-      const statusCode = bookResult?.Status?.Code ?? data?.Status?.Code;
+      const statusCode = bookResult?.Status?.Code ?? data?.Status?.Code ?? bookResult?.ResponseStatus ?? bookResult?.Status;
 
       bookingRecord.apiLogs.response = data;
 
@@ -460,13 +463,17 @@ export class HotelService implements OnModuleInit {
   }
 
   // ─── Get My Bookings ────────────────────────────────────────────────────────
-  async getMyBookings(userId?: string) {
-    // Only filter by userId — email/phone fallback removed to prevent cross-user data leaks
-    if (!userId) {
+  async getMyBookings(userId?: string, email?: string, phone?: string) {
+    const filter: any = {};
+    if (userId) filter.userId = userId;
+    else if (email) filter.email = email;
+    else if (phone) filter.phone = phone;
+
+    if (Object.keys(filter).length === 0) {
       return [];
     }
 
-    const bookings = await this.bookingModel.find({ userId }).sort({ createdAt: -1 }).exec();
+    const bookings = await this.bookingModel.find(filter).sort({ createdAt: -1 }).exec();
     return bookings;
   }
 
@@ -500,7 +507,7 @@ export class HotelService implements OnModuleInit {
           this.clearToken();
           return this.getHotelRooms(body, endUserIp);
         }
-        throw new HttpException(errMsg, HttpStatus.BAD_REQUEST);
+        throw new HttpException({message: errMsg, raw: data}, HttpStatus.BAD_REQUEST);
       }
 
       // Map B2B room pricing fields to what frontend expects
@@ -593,15 +600,20 @@ export class HotelService implements OnModuleInit {
         timeout: 25000,
       });
       const data = response.data;
-      const statusCode = data?.Status?.Code ?? data?.HotelChangeRequestStatusResult?.Status?.Code;
+      const statusCode = data?.Status?.Code ?? data?.HotelChangeRequestStatusResult?.Status?.Code ?? data?.HotelChangeRequestResult?.ResponseStatus;
       
       if (statusCode !== 200 && statusCode !== 1) {
-        const errMsg = data?.Status?.Description || data?.HotelChangeRequestStatusResult?.Status?.Description || 'Change request failed';
+        const errMsg = data?.Status?.Description || data?.HotelChangeRequestStatusResult?.Status?.Description || data?.HotelChangeRequestResult?.Error?.ErrorMessage || 'Change request failed';
         this.logger.warn(`⚠️ TBO Hotel Change Request failed: ${errMsg}`);
         throw new HttpException(errMsg, HttpStatus.BAD_REQUEST);
       }
 
       this.logger.log(`✅ TBO Hotel Change Request success`);
+      
+      if (payload.RequestType === 1) {
+        await this.bookingModel.updateOne({ bookingId: body.BookingId.toString() }, { status: 'CANCELLED' });
+      }
+      
       return data;
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -633,7 +645,7 @@ export class HotelService implements OnModuleInit {
       if (statusCode !== 200 && statusCode !== 1) {
         const errMsg = data?.Status?.Description || data?.HotelChangeRequestStatusResult?.Status?.Description || 'Get change request status failed';
         this.logger.warn(`⚠️ TBO Hotel Change Request Status failed: ${errMsg}`);
-        throw new HttpException(errMsg, HttpStatus.BAD_REQUEST);
+        throw new HttpException({message: errMsg, raw: data}, HttpStatus.BAD_REQUEST);
       }
 
       this.logger.log(`✅ TBO Hotel Change Request Status success`);
