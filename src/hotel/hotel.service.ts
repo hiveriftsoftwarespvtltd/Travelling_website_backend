@@ -55,6 +55,7 @@ const TBO_ERROR_TOKEN_EXPIRED = 6;
 const TBO_ERROR_INVALID_TOKEN  = 7;
 
 import { PaymentService } from '../payment/payment.service';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class HotelService implements OnModuleInit {
@@ -65,6 +66,7 @@ export class HotelService implements OnModuleInit {
     @InjectModel(HotelProperty.name) private propertyModel: Model<HotelPropertyDocument>,
     @InjectModel(HotelBooking.name) private bookingModel: Model<HotelBookingDocument>,
     private paymentService: PaymentService,
+    private mailService: MailService,
   ) {}
 
   // In-memory token cache (shared auth, same as flights)
@@ -352,7 +354,7 @@ export class HotelService implements OnModuleInit {
       hotelDetails: { ...(body.hotelDetails || {}), CheckInDate: body.checkInDate, CheckOutDate: body.checkOutDate },
       roomDetails: body.roomDetails || {}, 
       guestDetails: body.HotelRoomsDetails, 
-      fareDetails: { NetAmount: body.NetAmount },
+      fareDetails: { NetAmount: body.NetAmount, TotalFare: body.TotalFare || body.NetAmount },
       endUserIp,
       userId: body.userId || '',
       email: body.email || '',
@@ -403,12 +405,41 @@ export class HotelService implements OnModuleInit {
         );
       }
 
-      this.logger.log(`✅ TBO Hotel Book success! BookingId: ${bookResult?.BookingId}`);
-      
+      bookingRecord.apiLogs.response = bookResult;
+      bookingRecord.status = 'CONFIRMED';
       bookingRecord.bookingId = bookResult?.BookingId?.toString() || 'UNKNOWN';
       bookingRecord.confirmationNo = bookResult?.ConfirmationNo;
-      bookingRecord.status = statusCode === 1 ? 'CONFIRMED' : 'PENDING_CONFIRMATION';
       await bookingRecord.save();
+      this.logger.log(`✅ TBO Hotel Book success! BookingId: ${bookResult.BookingId}`);
+
+        // Try to send confirmation email
+        try {
+          if (bookingRecord.email) {
+            const hotelName = bookingRecord.hotelDetails?.HotelName || 'Hotel';
+            const checkIn = bookingRecord.hotelDetails?.CheckInDate || '';
+            const checkOut = bookingRecord.hotelDetails?.CheckOutDate || '';
+            const guest = bookingRecord.guestDetails?.[0]?.HotelPassenger?.[0];
+            const guestName = guest ? `${guest.FirstName || ''} ${guest.LastName || ''}`.trim() || 'Guest' : 'Guest';
+            const pnr = bookResult.ConfirmationNo || 'Pending';
+            const bookingDate = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+            const roomName = bookingRecord.roomDetails?.RoomTypeName || bookingRecord.guestDetails?.[0]?.RoomTypeName || 'Standard Room';
+            const totalAmount = bookingRecord.fareDetails?.NetAmount || 0;
+            
+            await this.mailService.sendHotelBookingConfirmation(bookingRecord.email, {
+              bookingId: bookResult.BookingId,
+              pnr,
+              bookingDate,
+              hotelName,
+              roomName,
+              checkIn,
+              checkOut,
+              guestName,
+              totalAmount
+            });
+          }
+      } catch (mailErr) {
+        this.logger.error(`Failed to send confirmation email for booking ${bookResult.BookingId}`, mailErr.stack);
+      }
 
       // Trigger Voucher Generation Asynchronously
       if (bookingRecord.status === 'CONFIRMED' && bookResult?.BookingId) {
@@ -546,7 +577,23 @@ export class HotelService implements OnModuleInit {
         timeout: 25000,
       });
       this.logger.log(`✅ TBO Hotel Booking Detail success`);
-      return response.data;
+
+      const data = response.data;
+      const localBooking = await this.bookingModel.findOne({ bookingId: body.BookingId || body.TraceId }).lean();
+      if (localBooking) {
+        const localFare = localBooking.fareDetails?.TotalFare || localBooking.roomDetails?.TotalFare || localBooking.fareDetails?.NetAmount;
+        if (localFare) {
+          if (data.HotelBookingDetailResponse) {
+            data.HotelBookingDetailResponse.LocalTotalFare = localFare;
+          } else if (data.GetBookingDetailResult) {
+            data.GetBookingDetailResult.LocalTotalFare = localFare;
+          } else {
+            data.LocalTotalFare = localFare;
+          }
+        }
+      }
+
+      return data;
     } catch (error) {
       if (error instanceof HttpException) throw error;
       this.logger.error('❌ TBO Hotel Booking Detail error', error?.message);

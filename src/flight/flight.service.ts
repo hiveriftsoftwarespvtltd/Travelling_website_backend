@@ -789,6 +789,23 @@ export class FlightService {
       }
 
       this.logger.log(`✅ TBO Get Booking Details success! PNR: ${data?.Response?.FlightItinerary?.PNR}`);
+      
+      // Sync local DB with latest status from TBO
+      if (data?.Response?.FlightItinerary) {
+        try {
+          const itinerary = data.Response.FlightItinerary;
+          await this.flightBookingModel.findOneAndUpdate(
+            { bookingId: String(itinerary.BookingId || reqBody.BookingId) },
+            { 
+              status: itinerary.Status,
+              TicketStatus: itinerary.TicketStatus,
+            }
+          );
+        } catch (dbErr) {
+          this.logger.error('Failed to sync booking status with DB: ' + dbErr.message);
+        }
+      }
+
       return data;
     } catch (error) {
       if (error instanceof HttpException) throw error;

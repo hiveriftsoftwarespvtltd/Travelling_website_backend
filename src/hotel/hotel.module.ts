@@ -6,6 +6,7 @@ import { HotelCity, HotelCitySchema } from './schemas/hotel-city.schema';
 import { HotelProperty, HotelPropertySchema } from './schemas/hotel-property.schema';
 import { HotelBooking, HotelBookingSchema } from './schemas/hotel-booking.schema';
 import { PaymentModule } from '../payment/payment.module';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { PaymentModule } from '../payment/payment.module';
       { name: HotelProperty.name, schema: HotelPropertySchema },
       { name: HotelBooking.name, schema: HotelBookingSchema },
     ]),
+    MailModule,
   ],
   controllers: [HotelController],
   providers: [HotelService],
