@@ -1,4 +1,10 @@
-import { IsString, IsNumber, IsBoolean, IsArray, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsArray,
+  IsOptional,
+} from 'class-validator';
 
 export class FlightSegmentDto {
   @IsString()

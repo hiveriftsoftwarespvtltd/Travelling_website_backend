@@ -24,7 +24,8 @@ export class SettingsService implements OnModuleInit {
         youtubeUrl: 'https://youtube.com',
         linkedinUrl: 'https://linkedin.com',
         metaTitle: 'Jiyo Life Travels - Best Travel Agency in Delhi',
-        metaDescription: 'Making every destination easy to reach, memorable to experience, and extraordinary to remember. Book manual customized tour packages.',
+        metaDescription:
+          'Making every destination easy to reach, memorable to experience, and extraordinary to remember. Book manual customized tour packages.',
         googleAnalyticsCode: 'G-XXXXXXXXXX',
       });
       console.log('Default settings seeded successfully!');
@@ -34,7 +35,9 @@ export class SettingsService implements OnModuleInit {
   async getSettings(): Promise<any> {
     let settings = await this.settingsModel.findOne().exec();
     if (!settings) {
-      settings = await this.settingsModel.create({ companyName: 'Jiyo Life Travel' });
+      settings = await this.settingsModel.create({
+        companyName: 'Jiyo Life Travel',
+      });
     }
     return settings;
   }
@@ -45,6 +48,8 @@ export class SettingsService implements OnModuleInit {
       settings = new this.settingsModel(updateDto);
       return settings.save();
     }
-    return this.settingsModel.findByIdAndUpdate(settings._id, updateDto, { new: true }).exec();
+    return this.settingsModel
+      .findByIdAndUpdate(settings._id, updateDto, { new: true })
+      .exec();
   }
 }

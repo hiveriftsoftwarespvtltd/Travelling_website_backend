@@ -27,4 +27,8 @@ export class Airport {
 export const AirportSchema = SchemaFactory.createForClass(Airport);
 
 // Text index for complex searching, though regex with specific indexed fields works well too.
-AirportSchema.index({ AIRPORTNAME: 'text', CITYNAME: 'text', AIRPORTCODE: 'text' });
+AirportSchema.index({
+  AIRPORTNAME: 'text',
+  CITYNAME: 'text',
+  AIRPORTCODE: 'text',
+});

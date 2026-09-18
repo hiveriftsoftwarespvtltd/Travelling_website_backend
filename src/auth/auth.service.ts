@@ -1,4 +1,8 @@
-import { Injectable, OnModuleInit, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './user.schema';
@@ -18,8 +22,11 @@ export class AuthService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const adminEmail = this.configService.get<string>('ADMIN_EMAIL') || 'vineetvineet8006@gmail.com';
-    const adminPassword = this.configService.get<string>('ADMIN_PASSWORD') || 'vineet123';
+    const adminEmail =
+      this.configService.get<string>('ADMIN_EMAIL') ||
+      'vineetvineet8006@gmail.com';
+    const adminPassword =
+      this.configService.get<string>('ADMIN_PASSWORD') || 'vineet123';
 
     const hashedPassword = await bcrypt.hash(adminPassword, 10);
     const existingAdmin = await this.userModel.findOne({ email: adminEmail });
@@ -29,12 +36,14 @@ export class AuthService implements OnModuleInit {
       await this.userModel.create({
         email: adminEmail,
         password: hashedPassword,
+        role: 'admin',
         isVerified: true,
       });
       console.log('Admin user seeded successfully!');
     } else {
-      // Always sync admin password & verification from .env on every startup
+      // Always sync admin password, role & verification from .env on every startup
       existingAdmin.password = hashedPassword;
+      existingAdmin.role = 'admin';
       existingAdmin.isVerified = true;
       await existingAdmin.save();
       console.log(`Admin user synced from .env: ${adminEmail}`);
@@ -53,12 +62,13 @@ export class AuthService implements OnModuleInit {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    return { 
-      id: user._id, 
-      email: user.email, 
-      firstName: user.firstName, 
-      lastName: user.lastName, 
-      mobile: user.mobile 
+    return {
+      id: user._id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      mobile: user.mobile,
+      role: user.role || 'user',
     };
   }
 
@@ -66,11 +76,14 @@ export class AuthService implements OnModuleInit {
     // Only allow login if email is verified
     const dbUser = await this.userModel.findById(user.id);
     if (dbUser && dbUser.isVerified === false) {
-      throw new UnauthorizedException('Please verify your email before logging in.');
+      throw new UnauthorizedException(
+        'Please verify your email before logging in.',
+      );
     }
 
-    const payload = { email: user.email, sub: user.id };
-    
+    const role = user.role || dbUser?.role || 'user';
+    const payload = { email: user.email, sub: user.id, role };
+
     // Trigger login notification asynchronously (fire and forget)
     this.mailService.sendLoginNotification(user.email).catch(console.error);
 
@@ -83,27 +96,29 @@ export class AuthService implements OnModuleInit {
         firstName: user.firstName,
         lastName: user.lastName,
         mobile: user.mobile,
+        role,
       },
     };
   }
 
   async register(registerDto: any) {
     const { email, password, firstName, lastName, mobile } = registerDto;
-    
+
     const existingUser = await this.userModel.findOne({ email });
     const hashedPassword = await bcrypt.hash(password, 10);
     // Generate 6-digit OTP for email verification
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins expiry
 
-    // LOG OTP FOR DEVELOPMENT PURPOSES
-    console.log(`\n\n========================================`);
-    console.log(`🔐 OTP for ${email}: ${otp}`);
-    console.log(`========================================\n\n`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`🔐 Registration OTP for ${email}: ${otp}`);
+    }
 
     if (existingUser) {
       if (existingUser.isVerified) {
-        throw new UnauthorizedException('Email is already registered and verified. Please login.');
+        throw new UnauthorizedException(
+          'Email is already registered and verified. Please login.',
+        );
       } else {
         // User exists but is not verified. Update their details and send a new OTP.
         existingUser.password = hashedPassword;
@@ -115,7 +130,10 @@ export class AuthService implements OnModuleInit {
         await existingUser.save();
 
         this.mailService.sendVerificationOTP(email, otp).catch(console.error);
-        return { message: 'OTP sent to your email. Please verify.', userId: existingUser._id, otp: otp };
+        return {
+          message: 'OTP sent to your email. Please verify.',
+          userId: existingUser._id,
+        };
       }
     }
 
@@ -132,15 +150,16 @@ export class AuthService implements OnModuleInit {
 
     // Send Verification Email asynchronously
     this.mailService.sendVerificationOTP(email, otp).catch(console.error);
-    // Optionally also send a welcome email now, or wait until verified.
-    // this.mailService.sendWelcomeEmail(email, firstName || 'Traveller').catch(console.error);
 
-    return { message: 'User registered successfully. Please verify your email.', userId: newUser._id, otp: otp };
+    return {
+      message: 'User registered successfully. Please verify your email.',
+      userId: newUser._id,
+    };
   }
 
   async verifyEmail(verifyDto: any) {
     const { email, otp } = verifyDto;
-    
+
     const user = await this.userModel.findOne({ email });
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -155,7 +174,9 @@ export class AuthService implements OnModuleInit {
     }
 
     if (user.otpExpiry < new Date()) {
-      throw new UnauthorizedException('OTP has expired. Please request a new one.');
+      throw new UnauthorizedException(
+        'OTP has expired. Please request a new one.',
+      );
     }
 
     // OTP is valid, mark verified
@@ -178,10 +199,9 @@ export class AuthService implements OnModuleInit {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
 
-    // LOG OTP FOR DEVELOPMENT PURPOSES
-    console.log(`\n\n========================================`);
-    console.log(`🔐 Forgot Password OTP for ${email}: ${otp}`);
-    console.log(`========================================\n\n`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`🔐 Forgot Password OTP for ${email}: ${otp}`);
+    }
 
     // Save OTP to user (in a real production app, hash the OTP before saving)
     user.otp = otp;
@@ -191,12 +211,14 @@ export class AuthService implements OnModuleInit {
     // Send OTP email asynchronously
     this.mailService.sendPasswordResetOTP(email, otp).catch(console.error);
 
-    return { message: 'If that email is registered, an OTP has been sent.', otp: otp };
+    return {
+      message: 'If that email is registered, an OTP has been sent.',
+    };
   }
 
   async resetPassword(resetDto: any) {
     const { email, otp, newPassword } = resetDto;
-    
+
     const user = await this.userModel.findOne({ email });
     if (!user || !user.otp || !user.otpExpiry) {
       throw new UnauthorizedException('Invalid or expired OTP');
@@ -220,6 +242,8 @@ export class AuthService implements OnModuleInit {
   }
 
   async getAllUsers(): Promise<User[]> {
-    return this.userModel.find({}, { password: 0, otp: 0, otpExpiry: 0 }).exec();
+    return this.userModel
+      .find({}, { password: 0, otp: 0, otpExpiry: 0 })
+      .exec();
   }
 }

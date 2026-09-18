@@ -7,7 +7,8 @@ import { LeadService } from '../lead/lead.service';
 @Injectable()
 export class NewsletterService {
   constructor(
-    @InjectModel(Newsletter.name) private newsletterModel: Model<NewsletterDocument>,
+    @InjectModel(Newsletter.name)
+    private newsletterModel: Model<NewsletterDocument>,
     private readonly leadService: LeadService,
   ) {}
 

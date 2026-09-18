@@ -5,11 +5,15 @@ import { Lead, LeadDocument } from './lead.schema';
 
 @Injectable()
 export class LeadService {
-  constructor(
-    @InjectModel(Lead.name) private leadModel: Model<LeadDocument>,
-  ) {}
+  constructor(@InjectModel(Lead.name) private leadModel: Model<LeadDocument>) {}
 
-  async create(createLeadDto: { name: string; email?: string; mobile?: string; source: string; status?: string }): Promise<Lead> {
+  async create(createLeadDto: {
+    name: string;
+    email?: string;
+    mobile?: string;
+    source: string;
+    status?: string;
+  }): Promise<Lead> {
     const newLead = new this.leadModel(createLeadDto);
     return newLead.save();
   }
@@ -23,7 +27,9 @@ export class LeadService {
   }
 
   async updateStatus(id: string, status: string): Promise<any> {
-    return this.leadModel.findByIdAndUpdate(id, { status }, { new: true }).exec();
+    return this.leadModel
+      .findByIdAndUpdate(id, { status }, { new: true })
+      .exec();
   }
 
   async remove(id: string): Promise<any> {

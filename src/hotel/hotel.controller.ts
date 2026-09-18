@@ -1,6 +1,7 @@
-import { Controller, Post, Get, Body, Req, Query } from '@nestjs/common';
+import { Controller, Post, Get, Body, Req, Query, UseGuards } from '@nestjs/common';
 import { HotelService } from './hotel.service';
 import type { Request } from 'express';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('hotel')
 export class HotelController {
@@ -34,7 +35,12 @@ export class HotelController {
   }
 
   @Post('book')
-  async bookHotel(@Body() body: any, @Req() req: Request) {
+  @UseGuards(JwtAuthGuard)
+  async bookHotel(@Body() body: any, @Req() req: any) {
+    if (req.user) {
+      body.userId = body.userId || req.user.userId;
+      body.email = body.email || req.user.email;
+    }
     return this.hotelService.bookHotel(body, this.getValidIp(req));
   }
 
@@ -58,12 +64,11 @@ export class HotelController {
     return this.hotelService.getChangeRequestStatus(body, this.getValidIp(req));
   }
 
-
   @Get('my-bookings')
   async getMyBookings(
     @Query('userId') userId?: string,
     @Query('email') email?: string,
-    @Query('phone') phone?: string
+    @Query('phone') phone?: string,
   ) {
     return this.hotelService.getMyBookings(userId, email, phone);
   }
@@ -103,7 +108,12 @@ export class HotelController {
   @Post('seed-all-cities')
   async seedAllCities() {
     // This runs asynchronously in the background
-    this.hotelService.seedAllCities().catch(err => console.error('Background seed failed', err));
-    return { status: 'success', message: 'Global city seeding started in the background.' };
+    this.hotelService
+      .seedAllCities()
+      .catch((err) => console.error('Background seed failed', err));
+    return {
+      status: 'success',
+      message: 'Global city seeding started in the background.',
+    };
   }
 }

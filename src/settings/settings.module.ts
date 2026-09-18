@@ -6,7 +6,9 @@ import { SettingsController } from './settings.controller';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Settings.name, schema: SettingsSchema }]),
+    MongooseModule.forFeature([
+      { name: Settings.name, schema: SettingsSchema },
+    ]),
   ],
   controllers: [SettingsController],
   providers: [SettingsService],

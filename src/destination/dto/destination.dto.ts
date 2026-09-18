@@ -1,4 +1,12 @@
-import { IsNotEmpty, IsNumber, IsString, Min, IsOptional, IsArray, IsBoolean } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Min,
+  IsOptional,
+  IsArray,
+  IsBoolean,
+} from 'class-validator';
 
 export class DestinationDto {
   @IsString()

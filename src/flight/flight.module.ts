@@ -2,8 +2,14 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FlightController } from './flight.controller';
 import { FlightService } from './flight.service';
-import { FlightBooking, FlightBookingSchema } from './schemas/flight-booking.schema';
-import { Cancellation, CancellationSchema } from './schemas/cancellation.schema';
+import {
+  FlightBooking,
+  FlightBookingSchema,
+} from './schemas/flight-booking.schema';
+import {
+  Cancellation,
+  CancellationSchema,
+} from './schemas/cancellation.schema';
 
 @Module({
   imports: [

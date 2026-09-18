@@ -12,7 +12,7 @@ export class MailService {
 
   private async initializeTransporter() {
     const emailUser = process.env.EMAIL_USER;
-    
+
     if (emailUser && emailUser !== 'your-email@gmail.com') {
       // Use Real SMTP credentials from .env
       this.transporter = nodemailer.createTransport({
@@ -27,10 +27,14 @@ export class MailService {
       this.logger.log('MailService initialized with real SMTP credentials.');
     } else {
       // Fallback: Use Ethereal fake SMTP for instant testing out-of-the-box
-      this.logger.log('No valid SMTP credentials found in .env. Generating Ethereal test account...');
+      this.logger.log(
+        'No valid SMTP credentials found in .env. Generating Ethereal test account...',
+      );
       nodemailer.createTestAccount((err, account) => {
         if (err) {
-          this.logger.error('Failed to create a testing account. ' + err.message);
+          this.logger.error(
+            'Failed to create a testing account. ' + err.message,
+          );
           return;
         }
         this.transporter = nodemailer.createTransport({
@@ -42,7 +46,9 @@ export class MailService {
             pass: account.pass,
           },
         });
-        this.logger.log(`Ethereal test account generated successfully. Emails will be logged to console.`);
+        this.logger.log(
+          `Ethereal test account generated successfully. Emails will be logged to console.`,
+        );
       });
     }
   }
@@ -50,7 +56,9 @@ export class MailService {
   // Wrapper to log Ethereal URL if using test account
   private logPreviewUrl(info: any) {
     if (nodemailer.getTestMessageUrl(info)) {
-      console.log(`\n📧 Email sent! View it here: ${nodemailer.getTestMessageUrl(info)}\n`);
+      console.log(
+        `\n📧 Email sent! View it here: ${nodemailer.getTestMessageUrl(info)}\n`,
+      );
     }
   }
 
@@ -67,7 +75,10 @@ export class MailService {
       this.logger.log(`Login notification email sent to ${email}`);
       this.logPreviewUrl(info);
     } catch (error) {
-      this.logger.error(`Failed to send login notification to ${email}`, error.stack);
+      this.logger.error(
+        `Failed to send login notification to ${email}`,
+        error.stack,
+      );
     }
   }
 
@@ -84,7 +95,10 @@ export class MailService {
       this.logger.log(`Password reset OTP sent to ${email}`);
       this.logPreviewUrl(info);
     } catch (error) {
-      this.logger.error(`Failed to send password reset OTP to ${email}`, error.stack);
+      this.logger.error(
+        `Failed to send password reset OTP to ${email}`,
+        error.stack,
+      );
     }
   }
 
@@ -101,7 +115,10 @@ export class MailService {
       this.logger.log(`Welcome email sent to ${email}`);
       this.logPreviewUrl(info);
     } catch (error) {
-      this.logger.error(`Failed to send welcome email to ${email}`, error.stack);
+      this.logger.error(
+        `Failed to send welcome email to ${email}`,
+        error.stack,
+      );
     }
   }
 
@@ -118,15 +135,28 @@ export class MailService {
       this.logger.log(`Verification OTP sent to ${email}`);
       this.logPreviewUrl(info);
     } catch (error) {
-      this.logger.error(`Failed to send verification OTP to ${email}`, error.stack);
+      this.logger.error(
+        `Failed to send verification OTP to ${email}`,
+        error.stack,
+      );
     }
   }
 
   async sendHotelBookingConfirmation(email: string, bookingDetails: any) {
     try {
       if (!this.transporter) return;
-      const { bookingId, pnr, bookingDate, hotelName, roomName, checkIn, checkOut, guestName, totalAmount } = bookingDetails;
-      
+      const {
+        bookingId,
+        pnr,
+        bookingDate,
+        hotelName,
+        roomName,
+        checkIn,
+        checkOut,
+        guestName,
+        totalAmount,
+      } = bookingDetails;
+
       const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -246,7 +276,10 @@ export class MailService {
       this.logger.log(`Hotel booking confirmation email sent to ${email}`);
       this.logPreviewUrl(info);
     } catch (error) {
-      this.logger.error(`Failed to send hotel booking confirmation to ${email}`, error.stack);
+      this.logger.error(
+        `Failed to send hotel booking confirmation to ${email}`,
+        error.stack,
+      );
     }
   }
 }

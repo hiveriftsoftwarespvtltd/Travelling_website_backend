@@ -22,15 +22,19 @@ export class AirportService implements OnModuleInit {
     try {
       const count = await this.airportModel.countDocuments();
       if (count > 0) {
-        this.logger.log(`Airports collection already seeded with ${count} records.`);
+        this.logger.log(
+          `Airports collection already seeded with ${count} records.`,
+        );
         return;
       }
 
       this.logger.log('Airports collection is empty. Starting CSV import...');
       const csvFilePath = path.join(process.cwd(), 'data', 'airports.csv');
-      
+
       if (!fs.existsSync(csvFilePath)) {
-        this.logger.warn(`CSV file not found at ${csvFilePath}. Skipping import.`);
+        this.logger.warn(
+          `CSV file not found at ${csvFilePath}. Skipping import.`,
+        );
         return;
       }
 
@@ -52,7 +56,9 @@ export class AirportService implements OnModuleInit {
           }
         })
         .on('end', async () => {
-          this.logger.log(`Successfully parsed ${airportsData.length} records. Bulk inserting into MongoDB...`);
+          this.logger.log(
+            `Successfully parsed ${airportsData.length} records. Bulk inserting into MongoDB...`,
+          );
           try {
             await this.airportModel.insertMany(airportsData);
             this.logger.log('Successfully seeded airports collection.');
@@ -60,7 +66,6 @@ export class AirportService implements OnModuleInit {
             this.logger.error('Error inserting records into MongoDB', error);
           }
         });
-
     } catch (error) {
       this.logger.error('Error seeding airports', error);
     }
@@ -71,19 +76,21 @@ export class AirportService implements OnModuleInit {
       return [];
     }
 
-    const regex = new RegExp(query.trim(), 'i');
+    const sanitized = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(sanitized, 'i');
 
-    return this.airportModel.find({
-      $or: [
-        { AIRPORTNAME: { $regex: regex } },
-        { AIRPORTCODE: { $regex: regex } },
-        { CITYNAME: { $regex: regex } },
-        { CITYCODE: { $regex: regex } },
-        { COUNTRYCODE: { $regex: regex } },
-        { COUNTRYNAME: { $regex: regex } },
-      ],
-    })
-    .limit(15)
-    .exec();
+    return this.airportModel
+      .find({
+        $or: [
+          { AIRPORTNAME: { $regex: regex } },
+          { AIRPORTCODE: { $regex: regex } },
+          { CITYNAME: { $regex: regex } },
+          { CITYCODE: { $regex: regex } },
+          { COUNTRYCODE: { $regex: regex } },
+          { COUNTRYNAME: { $regex: regex } },
+        ],
+      })
+      .limit(15)
+      .exec();
   }
 }

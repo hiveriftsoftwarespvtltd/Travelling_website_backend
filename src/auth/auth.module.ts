@@ -7,6 +7,7 @@ import { User, UserSchema } from './user.schema';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
+import { RolesGuard } from './roles.guard';
 import { MailModule } from '../mail/mail.module';
 
 @Module({
@@ -18,7 +19,8 @@ import { MailModule } from '../mail/mail.module';
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET') || 'lokeshkumar',
         signOptions: {
-          expiresIn: (configService.get<string>('ACCESS_TOKEN_TTL') || '1h') as any,
+          expiresIn: (configService.get<string>('ACCESS_TOKEN_TTL') ||
+            '1h') as any,
         },
       }),
       inject: [ConfigService],
@@ -26,7 +28,7 @@ import { MailModule } from '../mail/mail.module';
     MailModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService],
+  providers: [AuthService, JwtStrategy, RolesGuard],
+  exports: [AuthService, RolesGuard],
 })
 export class AuthModule {}

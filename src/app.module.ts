@@ -34,7 +34,9 @@ import { SettingsModule } from './settings/settings.module';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGO_URI') || configService.get<string>('MONGODB_URI'),
+        uri:
+          configService.get<string>('MONGO_URI') ||
+          configService.get<string>('MONGODB_URI'),
       }),
       inject: [ConfigService],
     }),
@@ -62,4 +64,4 @@ import { SettingsModule } from './settings/settings.module';
     SettingsModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}

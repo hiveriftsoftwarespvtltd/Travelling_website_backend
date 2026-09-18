@@ -1,4 +1,10 @@
-import { Body, Controller, HttpException, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpException,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { PaymentService } from './payment.service';
 
 @Controller('payment')
@@ -10,7 +16,9 @@ export class PaymentController {
    * Frontend calls this to get a Razorpay order_id before showing the payment modal
    */
   @Post('create-order')
-  async createOrder(@Body() body: { amount: number; receipt?: string; currency?: string }) {
+  async createOrder(
+    @Body() body: { amount: number; receipt?: string; currency?: string },
+  ) {
     if (!body.amount || body.amount <= 0) {
       throw new HttpException(
         { message: 'Invalid amount. Amount must be greater than 0.' },
@@ -55,7 +63,10 @@ export class PaymentController {
 
     if (!isValid) {
       throw new HttpException(
-        { message: 'Payment verification failed. Signature mismatch. Booking aborted.' },
+        {
+          message:
+            'Payment verification failed. Signature mismatch. Booking aborted.',
+        },
         HttpStatus.UNAUTHORIZED,
       );
     }

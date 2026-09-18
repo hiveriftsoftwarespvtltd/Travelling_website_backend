@@ -8,26 +8,46 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname, join } from 'path';
+import { extname } from 'path';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('upload')
 export class UploadController {
   @Post()
-  @UseGuards(JwtAuthGuard) // Protect image upload with Admin token
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
           callback(null, `file-${uniqueSuffix}${ext}`);
         },
       }),
       fileFilter: (req, file, callback) => {
-        if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) {
-          return callback(new BadRequestException('Only image files are allowed!'), false);
+        const allowedExtensions = /\.(jpe?g|png|gif|webp)$/i;
+        const allowedMimes = [
+          'image/jpeg',
+          'image/png',
+          'image/gif',
+          'image/webp',
+        ];
+
+        if (
+          !allowedExtensions.test(file.originalname) ||
+          !allowedMimes.includes(file.mimetype)
+        ) {
+          return callback(
+            new BadRequestException(
+              'Only valid image files (JPG, PNG, GIF, WEBP) are allowed!',
+            ),
+            false,
+          );
         }
         callback(null, true);
       },
@@ -40,8 +60,11 @@ export class UploadController {
     if (!file) {
       throw new BadRequestException('No file uploaded or file is not allowed');
     }
-    // Return the full URL of the uploaded image
-    const fileUrl = `http://localhost:8009/uploads/${file.filename}`;
+    const baseUrl =
+      process.env.SERVER_BASE_URL ||
+      process.env.BACKEND_URL ||
+      'http://localhost:8009';
+    const fileUrl = `${baseUrl.replace(/\/$/, '')}/uploads/${file.filename}`;
     return { url: fileUrl };
   }
 }

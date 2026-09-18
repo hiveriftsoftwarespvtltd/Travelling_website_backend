@@ -25,7 +25,7 @@ export class HotelProperty {
 
   @Prop()
   HotelPicture?: string;
-  
+
   @Prop()
   HotelAddress?: string;
 }

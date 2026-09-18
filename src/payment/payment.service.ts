@@ -2,7 +2,6 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const Razorpay = require('razorpay');
 
 @Injectable()
@@ -13,7 +12,8 @@ export class PaymentService {
 
   constructor(private readonly configService: ConfigService) {
     this.KEY_ID = this.configService.get<string>('RAZORPAY_KEY_ID') || '';
-    this.KEY_SECRET = this.configService.get<string>('RAZORPAY_KEY_SECRET') || '';
+    this.KEY_SECRET =
+      this.configService.get<string>('RAZORPAY_KEY_SECRET') || '';
 
     this.razorpay = new Razorpay({
       key_id: this.KEY_ID,
@@ -63,13 +63,23 @@ export class PaymentService {
     razorpay_payment_id: string,
     razorpay_signature: string,
   ): boolean {
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return false;
+    }
     const body = `${razorpay_order_id}|${razorpay_payment_id}`;
     const expectedSignature = crypto
       .createHmac('sha256', this.KEY_SECRET)
       .update(body)
       .digest('hex');
 
-    return expectedSignature === razorpay_signature;
+    const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+    const signatureBuffer = Buffer.from(razorpay_signature, 'utf8');
+
+    if (expectedBuffer.length !== signatureBuffer.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(expectedBuffer, signatureBuffer);
   }
 
   /**
@@ -79,7 +89,7 @@ export class PaymentService {
     try {
       const refund = await this.razorpay.payments.refund(paymentId, {
         amount: Math.round(amount * 100), // convert to paise
-        notes: notes || { reason: 'Automated refund' }
+        notes: notes || { reason: 'Automated refund' },
       });
       return { success: true, refundId: refund.id, status: refund.status };
     } catch (error) {

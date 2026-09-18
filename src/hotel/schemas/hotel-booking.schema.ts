@@ -41,12 +41,12 @@ export class HotelBooking {
   @Prop()
   endUserIp: string;
 
-  @Prop()
+  @Prop({ index: true })
   userId: string; // The MongoDB User ID of the person who booked this
 
-  @Prop()
+  @Prop({ index: true })
   email: string; // The email of the person who booked this
-  
+
   @Prop()
   traceId: string;
 

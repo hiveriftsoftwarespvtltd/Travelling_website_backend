@@ -1,14 +1,18 @@
-import { Controller, Post, Body, Req } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
 import { FlightService } from './flight.service';
 import { FlightSearchDto } from './dto/flight-search.dto';
 import type { Request } from 'express';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('flight')
 export class FlightController {
-  constructor(private readonly flightService: FlightService) { }
+  constructor(private readonly flightService: FlightService) {}
 
   private getValidIp(req: Request): string {
-    const rawIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || '103.98.38.139';
+    const rawIp =
+      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      req.socket.remoteAddress ||
+      '103.98.38.139';
     // TBO sandbox DB column for IP is too small for IPv6. Fallback to IPv4.
     if (rawIp.includes(':')) {
       return '103.98.38.139';
@@ -24,14 +28,20 @@ export class FlightController {
   }
 
   @Post('calendar-fare')
-  async getCalendarFare(@Body() searchDto: FlightSearchDto, @Req() req: Request) {
+  async getCalendarFare(
+    @Body() searchDto: FlightSearchDto,
+    @Req() req: Request,
+  ) {
     const endUserIp = this.getValidIp(req);
 
     return this.flightService.getCalendarFare(searchDto, endUserIp);
   }
 
   @Post('update-calendar-fare')
-  async updateCalendarFareOfDay(@Body() searchDto: FlightSearchDto, @Req() req: Request) {
+  async updateCalendarFareOfDay(
+    @Body() searchDto: FlightSearchDto,
+    @Req() req: Request,
+  ) {
     const endUserIp = this.getValidIp(req);
 
     return this.flightService.updateCalendarFareOfDay(searchDto, endUserIp);
@@ -66,15 +76,25 @@ export class FlightController {
   }
 
   @Post('book')
-  async bookFlight(@Body() reqBody: any, @Req() req: Request) {
+  @UseGuards(JwtAuthGuard)
+  async bookFlight(@Body() reqBody: any, @Req() req: any) {
     const endUserIp = this.getValidIp(req);
+    if (req.user) {
+      reqBody.userId = reqBody.userId || req.user.userId;
+      reqBody.email = reqBody.email || req.user.email;
+    }
 
     return this.flightService.bookFlight(reqBody, endUserIp);
   }
 
   @Post('ticket')
-  async ticketFlight(@Body() reqBody: any, @Req() req: Request) {
+  @UseGuards(JwtAuthGuard)
+  async ticketFlight(@Body() reqBody: any, @Req() req: any) {
     const endUserIp = this.getValidIp(req);
+    if (req.user) {
+      reqBody.userId = reqBody.userId || req.user.userId;
+      reqBody.email = reqBody.email || req.user.email;
+    }
 
     return this.flightService.ticketFlight(reqBody, endUserIp);
   }
@@ -115,17 +135,26 @@ export class FlightController {
   }
 
   // --- Database Fetch Routes ---
-  
+
   @Post('my-bookings')
-  async getMyBookings(@Body() reqBody: any, @Req() req: Request) {
-    // Ideally this would use JWT user ID. Using EndUserIp or all for now.
+  @UseGuards(JwtAuthGuard)
+  async getMyBookings(@Body() reqBody: any, @Req() req: any) {
     const endUserIp = this.getValidIp(req);
+    if (req.user && req.user.role !== 'admin') {
+      reqBody.userId = req.user.userId;
+      reqBody.email = req.user.email;
+    }
     return this.flightService.getMyBookings(reqBody, endUserIp);
   }
 
   @Post('my-cancellations')
-  async getMyCancellations(@Body() reqBody: any, @Req() req: Request) {
+  @UseGuards(JwtAuthGuard)
+  async getMyCancellations(@Body() reqBody: any, @Req() req: any) {
     const endUserIp = this.getValidIp(req);
+    if (req.user && req.user.role !== 'admin') {
+      reqBody.userId = req.user.userId;
+      reqBody.email = req.user.email;
+    }
     return this.flightService.getMyCancellations(reqBody, endUserIp);
   }
 
@@ -135,4 +164,3 @@ export class FlightController {
     return this.flightService.getCancellationByBooking(reqBody, endUserIp);
   }
 }
-

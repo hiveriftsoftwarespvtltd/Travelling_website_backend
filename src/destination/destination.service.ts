@@ -16,11 +16,31 @@ export class DestinationService implements OnModuleInit {
     if (count === 0) {
       console.log('Seeding default destinations...');
       const defaultDestinations = [
-        { name: 'Maldives', listings: 15, image: '/assets/img/destination/destination_1_1.jpg' },
-        { name: 'Thailand', listings: 22, image: '/assets/img/destination/destination_1_2.jpg' },
-        { name: 'Belgium', listings: 25, image: '/assets/img/destination/destination_1_3.jpg' },
-        { name: 'Island', listings: 28, image: '/assets/img/destination/destination_1_4.jpg' },
-        { name: 'Maldives', listings: 30, image: '/assets/img/destination/destination_1_5.jpg' },
+        {
+          name: 'Maldives',
+          listings: 15,
+          image: '/assets/img/destination/destination_1_1.jpg',
+        },
+        {
+          name: 'Thailand',
+          listings: 22,
+          image: '/assets/img/destination/destination_1_2.jpg',
+        },
+        {
+          name: 'Belgium',
+          listings: 25,
+          image: '/assets/img/destination/destination_1_3.jpg',
+        },
+        {
+          name: 'Island',
+          listings: 28,
+          image: '/assets/img/destination/destination_1_4.jpg',
+        },
+        {
+          name: 'Maldives',
+          listings: 30,
+          image: '/assets/img/destination/destination_1_5.jpg',
+        },
       ];
       await this.destinationModel.create(defaultDestinations);
       console.log('Destinations seeded successfully!');
@@ -43,7 +63,10 @@ export class DestinationService implements OnModuleInit {
     return this.destinationModel.create(destinationDto);
   }
 
-  async update(id: string, destinationDto: DestinationDto): Promise<Destination> {
+  async update(
+    id: string,
+    destinationDto: DestinationDto,
+  ): Promise<Destination> {
     const updated = await this.destinationModel
       .findByIdAndUpdate(id, destinationDto, { new: true })
       .exec();

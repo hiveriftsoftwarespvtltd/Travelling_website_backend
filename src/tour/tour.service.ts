@@ -6,9 +6,7 @@ import { TourDto } from './dto/tour.dto';
 
 @Injectable()
 export class TourService implements OnModuleInit {
-  constructor(
-    @InjectModel(Tour.name) private tourModel: Model<TourDocument>,
-  ) {}
+  constructor(@InjectModel(Tour.name) private tourModel: Model<TourDocument>) {}
 
   async onModuleInit() {
     const count = await this.tourModel.countDocuments();

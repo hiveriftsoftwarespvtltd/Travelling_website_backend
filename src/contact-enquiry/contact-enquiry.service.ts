@@ -1,13 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ContactEnquiry, ContactEnquiryDocument } from './contact-enquiry.schema';
+import {
+  ContactEnquiry,
+  ContactEnquiryDocument,
+} from './contact-enquiry.schema';
 import { LeadService } from '../lead/lead.service';
 
 @Injectable()
 export class ContactEnquiryService {
   constructor(
-    @InjectModel(ContactEnquiry.name) private enquiryModel: Model<ContactEnquiryDocument>,
+    @InjectModel(ContactEnquiry.name)
+    private enquiryModel: Model<ContactEnquiryDocument>,
     private readonly leadService: LeadService,
   ) {}
 
@@ -32,7 +36,9 @@ export class ContactEnquiryService {
   }
 
   async updateStatus(id: string, status: string): Promise<ContactEnquiry> {
-    const updated = await this.enquiryModel.findByIdAndUpdate(id, { status }, { new: true }).exec();
+    const updated = await this.enquiryModel
+      .findByIdAndUpdate(id, { status }, { new: true })
+      .exec();
     if (!updated) {
       throw new NotFoundException(`Enquiry with ID ${id} not found`);
     }

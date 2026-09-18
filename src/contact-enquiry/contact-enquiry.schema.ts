@@ -24,4 +24,5 @@ export class ContactEnquiry {
   status: string; // 'New', 'Contacted', 'Closed'
 }
 
-export const ContactEnquirySchema = SchemaFactory.createForClass(ContactEnquiry);
+export const ContactEnquirySchema =
+  SchemaFactory.createForClass(ContactEnquiry);

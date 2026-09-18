@@ -28,6 +28,9 @@ export class User {
 
   @Prop({ default: false })
   isVerified: boolean;
+
+  @Prop({ default: 'user', enum: ['user', 'admin'], index: true })
+  role: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

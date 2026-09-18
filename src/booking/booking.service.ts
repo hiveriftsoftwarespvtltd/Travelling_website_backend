@@ -3,7 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Booking, BookingDocument } from './booking.schema';
 import { LeadService } from '../lead/lead.service';
-import { Destination, DestinationDocument } from '../destination/destination.schema';
+import {
+  Destination,
+  DestinationDocument,
+} from '../destination/destination.schema';
 import { Blog, BlogDocument } from '../blog/blog.schema';
 import { Review, ReviewDocument } from '../review/review.schema';
 import { Gallery, GalleryDocument } from '../gallery/gallery.schema';
@@ -12,7 +15,8 @@ import { Gallery, GalleryDocument } from '../gallery/gallery.schema';
 export class BookingService {
   constructor(
     @InjectModel(Booking.name) private bookingModel: Model<BookingDocument>,
-    @InjectModel(Destination.name) private destinationModel: Model<DestinationDocument>,
+    @InjectModel(Destination.name)
+    private destinationModel: Model<DestinationDocument>,
     @InjectModel(Blog.name) private blogModel: Model<BlogDocument>,
     @InjectModel(Review.name) private reviewModel: Model<ReviewDocument>,
     @InjectModel(Gallery.name) private galleryModel: Model<GalleryDocument>,
@@ -49,7 +53,9 @@ export class BookingService {
   }
 
   async updateStatus(id: string, status: string): Promise<Booking> {
-    const updated = await this.bookingModel.findByIdAndUpdate(id, { status }, { new: true }).exec();
+    const updated = await this.bookingModel
+      .findByIdAndUpdate(id, { status }, { new: true })
+      .exec();
     if (!updated) {
       throw new NotFoundException(`Booking with ID ${id} not found`);
     }
@@ -66,11 +72,21 @@ export class BookingService {
 
   async getDashboardMetrics(): Promise<any> {
     const totalBookings = await this.bookingModel.countDocuments();
-    const newEnquiries = await this.bookingModel.countDocuments({ status: 'New' });
-    const contacted = await this.bookingModel.countDocuments({ status: 'Contacted' });
-    const followUp = await this.bookingModel.countDocuments({ status: 'Follow Up' });
-    const confirmed = await this.bookingModel.countDocuments({ status: 'Confirmed' });
-    const cancelled = await this.bookingModel.countDocuments({ status: 'Cancelled' });
+    const newEnquiries = await this.bookingModel.countDocuments({
+      status: 'New',
+    });
+    const contacted = await this.bookingModel.countDocuments({
+      status: 'Contacted',
+    });
+    const followUp = await this.bookingModel.countDocuments({
+      status: 'Follow Up',
+    });
+    const confirmed = await this.bookingModel.countDocuments({
+      status: 'Confirmed',
+    });
+    const cancelled = await this.bookingModel.countDocuments({
+      status: 'Cancelled',
+    });
     const totalDestinations = await this.destinationModel.countDocuments();
     const totalBlogs = await this.blogModel.countDocuments();
     const totalReviews = await this.reviewModel.countDocuments();

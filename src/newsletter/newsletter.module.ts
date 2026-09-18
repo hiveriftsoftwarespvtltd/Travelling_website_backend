@@ -7,7 +7,9 @@ import { LeadModule } from '../lead/lead.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Newsletter.name, schema: NewsletterSchema }]),
+    MongooseModule.forFeature([
+      { name: Newsletter.name, schema: NewsletterSchema },
+    ]),
     LeadModule,
   ],
   controllers: [NewsletterController],
