@@ -10,6 +10,8 @@ import {
   Cancellation,
   CancellationSchema,
 } from './schemas/cancellation.schema';
+import { SettingsModule } from '../settings/settings.module';
+import { FlightPricingModule } from '../flight-pricing/flight-pricing.module';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import {
       { name: FlightBooking.name, schema: FlightBookingSchema },
       { name: Cancellation.name, schema: CancellationSchema },
     ]),
+    SettingsModule,
+    FlightPricingModule,
   ],
   controllers: [FlightController],
   providers: [FlightService],

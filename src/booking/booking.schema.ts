@@ -17,8 +17,9 @@ export class Booking {
   @Prop({ required: true })
   lastName: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false, default: '' })
   email: string;
+
 
   @Prop({ required: true })
   mobile: string;

@@ -27,6 +27,10 @@ export class SettingsService implements OnModuleInit {
         metaDescription:
           'Making every destination easy to reach, memorable to experience, and extraordinary to remember. Book manual customized tour packages.',
         googleAnalyticsCode: 'G-XXXXXXXXXX',
+        flightDomesticMarkupType: 'fixed',
+        flightDomesticMarkupValue: 0,
+        flightInternationalMarkupType: 'fixed',
+        flightInternationalMarkupValue: 0,
       });
       console.log('Default settings seeded successfully!');
     }
@@ -37,6 +41,10 @@ export class SettingsService implements OnModuleInit {
     if (!settings) {
       settings = await this.settingsModel.create({
         companyName: 'Jiyo Life Travel',
+        flightDomesticMarkupType: 'fixed',
+        flightDomesticMarkupValue: 0,
+        flightInternationalMarkupType: 'fixed',
+        flightInternationalMarkupValue: 0,
       });
     }
     return settings;

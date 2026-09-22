@@ -106,3 +106,4 @@ test_admin.js
 test_booking.js
 test-booking.js
 convert-xlsx.js
+check_bookings.js

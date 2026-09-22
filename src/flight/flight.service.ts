@@ -1,10 +1,39 @@
-import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import axios from 'axios';
+import * as http from 'http';
+import * as https from 'https';
 import { FlightSearchDto } from './dto/flight-search.dto';
 import { FlightBooking } from './schemas/flight-booking.schema';
 import { Cancellation } from './schemas/cancellation.schema';
+import { SettingsService } from '../settings/settings.service';
+import { FlightPricingService } from '../flight-pricing/flight-pricing.service';
+import { MarketType } from '../flight-pricing/schemas/flight-pricing-rule.schema';
+
+// ─── High-Performance Persistent Connection Pool ──────────────────
+const httpAgent = new http.Agent({
+  keepAlive: true,
+  maxSockets: 60,
+  maxFreeSockets: 30,
+  keepAliveMsecs: 60000,
+});
+const httpsAgent = new https.Agent({
+  keepAlive: true,
+  maxSockets: 60,
+  maxFreeSockets: 30,
+  keepAliveMsecs: 60000,
+});
+
+const tboClient = axios.create({
+  httpAgent,
+  httpsAgent,
+  headers: {
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
+  },
+  timeout: 45000,
+});
 
 // ─── TBO API Endpoints & Credentials ──────────────────────────────
 const TBO = {
@@ -67,7 +96,7 @@ const TBO_ERROR_TOKEN_EXPIRED = 6;
 const TBO_ERROR_INVALID_TOKEN = 7;
 
 @Injectable()
-export class FlightService {
+export class FlightService implements OnApplicationBootstrap {
   private readonly logger = new Logger(FlightService.name);
 
   constructor(
@@ -75,17 +104,219 @@ export class FlightService {
     private flightBookingModel: Model<FlightBooking>,
     @InjectModel(Cancellation.name)
     private cancellationModel: Model<Cancellation>,
+    private readonly settingsService: SettingsService,
+    private readonly flightPricingService: FlightPricingService,
   ) {}
+
+  /**
+   * Helper: Checks if a flight itinerary is domestic (all segments have origin & destination in IN).
+   */
+  private isDomesticFlight(itinerary: any): boolean {
+    try {
+      const segments = itinerary?.Segments;
+      if (!segments || !Array.isArray(segments) || segments.length === 0) return true;
+
+      for (const segGroup of segments) {
+        if (!Array.isArray(segGroup)) continue;
+        for (const leg of segGroup) {
+          const orig = leg?.Origin?.Airport?.CountryCode;
+          const dest = leg?.Destination?.Airport?.CountryCode;
+          if (orig && orig !== 'IN') return false;
+          if (dest && dest !== 'IN') return false;
+        }
+      }
+      return true;
+    } catch {
+      return true;
+    }
+  }
+
+  /**
+   * Helper: Applies agency markup to an individual itinerary using the centralized pricing engine.
+   * Preserves supplierFare, calculates slab-based markup, clamps min/max, and formats customer fare.
+   */
+  private async applyMarkupToItinerary(
+    itinerary: any,
+    defaultPaxCount: number = 1,
+  ) {
+    if (!itinerary || !itinerary.Fare) return;
+
+    let totalPax = defaultPaxCount;
+    if (
+      Array.isArray(itinerary.FareBreakdown) &&
+      itinerary.FareBreakdown.length > 0
+    ) {
+      const count = itinerary.FareBreakdown.reduce(
+        (acc: number, fb: any) => acc + (Number(fb.PassengerCount) || 0),
+        0,
+      );
+      if (count > 0) totalPax = count;
+    }
+
+    const isDomestic = this.isDomesticFlight(itinerary);
+    const market = isDomestic ? MarketType.DOMESTIC : MarketType.INTERNATIONAL;
+    const rawSupplierFare = Number(
+      itinerary.Fare.SupplierFare ||
+        itinerary.Fare.PublishedFare ||
+        itinerary.Fare.OfferedFare ||
+        itinerary.Fare.BaseFare ||
+        0,
+    );
+
+    const pricing = await this.flightPricingService.calculateFlightPrice(
+      rawSupplierFare,
+      market,
+      { paxCount: totalPax },
+    );
+
+    itinerary.Fare.SupplierFare = rawSupplierFare;
+    itinerary.Fare.SupplierBaseFare = itinerary.Fare.BaseFare;
+    itinerary.Fare.AgencyMarkup = pricing.markupAmount;
+    itinerary.Fare.MarkupPercentage = pricing.markupPercentage;
+    itinerary.Fare.PricingRuleId = pricing.pricingRuleId;
+    itinerary.Fare.IsDomestic = isDomestic;
+    itinerary.Fare.MarketType = market;
+    itinerary.Fare.FinalCustomerFare = pricing.finalCustomerFare;
+
+    if (pricing.markupAmount > 0) {
+      itinerary.Fare.PublishedFare = pricing.finalCustomerFare;
+      itinerary.Fare.OfferedFare = pricing.finalCustomerFare;
+      if (typeof itinerary.Fare.BaseFare === 'number') {
+        itinerary.Fare.BaseFare = Math.round(itinerary.Fare.BaseFare + pricing.markupAmount);
+      }
+
+      if (
+        Array.isArray(itinerary.FareBreakdown) &&
+        itinerary.FareBreakdown.length > 0
+      ) {
+        const payingBreakdowns = itinerary.FareBreakdown.filter(
+          (fb: any) => fb.PassengerType === 1 || fb.PassengerType === 2,
+        );
+        const totalPaying =
+          payingBreakdowns.reduce(
+            (sum: number, fb: any) => sum + (Number(fb.PassengerCount) || 1),
+            0,
+          ) || 1;
+        const markupPerPax = Math.round(pricing.markupAmount / totalPaying);
+
+        for (const fb of payingBreakdowns) {
+          const count = Number(fb.PassengerCount) || 1;
+          const fbMarkup = markupPerPax * count;
+          fb.BaseFare = Math.round((fb.BaseFare || 0) + fbMarkup);
+          fb.AgencyMarkup = markupPerPax;
+        }
+      }
+    }
+  }
+
+  /**
+   * Helper: Iterates over 1D or 2D array of itineraries and applies markup to each.
+   */
+  private async applyMarkupToResults(
+    data: any,
+    defaultPaxCount: number = 1,
+  ) {
+    if (!data?.Response?.Results) return;
+    const results = data.Response.Results;
+
+    if (Array.isArray(results)) {
+      for (const item of results) {
+        if (Array.isArray(item)) {
+          for (const itin of item) {
+            await this.applyMarkupToItinerary(itin, defaultPaxCount);
+          }
+        } else if (item && typeof item === 'object') {
+          await this.applyMarkupToItinerary(item, defaultPaxCount);
+        }
+      }
+    }
+  }
 
   // In-memory token cache — valid for 3 hours (TBO tokens last longer but 3h is safe)
   private cachedToken: string | null = null;
   private tokenExpiry: number = 0;
 
-  // In-memory flight search cache — valid for 3 minutes (180s)
-  private flightSearchCache = new Map<string, { data: any; expiry: number }>();
+  // In-memory flight search cache — 2-tier Stale-While-Revalidate (SWR)
+  // freshUntil: 15 minutes (immediate return)
+  // staleUntil: 2 hours (immediate return + background revalidation)
+  private flightSearchCache = new Map<
+    string,
+    { data: any; freshUntil: number; staleUntil: number }
+  >();
 
-  // In-memory calendar fare cache — valid for 10 minutes (600s)
+  // In-flight request deduplication — if the same search is already in progress,
+  // share the same Promise instead of firing a duplicate TBO API call.
+  private flightSearchInFlight = new Map<string, Promise<any>>();
+
+  // In-memory calendar fare cache — valid for 15 minutes (900s)
   private calendarFareCache = new Map<string, { data: any; expiry: number }>();
+
+  async onApplicationBootstrap() {
+    // Delay pre-warming 4 seconds after boot to let all NestJS providers start
+    setTimeout(() => {
+      this.prewarmTopRoutes().catch((err) =>
+        this.logger.warn(`⚠️ Initial route pre-warming notice: ${err?.message}`),
+      );
+    }, 4000);
+
+    // Periodic pre-warming every 25 minutes to keep top domestic routes primed
+    setInterval(() => {
+      this.prewarmTopRoutes().catch((err) =>
+        this.logger.warn(`⚠️ Periodic route pre-warming notice: ${err?.message}`),
+      );
+    }, 25 * 60 * 1000);
+  }
+
+  /**
+   * Pre-warms the top most searched domestic flight sectors into memory
+   */
+  private async prewarmTopRoutes() {
+    this.logger.log('🔥 [PRE-WARM] Pre-warming popular flight sectors in background...');
+    const d = new Date();
+    d.setDate(d.getDate() + 3);
+    const depTime = d.toISOString().split('T')[0] + 'T00:00:00';
+
+    const popularRoutes = [
+      { Origin: 'DEL', Destination: 'BOM' },
+      { Origin: 'BOM', Destination: 'DEL' },
+      { Origin: 'DEL', Destination: 'BLR' },
+    ];
+
+    for (const route of popularRoutes) {
+      try {
+        const dto: FlightSearchDto = {
+          JourneyType: 1,
+          AdultCount: 1,
+          ChildCount: 0,
+          InfantCount: 0,
+          DirectFlight: false,
+          OneStopFlight: false,
+          PreferredAirlines: null,
+          Sources: null,
+          Segments: [
+            {
+              Origin: route.Origin,
+              Destination: route.Destination,
+              FlightCabinClass: 1,
+              PreferredDepartureTime: depTime,
+              PreferredArrivalTime: depTime,
+            },
+          ],
+        };
+        const segKey = `${route.Origin}-${route.Destination}-${depTime.slice(0, 10)}-1`;
+        const cacheKey = `1:1:0:0:0:0:${segKey}`;
+        const cached = this.flightSearchCache.get(cacheKey);
+        if (!cached || Date.now() > cached.freshUntil) {
+          this.logger.log(`🔥 Pre-warming route: ${route.Origin} → ${route.Destination} (${depTime.slice(0, 10)})`);
+          await this.executeTboSearch(dto, '127.0.0.1', cacheKey);
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+        }
+      } catch (e: any) {
+        this.logger.warn(`⚠️ Route pre-warming skipped for ${route.Origin}-${route.Destination}: ${e?.message}`);
+      }
+    }
+    this.logger.log('🔥 [PRE-WARM] Popular route pre-warming pass complete.');
+  }
 
   // ─── Step 1: Get Authentication Token ──────────────────────────────────────
   // Per TBO docs: POST to SharedData.svc/rest/Authenticate
@@ -105,7 +336,7 @@ export class FlightService {
       `🔑 Using TBO Credentials: ClientId=${TBO.AUTH_CREDENTIALS.ClientId}, UserName=${TBO.AUTH_CREDENTIALS.UserName}`,
     );
     try {
-      const response = await axios.post(
+      const response = await tboClient.post(
         TBO.AUTH_URL,
         {
           ...TBO.AUTH_CREDENTIALS,
@@ -135,7 +366,7 @@ export class FlightService {
         `✅ TBO Token obtained. Agent: ${data.Member?.FirstName} ${data.Member?.LastName}`,
       );
       return this.cachedToken as string;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof HttpException) throw error;
       this.logger.error('❌ TBO Auth API error', error?.message);
       throw new HttpException(
@@ -145,13 +376,12 @@ export class FlightService {
     }
   }
 
-  // ─── Step 2: Search Flights ─────────────────────────────────────────────────
+  // ─── Step 2: Search Flights (with 2-Tier SWR Caching & Socket Pool) ─────────
   // Per TBO docs: POST to AirService.svc/rest/Search
   // JourneyType: 1=OneWay, 2=Return, 3=MultiCity
   // FlightCabinClass: 1=All, 2=Economy, 3=PremiumEconomy, 4=Business, 5=PremiumBusiness, 6=First
   // ───────────────────────────────────────────────────────────────────────────
   async searchFlights(searchDto: FlightSearchDto, endUserIp: string) {
-    // 1. Check in-memory search cache (TTL: 3 minutes)
     const segKey = (searchDto.Segments || [])
       .map(
         (s) =>
@@ -160,45 +390,116 @@ export class FlightService {
       .join('|');
     const searchCacheKey = `${searchDto.JourneyType || 1}:${searchDto.AdultCount || 1}:${searchDto.ChildCount || 0}:${searchDto.InfantCount || 0}:${searchDto.DirectFlight ? 1 : 0}:${searchDto.OneStopFlight ? 1 : 0}:${segKey}`;
 
+    const now = Date.now();
     const cachedSearch = this.flightSearchCache.get(searchCacheKey);
-    if (cachedSearch && Date.now() < cachedSearch.expiry) {
-      const flightCount =
-        cachedSearch.data?.Response?.Results?.[0]?.length ?? 0;
+
+    // 1. FRESH HIT (< 15 mins): return immediately (approx 5-15ms)
+    if (cachedSearch && now < cachedSearch.freshUntil) {
+      const flightCount = cachedSearch.data?.Response?.Results?.[0]?.length ?? 0;
       this.logger.log(
-        `⚡ [CACHE HIT] Flight Search: ${searchDto.Segments?.[0]?.Origin} → ${searchDto.Segments?.[0]?.Destination} (${flightCount} flights)`,
+        `⚡ [CACHE HIT - FRESH] Flight Search: ${searchDto.Segments?.[0]?.Origin} → ${searchDto.Segments?.[0]?.Destination} (${flightCount} flights)`,
       );
-      return cachedSearch.data;
+      const paxCount = (searchDto.AdultCount || 1) + (searchDto.ChildCount || 0);
+      const cloned = JSON.parse(JSON.stringify(cachedSearch.data));
+      await this.applyMarkupToResults(cloned, paxCount);
+      return cloned;
     }
 
+    // 2. STALE HIT (< 2 hours): return immediately and revalidate in background (SWR pattern)
+    if (cachedSearch && now < cachedSearch.staleUntil) {
+      const flightCount = cachedSearch.data?.Response?.Results?.[0]?.length ?? 0;
+      this.logger.log(
+        `⚡ [CACHE HIT - STALE/SWR] Flight Search: ${searchDto.Segments?.[0]?.Origin} → ${searchDto.Segments?.[0]?.Destination} (${flightCount} flights). Revalidating in background...`,
+      );
+      // Background revalidation
+      this.revalidateSearchInBackground(searchDto, endUserIp, searchCacheKey);
+
+      const paxCount = (searchDto.AdultCount || 1) + (searchDto.ChildCount || 0);
+      const cloned = JSON.parse(JSON.stringify(cachedSearch.data));
+      await this.applyMarkupToResults(cloned, paxCount);
+      return cloned;
+    }
+
+    // 3. Deduplication: if the exact same search is already in flight, share the promise
+    const existingInflight = this.flightSearchInFlight.get(searchCacheKey);
+    if (existingInflight) {
+      this.logger.log(
+        `🔄 [DEDUP] Flight Search already in flight: ${searchDto.Segments?.[0]?.Origin} → ${searchDto.Segments?.[0]?.Destination}. Sharing promise.`,
+      );
+      const data = await existingInflight;
+      const paxCount = (searchDto.AdultCount || 1) + (searchDto.ChildCount || 0);
+      const cloned = JSON.parse(JSON.stringify(data));
+      await this.applyMarkupToResults(cloned, paxCount);
+      return cloned;
+    }
+
+    // 4. Cold execution: fetch from TBO using pooled keep-alive socket + gzip
+    const data = await this.executeTboSearch(searchDto, endUserIp, searchCacheKey);
+    const paxCount = (searchDto.AdultCount || 1) + (searchDto.ChildCount || 0);
+    const responseData = JSON.parse(JSON.stringify(data));
+    await this.applyMarkupToResults(responseData, paxCount);
+    return responseData;
+  }
+
+  /**
+   * Asynchronous background revalidation for Stale-While-Revalidate pattern
+   */
+  private revalidateSearchInBackground(
+    searchDto: FlightSearchDto,
+    endUserIp: string,
+    searchCacheKey: string,
+  ) {
+    if (this.flightSearchInFlight.has(searchCacheKey)) return;
+    this.executeTboSearch(searchDto, endUserIp, searchCacheKey)
+      .then((data) => {
+        const count = data?.Response?.Results?.[0]?.length ?? 0;
+        this.logger.log(`✅ [SWR REVALIDATED] Cache refreshed: ${count} flights for ${searchCacheKey.slice(0, 40)}`);
+      })
+      .catch((err) => {
+        this.logger.warn(`⚠️ [SWR REVALIDATE NOTICE] ${err?.message}`);
+      });
+  }
+
+  /**
+   * Executes the raw TBO Search API call with connection pooling, deduplication and error handling
+   */
+  private async executeTboSearch(
+    searchDto: FlightSearchDto,
+    endUserIp: string,
+    searchCacheKey: string,
+  ): Promise<any> {
     const tokenId = await this.getToken(endUserIp);
 
     const payload = {
-      EndUserIp: endUserIp, // Real user IP
-      TokenId: tokenId, // Auto-fetched token
+      EndUserIp: endUserIp,
+      TokenId: tokenId,
       AdultCount: searchDto.AdultCount,
       ChildCount: searchDto.ChildCount,
       InfantCount: searchDto.InfantCount,
       DirectFlight: searchDto.DirectFlight,
       OneStopFlight: searchDto.OneStopFlight,
-      JourneyType: searchDto.JourneyType, // 1=OneWay, 2=Return, 3=MultiCity
+      JourneyType: searchDto.JourneyType,
       PreferredAirlines: searchDto.PreferredAirlines ?? null,
       Segments: searchDto.Segments,
       Sources: searchDto.Sources ?? null,
     };
 
     this.logger.log(
-      `🔍 TBO Flight Search: ${searchDto.Segments[0]?.Origin} → ${searchDto.Segments[0]?.Destination} | JourneyType: ${searchDto.JourneyType}`,
+      `🔍 TBO Flight Search: ${searchDto.Segments?.[0]?.Origin} → ${searchDto.Segments?.[0]?.Destination} | JourneyType: ${searchDto.JourneyType}`,
     );
 
-    try {
-      const response = await axios.post(TBO.SEARCH_URL, payload, {
+    const tboSearchPromise = tboClient
+      .post(TBO.SEARCH_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
-        timeout: 45000, // TBO search can take up to 30-45 seconds
-      });
+        timeout: 45000,
+      })
+      .then((r) => r.data);
 
-      const data = response.data;
+    this.flightSearchInFlight.set(searchCacheKey, tboSearchPromise);
 
-      // TBO returns ResponseStatus: 1 for success
+    try {
+      const data = await tboSearchPromise;
+
       if (data?.Response?.ResponseStatus !== 1) {
         const tboError = data?.Response?.Error;
         this.logger.error('❌ TBO Search returned error', tboError);
@@ -206,20 +507,14 @@ export class FlightService {
           tboError?.ErrorCode === TBO_ERROR_TOKEN_EXPIRED ||
           tboError?.ErrorCode === TBO_ERROR_INVALID_TOKEN
         ) {
-          this.logger.warn(
-            '⚠️ TBO token expired/invalid. Clearing cache and retrying...',
-          );
+          this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
           this.cachedToken = null;
           this.tokenExpiry = 0;
-          return this.searchFlights(searchDto, endUserIp);
+          return this.executeTboSearch(searchDto, endUserIp, searchCacheKey);
         }
 
-        // ErrorCode 25 is "No result found". Return the response data with a successful response
-        // so the frontend can handle it nicely rather than getting a 502 Bad Gateway error.
         if (tboError?.ErrorCode === 25 || tboError?.ErrorCode === 2) {
-          this.logger.warn(
-            `⚠️ TBO Search: No flights found (ErrorCode ${tboError?.ErrorCode})`,
-          );
+          this.logger.warn(`⚠️ TBO Search: No flights found (ErrorCode ${tboError?.ErrorCode})`);
           return data;
         }
 
@@ -234,46 +529,39 @@ export class FlightService {
         `✅ TBO Search success! Found ${flightCount} flights. TraceId: ${data?.Response?.TraceId}`,
       );
 
-      // Save in cache for 3 minutes (180s)
+      // Save in cache: 15 minutes fresh, 2 hours stale
+      const now = Date.now();
       this.flightSearchCache.set(searchCacheKey, {
         data,
-        expiry: Date.now() + 180 * 1000,
+        freshUntil: now + 15 * 60 * 1000,
+        staleUntil: now + 120 * 60 * 1000,
       });
 
-      // Prune expired entries if cache is growing
-      if (this.flightSearchCache.size > 200) {
-        const now = Date.now();
+      // Prune expired entries if cache is growing large
+      if (this.flightSearchCache.size > 300) {
         for (const [k, v] of this.flightSearchCache.entries()) {
-          if (now > v.expiry) this.flightSearchCache.delete(k);
+          if (now > v.staleUntil) this.flightSearchCache.delete(k);
         }
       }
 
       return data;
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof HttpException) throw error;
 
-      // Handle TBO token expiry — clear cache and retry once
       const tboErrorCode = error?.response?.data?.Response?.Error?.ErrorCode;
       if (
         tboErrorCode === TBO_ERROR_TOKEN_EXPIRED ||
         tboErrorCode === TBO_ERROR_INVALID_TOKEN
       ) {
-        this.logger.warn(
-          '⚠️ TBO token expired/invalid. Clearing cache and retrying...',
-        );
+        this.logger.warn('⚠️ TBO token expired/invalid. Clearing cache and retrying...');
         this.cachedToken = null;
         this.tokenExpiry = 0;
-        return this.searchFlights(searchDto, endUserIp); // Retry once with fresh token
+        return this.executeTboSearch(searchDto, endUserIp, searchCacheKey);
       }
 
       this.logger.error('❌ TBO Search API error: ' + error?.message);
-      this.logger.error('Payload sent to TBO: ' + JSON.stringify(payload));
-
       let errorDetail = 'Unknown Error';
-      if (error?.response) {
-        this.logger.error(
-          'TBO Response Data: ' + JSON.stringify(error?.response?.data),
-        );
+      if (error?.response?.data) {
         errorDetail = JSON.stringify(error?.response?.data);
       } else {
         errorDetail = error?.message || 'Network Error / Timeout';
@@ -283,6 +571,8 @@ export class FlightService {
         `Failed to fetch flights from TBO API. Details: ${errorDetail}`,
         HttpStatus.BAD_GATEWAY,
       );
+    } finally {
+      this.flightSearchInFlight.delete(searchCacheKey);
     }
   }
 
@@ -329,7 +619,7 @@ export class FlightService {
     );
 
     try {
-      const response = await axios.post(TBO.CALENDAR_URL, payload, {
+      const response = await tboClient.post(TBO.CALENDAR_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 20000,
       });
@@ -429,7 +719,7 @@ export class FlightService {
     );
 
     try {
-      const response = await axios.post(TBO.UPDATE_CALENDAR_URL, payload, {
+      const response = await tboClient.post(TBO.UPDATE_CALENDAR_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 25000,
       });
@@ -507,7 +797,7 @@ export class FlightService {
     );
 
     try {
-      const response = await axios.post(TBO.FARE_UPSELL_URL, payload, {
+      const response = await tboClient.post(TBO.FARE_UPSELL_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 15000,
       });
@@ -544,6 +834,7 @@ export class FlightService {
       } catch (e) {
         this.logger.error('Failed to write debug JSON', e);
       }
+      await this.applyMarkupToResults(data);
       return data;
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -584,7 +875,7 @@ export class FlightService {
     );
 
     try {
-      const response = await axios.post(TBO.FARE_RULE_URL, payload, {
+      const response = await tboClient.post(TBO.FARE_RULE_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 15000,
       });
@@ -652,7 +943,7 @@ export class FlightService {
     );
 
     try {
-      const response = await axios.post(TBO.FARE_QUOTE_URL, payload, {
+      const response = await tboClient.post(TBO.FARE_QUOTE_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 25000,
       });
@@ -684,6 +975,9 @@ export class FlightService {
       this.logger.log(
         `✅ TBO Fare Quote success! IsPriceChanged: ${data?.Response?.IsPriceChanged}`,
       );
+      if (data?.Response?.Results) {
+        await this.applyMarkupToItinerary(data.Response.Results);
+      }
       return data;
     } catch (error) {
       if (error instanceof HttpException) throw error;
@@ -724,7 +1018,7 @@ export class FlightService {
     );
 
     try {
-      const response = await axios.post(TBO.SSR_URL, payload, {
+      const response = await tboClient.post(TBO.SSR_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 20000,
       });
@@ -811,10 +1105,31 @@ export class FlightService {
       });
     }
 
+    // Strip agency markup from passenger fares so TBO's strict validation passes
+    let totalAgencyMarkup = 0;
+    if (payload.Passengers && Array.isArray(payload.Passengers)) {
+      payload.Passengers.forEach((pax: any) => {
+        const paxMarkup = Number(
+          pax.Fare?.AgencyMarkup || pax.AgencyMarkup || 0,
+        );
+        if (paxMarkup > 0) {
+          totalAgencyMarkup += paxMarkup;
+          if (pax.Fare && typeof pax.Fare.BaseFare === 'number') {
+            pax.Fare.BaseFare = Math.max(0, pax.Fare.BaseFare - paxMarkup);
+          }
+        }
+        if (pax.Fare) {
+          delete pax.Fare.AgencyMarkup;
+          delete pax.Fare.IsDomestic;
+        }
+        delete pax.AgencyMarkup;
+      });
+    }
+
     this.logger.log(`🎫 TBO Book Request for TraceId: ${reqBody.TraceId}`);
 
     try {
-      const response = await axios.post(TBO.BOOK_URL, payload, {
+      const response = await tboClient.post(TBO.BOOK_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 300000, // TBO Book/Ticket can take up to 300 seconds per docs
       });
@@ -873,6 +1188,7 @@ export class FlightService {
               passengers: responseData.FlightItinerary?.Passenger || [],
               flightDetails: responseData.FlightItinerary || {},
               fareDetails: responseData.FlightItinerary?.Fare || {},
+              agencyMarkup: totalAgencyMarkup,
               endUserIp: endUserIp,
               userId: reqBody.userId || '',
               email: reqBody.email || '',
@@ -931,10 +1247,31 @@ export class FlightService {
       TokenId: tokenId,
     };
 
+    // Strip agency markup from passenger fares so TBO's strict validation passes
+    let totalAgencyMarkup = 0;
+    if (payload.Passengers && Array.isArray(payload.Passengers)) {
+      payload.Passengers.forEach((pax: any) => {
+        const paxMarkup = Number(
+          pax.Fare?.AgencyMarkup || pax.AgencyMarkup || 0,
+        );
+        if (paxMarkup > 0) {
+          totalAgencyMarkup += paxMarkup;
+          if (pax.Fare && typeof pax.Fare.BaseFare === 'number') {
+            pax.Fare.BaseFare = Math.max(0, pax.Fare.BaseFare - paxMarkup);
+          }
+        }
+        if (pax.Fare) {
+          delete pax.Fare.AgencyMarkup;
+          delete pax.Fare.IsDomestic;
+        }
+        delete pax.AgencyMarkup;
+      });
+    }
+
     this.logger.log(`🎫 TBO Ticket Request for TraceId: ${reqBody.TraceId}`);
 
     try {
-      const response = await axios.post(TBO.TICKET_URL, payload, {
+      const response = await tboClient.post(TBO.TICKET_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 300000, // TBO Book/Ticket can take up to 300 seconds per docs
       });
@@ -993,6 +1330,7 @@ export class FlightService {
               passengers: responseData.FlightItinerary?.Passenger || [],
               flightDetails: responseData.FlightItinerary || {},
               fareDetails: responseData.FlightItinerary?.Fare || {},
+              agencyMarkup: totalAgencyMarkup,
               endUserIp: endUserIp,
               userId: reqBody.userId || '',
               email: reqBody.email || '',
@@ -1071,7 +1409,7 @@ export class FlightService {
     );
 
     try {
-      const response = await axios.post(TBO.GET_BOOKING_DETAILS_URL, payload, {
+      const response = await tboClient.post(TBO.GET_BOOKING_DETAILS_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 25000,
       });
@@ -1174,7 +1512,7 @@ export class FlightService {
     );
 
     try {
-      const response = await axios.post(TBO.RELEASE_PNR_URL, payload, {
+      const response = await tboClient.post(TBO.RELEASE_PNR_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 25000,
       });
@@ -1284,7 +1622,7 @@ export class FlightService {
     );
 
     try {
-      const response = await axios.post(TBO.SEND_CHANGE_REQUEST_URL, payload, {
+      const response = await tboClient.post(TBO.SEND_CHANGE_REQUEST_URL, payload, {
         headers: { 'Content-Type': 'application/json' },
         timeout: 25000,
       });
@@ -1417,7 +1755,7 @@ export class FlightService {
     );
 
     try {
-      const response = await axios.post(
+      const response = await tboClient.post(
         TBO.GET_CHANGE_REQUEST_STATUS_URL,
         payload,
         {
@@ -1560,7 +1898,7 @@ export class FlightService {
     );
 
     try {
-      const response = await axios.post(
+      const response = await tboClient.post(
         TBO.GET_CANCELLATION_CHARGES_URL,
         payload,
         {
@@ -1753,6 +2091,22 @@ export class FlightService {
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  /**
+   * Admin: Get all flight bookings
+   */
+  async getAllFlightBookings() {
+    try {
+      const bookings = await this.flightBookingModel
+        .find()
+        .sort({ createdAt: -1 })
+        .exec();
+      return { success: true, count: bookings.length, data: bookings };
+    } catch (error) {
+      this.logger.error('Failed to get all flight bookings', error?.message);
+      return { success: false, data: [] };
     }
   }
 }

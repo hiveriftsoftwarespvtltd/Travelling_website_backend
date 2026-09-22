@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, Req, UseGuards } from '@nestjs/common';
 import { FlightService } from './flight.service';
 import { FlightSearchDto } from './dto/flight-search.dto';
 import type { Request } from 'express';
@@ -162,5 +162,11 @@ export class FlightController {
   async getCancellationByBooking(@Body() reqBody: any, @Req() req: Request) {
     const endUserIp = this.getValidIp(req);
     return this.flightService.getCancellationByBooking(reqBody, endUserIp);
+  }
+
+  @Get('admin/all-bookings')
+  @UseGuards(JwtAuthGuard)
+  async getAllFlightBookings() {
+    return this.flightService.getAllFlightBookings();
   }
 }

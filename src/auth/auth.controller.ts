@@ -3,6 +3,8 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
+  Req,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -57,6 +59,19 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() resetDto: ResetPasswordDto) {
     return this.authService.resetPassword(resetDto);
+  }
+
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(@Req() req: any, @Body() updateDto: any) {
+    return this.authService.updateProfile(req.user.userId, updateDto);
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async changePassword(@Req() req: any, @Body() changePassDto: any) {
+    return this.authService.changePassword(req.user.userId, changePassDto);
   }
 
   @Get('users')

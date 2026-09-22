@@ -45,6 +45,7 @@ export class PaymentService {
         currency: order.currency,
         receipt: order.receipt,
         keyId: this.KEY_ID, // Return key_id to frontend for Razorpay checkout
+        key: this.KEY_ID,
       };
     } catch (error) {
       throw new HttpException(

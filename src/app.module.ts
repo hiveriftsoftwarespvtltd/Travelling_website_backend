@@ -21,6 +21,8 @@ import { LeadModule } from './lead/lead.module';
 import { NewsletterModule } from './newsletter/newsletter.module';
 import { ContactEnquiryModule } from './contact-enquiry/contact-enquiry.module';
 import { SettingsModule } from './settings/settings.module';
+import { OfferModule } from './offer/offer.module';
+import { FlightPricingModule } from './flight-pricing/flight-pricing.module';
 
 @Module({
   imports: [
@@ -62,6 +64,8 @@ import { SettingsModule } from './settings/settings.module';
     NewsletterModule,
     ContactEnquiryModule,
     SettingsModule,
+    OfferModule,
+    FlightPricingModule,
   ],
 })
 export class AppModule {}

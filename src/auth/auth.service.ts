@@ -246,4 +246,42 @@ export class AuthService implements OnModuleInit {
       .find({}, { password: 0, otp: 0, otpExpiry: 0 })
       .exec();
   }
+
+  async updateProfile(userId: string, updateDto: { firstName?: string; lastName?: string; mobile?: string }) {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    if (updateDto.firstName !== undefined) user.firstName = updateDto.firstName;
+    if (updateDto.lastName !== undefined) user.lastName = updateDto.lastName;
+    if (updateDto.mobile !== undefined) user.mobile = updateDto.mobile;
+    await user.save();
+    return {
+      success: true,
+      message: 'Profile updated successfully',
+      user: {
+        _id: user.id,
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        mobile: user.mobile,
+        role: user.role,
+      },
+    };
+  }
+
+  async changePassword(userId: string, changePassDto: { currentPassword: string; newPassword: string }) {
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    const isMatch = await bcrypt.compare(changePassDto.currentPassword, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Incorrect current password');
+    }
+    user.password = await bcrypt.hash(changePassDto.newPassword, 10);
+    await user.save();
+    return { success: true, message: 'Password changed successfully' };
+  }
 }

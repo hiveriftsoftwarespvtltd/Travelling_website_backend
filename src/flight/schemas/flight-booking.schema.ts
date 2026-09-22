@@ -27,6 +27,9 @@ export class FlightBooking extends Document {
   @Prop({ type: SchemaTypes.Mixed })
   ssrDetails: any; // Seats, Meals, Baggage (if kept separate, or inside passengers)
 
+  @Prop({ default: 0 })
+  agencyMarkup: number; // The agency markup profit earned on this booking
+
   @Prop({ index: true })
   userId: string; // The MongoDB User ID of the person who booked this
 

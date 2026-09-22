@@ -40,6 +40,23 @@ export class Settings {
 
   @Prop({ required: false, default: '' })
   googleAnalyticsCode: string;
+
+  // Flight Markup Configuration
+  @Prop({ required: false, default: 'fixed' })
+  flightDomesticMarkupType: string; // 'fixed' | 'percentage'
+
+  @Prop({ required: false, default: 0 })
+  flightDomesticMarkupValue: number;
+
+  @Prop({ required: false, default: 'fixed' })
+  flightInternationalMarkupType: string; // 'fixed' | 'percentage'
+
+  @Prop({ required: false, default: 0 })
+  flightInternationalMarkupValue: number;
+
+  // Promotional Offers & Flash Deals
+  @Prop({ type: Array, default: [] })
+  offers: any[];
 }
 
 export const SettingsSchema = SchemaFactory.createForClass(Settings);
