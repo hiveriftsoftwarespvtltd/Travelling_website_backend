@@ -53,6 +53,7 @@ uploads/
 data/
 *.xlsx
 *.csv
+*.zip
 search.json
 
 # ===============================

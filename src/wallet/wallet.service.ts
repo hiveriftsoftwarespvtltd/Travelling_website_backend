@@ -1,14 +1,34 @@
 import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import axios from 'axios';
 
+function normalizeTboUrl(
+  baseUrl: string | undefined,
+  defaultBase: string,
+  endpoint: string,
+): string {
+  let base = (baseUrl || defaultBase).trim().replace(/\/+$/, '');
+  if (base.toLowerCase().endsWith(`/${endpoint.toLowerCase()}`)) {
+    return base;
+  }
+  if (!base.toLowerCase().endsWith('/rest')) {
+    base = `${base}/rest`;
+  }
+  return `${base}/${endpoint}`;
+}
+
 const getAuthUrl = () =>
-  process.env.TBO_AUTH_BASE_URL
-    ? `${process.env.TBO_AUTH_BASE_URL}/Authenticate`
-    : 'http://Sharedapi.tektravels.com/SharedData.svc/rest/Authenticate';
+  normalizeTboUrl(
+    process.env.TBO_AUTH_BASE_URL,
+    'http://Sharedapi.tektravels.com/SharedData.svc/rest',
+    'Authenticate',
+  );
+
 const getBalanceUrl = () =>
-  process.env.TBO_AUTH_BASE_URL
-    ? `${process.env.TBO_AUTH_BASE_URL}/GetAgencyBalance`
-    : 'http://Sharedapi.tektravels.com/SharedData.svc/rest/GetAgencyBalance';
+  normalizeTboUrl(
+    process.env.TBO_AUTH_BASE_URL,
+    'http://Sharedapi.tektravels.com/SharedData.svc/rest',
+    'GetAgencyBalance',
+  );
 
 const getAuthCredentials = () => ({
   ClientId: process.env.TBO_CLIENT_ID || 'ApiIntegrationNew',

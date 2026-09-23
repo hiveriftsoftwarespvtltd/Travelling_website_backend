@@ -63,7 +63,7 @@ export class UploadController {
     const baseUrl =
       process.env.SERVER_BASE_URL ||
       process.env.BACKEND_URL ||
-      'http://localhost:8009';
+      'https://jiyolifetravel.com/jiyolife_api';
     const fileUrl = `${baseUrl.replace(/\/$/, '')}/uploads/${file.filename}`;
     return { url: fileUrl };
   }

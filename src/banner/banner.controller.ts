@@ -5,7 +5,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { UpdateBannersDto } from './dto/banner.dto';
 
-@Controller('banner')
+@Controller(['banner', 'banners'])
 export class BannerController {
   constructor(private readonly bannerService: BannerService) {}
 

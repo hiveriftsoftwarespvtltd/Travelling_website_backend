@@ -8,12 +8,13 @@ export class HotelController {
   constructor(private readonly hotelService: HotelService) {}
 
   private getValidIp(req: Request): string {
+    const defaultIp = process.env.END_USER_IP || '68.178.170.69';
     const rawIp =
       (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
       req.socket.remoteAddress ||
-      '103.98.38.139';
-    // TBO DB column for IP is narrow — fallback to IPv4 for IPv6 addresses
-    if (rawIp.includes(':')) return '103.98.38.139';
+      defaultIp;
+    // TBO DB column for IP is narrow — fallback to IPv4 for IPv6 or localhost
+    if (rawIp.includes(':') || rawIp === '127.0.0.1') return defaultIp;
     return rawIp;
   }
 

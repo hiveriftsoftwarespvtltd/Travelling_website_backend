@@ -29,7 +29,10 @@ import { FlightPricingModule } from './flight-pricing/flight-pricing.module';
     // Configure global config module
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath:
+        process.env.NODE_ENV === 'production'
+          ? ['.env.production', '.env']
+          : ['.env.local', '.env'],
     }),
 
     // Connect to MongoDB Atlas using mongoose

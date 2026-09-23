@@ -11,11 +11,12 @@ export class WalletController {
   constructor(private readonly walletService: WalletService) {}
 
   private getValidIp(req: Request): string {
+    const defaultIp = process.env.END_USER_IP || '68.178.170.69';
     const rawIp =
       (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
       req.socket.remoteAddress ||
-      '192.168.11.120';
-    if (rawIp.includes(':')) return '192.168.11.120';
+      defaultIp;
+    if (rawIp.includes(':') || rawIp === '127.0.0.1') return defaultIp;
     return rawIp;
   }
 

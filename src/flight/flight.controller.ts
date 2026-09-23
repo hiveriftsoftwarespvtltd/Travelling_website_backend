@@ -9,13 +9,14 @@ export class FlightController {
   constructor(private readonly flightService: FlightService) {}
 
   private getValidIp(req: Request): string {
+    const defaultIp = process.env.END_USER_IP || '68.178.170.69';
     const rawIp =
       (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
       req.socket.remoteAddress ||
-      '103.98.38.139';
-    // TBO sandbox DB column for IP is too small for IPv6. Fallback to IPv4.
-    if (rawIp.includes(':')) {
-      return '103.98.38.139';
+      defaultIp;
+    // TBO sandbox/live DB column for IP is narrow — fallback to IPv4 for IPv6 or localhost
+    if (rawIp.includes(':') || rawIp === '127.0.0.1') {
+      return defaultIp;
     }
     return rawIp;
   }

@@ -34,53 +34,130 @@ const tboClient = axios.create({
   },
   timeout: 45000,
 });
+// ─── TBO URL Normalizer Helper ─────────────────────────────────────────
+function normalizeTboUrl(
+  baseUrl: string | undefined,
+  defaultBase: string,
+  endpoint: string,
+): string {
+  let base = (baseUrl || defaultBase).trim().replace(/\/+$/, '');
+  // If the user provided the full URL ending with the endpoint name
+  if (base.toLowerCase().endsWith(`/${endpoint.toLowerCase()}`)) {
+    return base;
+  }
+  // If base does not end with /rest, ensure /rest is included
+  if (!base.toLowerCase().endsWith('/rest')) {
+    base = `${base}/rest`;
+  }
+  return `${base}/${endpoint}`;
+}
 
 // ─── TBO API Endpoints & Credentials ──────────────────────────────
 const TBO = {
   get AUTH_URL() {
-    return `${process.env.TBO_AUTH_BASE_URL || 'http://Sharedapi.tektravels.com/SharedData.svc/rest'}/Authenticate`;
+    return normalizeTboUrl(
+      process.env.TBO_AUTH_BASE_URL,
+      'http://Sharedapi.tektravels.com/SharedData.svc/rest',
+      'Authenticate',
+    );
   },
   get SEARCH_URL() {
-    return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/Search`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_SEARCH_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'Search',
+    );
   },
   get FARE_UPSELL_URL() {
-    return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/FareUpsell`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_SEARCH_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'FareUpsell',
+    );
   },
   get FARE_RULE_URL() {
-    return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/FareRule`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_SEARCH_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'FareRule',
+    );
   },
   get FARE_QUOTE_URL() {
-    return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/FareQuote`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_SEARCH_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'FareQuote',
+    );
   },
   get SSR_URL() {
-    return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/SSR`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_SEARCH_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'SSR',
+    );
   },
   get BOOK_URL() {
-    return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/Book`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_BOOK_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'Book',
+    );
   },
   get TICKET_URL() {
-    return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/Ticket`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_BOOK_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'Ticket',
+    );
   },
   get GET_BOOKING_DETAILS_URL() {
-    return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/GetBookingDetails`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_BOOK_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'GetBookingDetails',
+    );
   },
   get RELEASE_PNR_URL() {
-    return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/ReleasePNRRequest`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_BOOK_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'ReleasePNRRequest',
+    );
   },
   get SEND_CHANGE_REQUEST_URL() {
-    return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/SendChangeRequest`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_BOOK_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'SendChangeRequest',
+    );
   },
   get GET_CHANGE_REQUEST_STATUS_URL() {
-    return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/GetChangeRequestStatus`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_BOOK_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'GetChangeRequestStatus',
+    );
   },
   get GET_CANCELLATION_CHARGES_URL() {
-    return `${process.env.TBO_AIR_BOOK_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/GetCancellationCharges`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_BOOK_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'GetCancellationCharges',
+    );
   },
   get CALENDAR_URL() {
-    return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/GetCalendarFare`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_SEARCH_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'GetCalendarFare',
+    );
   },
   get UPDATE_CALENDAR_URL() {
-    return `${process.env.TBO_AIR_SEARCH_BASE_URL || 'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest'}/UpdateCalendarFareOfDay`;
+    return normalizeTboUrl(
+      process.env.TBO_AIR_SEARCH_BASE_URL,
+      'http://api.tektravels.com/BookingEngineService_Air/AirService.svc/rest',
+      'UpdateCalendarFareOfDay',
+    );
   },
   get AUTH_CREDENTIALS() {
     return {
@@ -332,6 +409,7 @@ export class FlightService implements OnApplicationBootstrap {
     }
 
     this.logger.log(`🔐 Fetching new TBO auth token for IP: ${endUserIp}`);
+    this.logger.log(`🔗 Target Auth URL: ${TBO.AUTH_URL}`);
     this.logger.log(
       `🔑 Using TBO Credentials: ClientId=${TBO.AUTH_CREDENTIALS.ClientId}, UserName=${TBO.AUTH_CREDENTIALS.UserName}`,
     );
@@ -368,7 +446,11 @@ export class FlightService implements OnApplicationBootstrap {
       return this.cachedToken as string;
     } catch (error: any) {
       if (error instanceof HttpException) throw error;
-      this.logger.error('❌ TBO Auth API error', error?.message);
+      const respData = error?.response?.data;
+      const detailStr = respData ? (typeof respData === 'object' ? JSON.stringify(respData) : String(respData)) : '';
+      this.logger.error(
+        `❌ TBO Auth API error [URL: ${TBO.AUTH_URL}]: ${error?.message} ${detailStr ? ' | ' + detailStr : ''}`,
+      );
       throw new HttpException(
         'Failed to authenticate with TBO flight API',
         HttpStatus.BAD_GATEWAY,
