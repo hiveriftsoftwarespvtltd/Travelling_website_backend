@@ -53,13 +53,14 @@ const STATIC_TBO_HOTEL_CODES = `${STATIC_BASE_URL}/TBOHotelCodeList`;
 // B2B Auth credentials (used for Authenticate → TokenId flow)
 const AUTH_CREDENTIALS = {
   get ClientId() {
-    return process.env.TBO_CLIENT_ID || 'ApiIntegrationNew';
+    const raw = process.env.TBO_CLIENT_ID || 'ApiIntegrationNew';
+    return raw.toLowerCase() === 'tboprod' ? 'TBOPROD' : raw.trim();
   },
   get UserName() {
-    return process.env.TBO_USERNAME || 'Lifejiyo';
+    return (process.env.TBO_USERNAME || 'Lifejiyo').trim();
   },
   get Password() {
-    return process.env.TBO_PASSWORD || 'Lifejiyo@123';
+    return (process.env.TBO_PASSWORD || 'Lifejiyo@123').trim();
   },
 };
 
@@ -121,10 +122,11 @@ export class HotelService implements OnModuleInit {
     this.logger.log(
       `🔐 Fetching new TBO auth token for Hotel API | IP: ${endUserIp}`,
     );
+    const authIp = process.env.END_USER_IP || '68.178.170.69';
     try {
       const response = await axios.post(
         AUTH_URL,
-        { ...AUTH_CREDENTIALS, EndUserIp: endUserIp },
+        { ...AUTH_CREDENTIALS, EndUserIp: authIp },
         { headers: { 'Content-Type': 'application/json' }, timeout: 15000 },
       );
 

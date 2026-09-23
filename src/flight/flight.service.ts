@@ -160,10 +160,11 @@ const TBO = {
     );
   },
   get AUTH_CREDENTIALS() {
+    const rawClientId = process.env.TBO_CLIENT_ID || 'ApiIntegrationNew';
     return {
-      ClientId: process.env.TBO_CLIENT_ID || 'ApiIntegrationNew',
-      UserName: process.env.TBO_USERNAME || 'Lifejiyo',
-      Password: process.env.TBO_PASSWORD || 'Lifejiyo@123',
+      ClientId: rawClientId.toLowerCase() === 'tboprod' ? 'TBOPROD' : rawClientId.trim(),
+      UserName: (process.env.TBO_USERNAME || 'Lifejiyo').trim(),
+      Password: (process.env.TBO_PASSWORD || 'Lifejiyo@123').trim(),
     };
   },
 };
@@ -408,7 +409,8 @@ export class FlightService implements OnApplicationBootstrap {
       return this.cachedToken;
     }
 
-    this.logger.log(`🔐 Fetching new TBO auth token for IP: ${endUserIp}`);
+    const authIp = process.env.END_USER_IP || '68.178.170.69';
+    this.logger.log(`🔐 Fetching new TBO auth token for IP: ${authIp}`);
     this.logger.log(`🔗 Target Auth URL: ${TBO.AUTH_URL}`);
     this.logger.log(
       `🔑 Using TBO Credentials: ClientId=${TBO.AUTH_CREDENTIALS.ClientId}, UserName=${TBO.AUTH_CREDENTIALS.UserName}`,
@@ -418,7 +420,7 @@ export class FlightService implements OnApplicationBootstrap {
         TBO.AUTH_URL,
         {
           ...TBO.AUTH_CREDENTIALS,
-          EndUserIp: endUserIp, // Real user IP from request
+          EndUserIp: authIp,
         },
         {
           headers: { 'Content-Type': 'application/json' },
