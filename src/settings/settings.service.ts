@@ -15,10 +15,10 @@ export class SettingsService implements OnModuleInit {
       console.log('Seeding default website settings...');
       await this.settingsModel.create({
         companyName: 'Jiyo Life Travels',
-        phone: '+91-92892 28555',
+        phone: '+91 79824 26916',
         email: 'info@jiyolifetravels.com',
         address: 'Tower 21 Pocket 14, Sector 24, Rohini, Delhi, India',
-        whatsappNumber: '+91-92892 28555',
+        whatsappNumber: '+91 79824 26916',
         facebookUrl: 'https://www.facebook.com/share/1asni32Bye/',
         instagramUrl: 'https://www.instagram.com/jiyolife_travel/',
         youtubeUrl: 'https://youtube.com',
@@ -33,6 +33,10 @@ export class SettingsService implements OnModuleInit {
         flightInternationalMarkupValue: 0,
       });
       console.log('Default settings seeded successfully!');
+    } else {
+      existing.phone = '+91 79824 26916';
+      existing.whatsappNumber = '+91 79824 26916';
+      await existing.save();
     }
   }
 
