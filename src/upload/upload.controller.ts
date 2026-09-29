@@ -63,7 +63,7 @@ export class UploadController {
     const baseUrl =
       process.env.SERVER_BASE_URL ||
       process.env.BACKEND_URL ||
-      'https://jiyolifetravel.com/jiyolife_api';
+      'https://api.jiyolifetravel.com';
     const fileUrl = `${baseUrl.replace(/\/$/, '')}/uploads/${file.filename}`;
     return { url: fileUrl };
   }
