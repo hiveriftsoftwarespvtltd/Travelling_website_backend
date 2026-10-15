@@ -4,15 +4,11 @@
       "ErrorCode": 0,
       "ErrorMessage": ""
     },
+    "IncludeFareRulesInUpsell": false,
     "ResponseStatus": 1,
     "Results": [
       {
-        "FareInclusions": [
-          "Cabin Baggage Included",
-          "Check-In baggage Included",
-          "Cancellation fees apply",
-          "Reissue fees apply"
-        ],
+        "FareInclusions": [],
         "FirstNameFormat": null,
         "IsBookableIfSeatNotAvailable": false,
         "IsExclusiveFare": false,
@@ -22,7 +18,7 @@
         "LastNameFormat": null,
         "NonStopFirstRanking": 1,
         "SmartChoiceRanking": 1,
-        "ResultIndex": "OB18[TBO]ZLFir+Eiooh1hN89PFzzKf2hykxyHhnxCM1kH19cY4VZVtw8ov6H7m97uvHVswSJZJj9XHDOnq8KKgnlxoFzH2aZb6ZuhtxNNi6CstEsdZWlOWKuMLo1a87mL3us74xsDPP/YRcQdeV4aYBMk58liicZdbUd6iZhdsjS9zQF6u6K7Gz8JPgR17lfV5OQl2McZq7+mE6PKQ9UoxzU1uacAgnsOF+fPcluA8U8DWVUcWanDd2W24VdPnic+QG5x5eejJVTQtKw62i5m2gW2mI06ar3fkYpzpGcxIZKb9WYODYVmeIoxX7gQJC6e742+YGSeINgUClPyEGQz69sS95vZu270iYYCLqDrNymZRCHWU9vyLzzbdNRfI44T86jaIVKViPT66z8bVnS/ZH2L8yqAswj7DGW+ABoEdWLYBCAWLmrOFNdiPRmsQ1KYVB82L1PfMX9WN01/vU2D9WvqSx53aRiqT/v+lsyc9eLJL6lu8vQHanjLHpVbGsnYbRHbYok7b2LXcPFsgg5kSVN43AJo80Vu4s733s5E+XnK4RhzrlKI61+4lPfC5xLAiU6otVmMVEzNWlSOQ3+OVTTmw22qYxILPFG4LPRBcmyeZg3sVlc0mQ9upvNGZNEs+AFSeCXl+8b2CqgkiUECp2Dk0xddzr2JkWVGPzLXn1BQHJKOo6j3TrTA/2/9knOjYWgrjdWe6EiknSiPjXE8+8TCT931qRBWA4XaGLcVEOPQqGiK4lmY+Q9T2M89l+gBjbKuUGQcwHkx4ffBAwPQWC0klrLYGDi2JxlTVx8AFKjma4NZ9LVCP6Sdsa8jIoArPWQJR/PQstztvXlak95BVS6I4N4kbRd98f4TSyD7iZkhec0AFB0PicPokCfs1ng5M7qyy0MKV0HySE4sZvKdHlwgngooFp8FhUfNF84JaYZgJGkYw1PR1oHaaYZQp9JcrRDV0OSGvSNAJsKHAqiS5RptLlx7L+3LbVZKMsun53oxuO236iAPv5P0ZzpCxBtUXKLN/cLqedvnZ17Y+8jJLfy0dRuSrPkD0m5njbPkz6ctLhm5Z8+kEShno5v7wm2t26KatV/Ve7cNxieXrJNLQiBF9I3xYGsCpsEl5gZXunKmp7s1pML5FGjzLiWlJKOvIy0GjNzfQ+Oi9BUlQ/amJBkpPnIlFFoUmB4X7+BqO5kK9xITMoOERoVWFzn/qvkFX7ZXQrgDHcTuQzqkFKsqIhba3PaUdIRpWW6EyG9u3VfAk37NoHIev3MO+NawCaiQVh2xJLk",
+        "ResultIndex": "OB3[TBO]fqgvzwimH0teLRb3grlY6JEvj1/Vs76BR0pD5dmY3t8CMIhlJbQvBus4NE2p10xqwbmo/RVb3SS2K5THISEGSUUfubSXRJjt7Ulx0u3vbQC7WqyBnlvouPqmN91rlgymNutaCTieWnf4ediFOIoDMSPVUZUvEuII/V8ts9FIybRpQ2edozMjXWBhjyskamcpwXesTiSQhh4H3UYO7pMBKuw6rEitwtAhhjZLq91M6q4rDzKZry0iDjR/c7v+aYNQGaHh9aGf2bEJyfqjps5FwskoHIBWVOm+FMItkT8FaUCKOdcRJOJqAKRRUQRJnNqgjGxeRhMfzbEzi1A8tbNkXEVBQJ4v2XCSDHFHjuS+xVjU/K9h/3eZ20Nsw45ScwTx60mCBTPetGze04b5drHanUowrY7BwKcEcBGCHACRjcHL91t9Ui7yRmXP8k0ZfrTfg1UNapNemkuMjpXsnrhcsQJE1mLBnIUvYSAnaASjMgGEO9bjo0M44he9UFD1Idru+tlDd8ybaS3KdNI8K7yJRQZkLSTO5Liecei/WmY4WvVrllo6icDLHxYN8v05Vz5GZq9T3BhSh4Jqj6NWCUI8W3hWpRRyzznRtpc6MKXX9JMBoEwo611oKsejOw1m+IbAs9vJfZNSTUfxSQn/U9T3cHunTDGDzMV6DIOoR8KhEhd6vM6SVJQ7JA0SUrMns2U1mIlhFNYRpUlhXPTnLlHtGniW3Hqkomt9Tx/BXsl5hJX2AL7TC7rgFxVLRSWTxlnnBEClpGgcnQKseQxgxJv0t6MYxoXe4sTh4ZO5lAnGkrVRUgIPk9KWpP7ZztDwQa1Q+lHksTudSdTVbiVjCLWMpIR1c60yxcMBj2F4Gakd1lpoLHidQ1XPLlRFQFBAxTf6FH0mGr8DGYU7IOVy41xCOh+sfXYjCrZCfEoYzLzOXJAfSKBo56m/u8mKtM/DmjSkXyN6IEER9Z6xNXlFT+XCD0CFv6uh7Ge4inBpLhYO6HZRZHciVN5bjRbAY6zg5Jo1XRj2t8R5FWpdlD9BMzlldx7HvhVIkvTKVGvLYNV8oQdDl1kLMMRhm01ydZbzBSk0Rx470RPH/c/0kKzJu3p6qYb8U5n4GUWKqwgWk9Mr+aZ51lOm1pNx2syI5T5F95ma",
         "Source": 14,
         "IsLCC": true,
         "IsRefundable": true,
@@ -41,8 +37,8 @@
           "DCFARAmount": 0,
           "ServiceFeeDisplayType": 0,
           "Currency": "INR",
-          "BaseFare": 3387,
-          "Tax": 1570,
+          "BaseFare": 3350,
+          "Tax": 1826,
           "TaxBreakup": [
             {
               "key": "K3",
@@ -73,11 +69,11 @@
             }
           ],
           "Discount": 0,
-          "PublishedFare": 5311,
+          "PublishedFare": 5530,
           "CommissionEarned": 0,
           "PLBEarned": 0,
           "IncentiveEarned": 0,
-          "OfferedFare": 5311,
+          "OfferedFare": 5530,
           "TdsOnCommission": 0,
           "TdsOnPLB": 0,
           "TdsOnIncentive": 0,
@@ -134,8 +130,8 @@
             "Currency": "INR",
             "PassengerType": 1,
             "PassengerCount": 1,
-            "BaseFare": 3387,
-            "Tax": 1570,
+            "BaseFare": 3350,
+            "Tax": 1826,
             "TransactionFee": 0,
             "YQTax": 0,
             "TaxBreakUp": null,
@@ -151,14 +147,14 @@
               "Baggage": "15 KG",
               "CabinBaggage": "7 KG",
               "CabinClass": 2,
-              "SupplierFareClass": "Value",
+              "SupplierFareClass": "Promo",
               "TripIndicator": 1,
               "SegmentIndicator": 1,
               "Airline": {
                 "AirlineCode": "IX",
                 "AirlineName": "Air India Express",
-                "FlightNumber": "1001",
-                "FareClass": "KC",
+                "FlightNumber": "1059",
+                "FareClass": "XT",
                 "OperatingCarrier": ""
               },
               "Origin": {
@@ -171,25 +167,82 @@
                   "CountryCode": "IN",
                   "CountryName": "India"
                 },
-                "DepTime": "2026-09-25T09:00:00"
+                "DepTime": "2026-10-23T14:10:00"
               },
               "Destination": {
                 "Airport": {
-                  "AirportCode": "IXB",
-                  "AirportName": "Bagdogra",
-                  "Terminal": "",
-                  "CityCode": "IXB",
-                  "CityName": "Bagdogra",
+                  "AirportCode": "BBI",
+                  "AirportName": "Biju Patnaik International Airport",
+                  "Terminal": "1",
+                  "CityCode": "BBI",
+                  "CityName": "Bhubaneshwar",
                   "CountryCode": "IN",
                   "CountryName": "India"
                 },
-                "ArrTime": "2026-09-25T11:10:00"
+                "ArrTime": "2026-10-23T16:25:00"
               },
-              "Duration": 130,
+              "Duration": 135,
               "GroundTime": 0,
               "Mile": 0,
               "StopOver": false,
               "FlightInfoIndex": "1",
+              "StopPoint": "",
+              "StopPointArrivalTime": "0001-01-01T00:00:00",
+              "StopPointDepartureTime": "0001-01-01T00:00:00",
+              "Craft": "32N",
+              "Remark": null,
+              "IsETicketEligible": true,
+              "FlightStatus": "Confirmed",
+              "Status": "",
+              "FareClassification": {
+                "Color": "rgb(252,230,201)",
+                "Type": "Promo"
+              }
+            },
+            {
+              "Baggage": "15 KG",
+              "CabinBaggage": "7 KG",
+              "CabinClass": 2,
+              "SupplierFareClass": "Promo",
+              "TripIndicator": 1,
+              "SegmentIndicator": 2,
+              "Airline": {
+                "AirlineCode": "IX",
+                "AirlineName": "Air India Express",
+                "FlightNumber": "1025",
+                "FareClass": "XT",
+                "OperatingCarrier": ""
+              },
+              "Origin": {
+                "Airport": {
+                  "AirportCode": "BBI",
+                  "AirportName": "Biju Patnaik International Airport",
+                  "Terminal": "1",
+                  "CityCode": "BBI",
+                  "CityName": "Bhubaneshwar",
+                  "CountryCode": "IN",
+                  "CountryName": "India"
+                },
+                "DepTime": "2026-10-23T20:30:00"
+              },
+              "Destination": {
+                "Airport": {
+                  "AirportCode": "BOM",
+                  "AirportName": "Chhatrapati Shivaji International Airport",
+                  "Terminal": "2",
+                  "CityCode": "BOM",
+                  "CityName": "Mumbai",
+                  "CountryCode": "IN",
+                  "CountryName": "India"
+                },
+                "ArrTime": "2026-10-23T23:05:00"
+              },
+              "AccumulatedDuration": 535,
+              "Duration": 155,
+              "GroundTime": 245,
+              "Mile": 0,
+              "StopOver": false,
+              "FlightInfoIndex": "2",
               "StopPoint": "",
               "StopPointArrivalTime": "0001-01-01T00:00:00",
               "StopPointDepartureTime": "0001-01-01T00:00:00",
@@ -199,65 +252,8 @@
               "FlightStatus": "Confirmed",
               "Status": "",
               "FareClassification": {
-                "Color": "rgb(255,213,128)",
-                "Type": "Value"
-              }
-            },
-            {
-              "Baggage": "15 KG",
-              "CabinBaggage": "7 KG",
-              "CabinClass": 2,
-              "SupplierFareClass": "Value",
-              "TripIndicator": 1,
-              "SegmentIndicator": 2,
-              "Airline": {
-                "AirlineCode": "IX",
-                "AirlineName": "Air India Express",
-                "FlightNumber": "2963",
-                "FareClass": "KC",
-                "OperatingCarrier": ""
-              },
-              "Origin": {
-                "Airport": {
-                  "AirportCode": "IXB",
-                  "AirportName": "Bagdogra",
-                  "Terminal": "",
-                  "CityCode": "IXB",
-                  "CityName": "Bagdogra",
-                  "CountryCode": "IN",
-                  "CountryName": "India"
-                },
-                "DepTime": "2026-09-25T12:30:00"
-              },
-              "Destination": {
-                "Airport": {
-                  "AirportCode": "BLR",
-                  "AirportName": "Kempegowda International Airport",
-                  "Terminal": "2",
-                  "CityCode": "BLR",
-                  "CityName": "Bangalore",
-                  "CountryCode": "IN",
-                  "CountryName": "India"
-                },
-                "ArrTime": "2026-09-25T15:25:00"
-              },
-              "AccumulatedDuration": 385,
-              "Duration": 175,
-              "GroundTime": 80,
-              "Mile": 0,
-              "StopOver": false,
-              "FlightInfoIndex": "2",
-              "StopPoint": "",
-              "StopPointArrivalTime": "0001-01-01T00:00:00",
-              "StopPointDepartureTime": "0001-01-01T00:00:00",
-              "Craft": "738",
-              "Remark": null,
-              "IsETicketEligible": true,
-              "FlightStatus": "Confirmed",
-              "Status": "",
-              "FareClassification": {
-                "Color": "rgb(255,213,128)",
-                "Type": "Value"
+                "Color": "rgb(252,230,201)",
+                "Type": "Promo"
               }
             }
           ]
@@ -267,79 +263,33 @@
         "FareRules": [
           {
             "Origin": "DEL",
-            "Destination": "BLR",
+            "Destination": "BBI",
             "Airline": "IX",
-            "FareBasisCode": "KNRA000",
-            "FareRuleDetail": "The FareBasisCode is: KNRA000<br /><span><b>IX-I5 Domestic Fare Rules</b></span><br /><br /><table border=\"1\"><tbody><tr><td rowspan=\"2\"><b>Change/Cancel/Meal/Seat/Baggage</b></td><td rowspan=\"2\"></td><td style=\"text-align:center\"><b>Fare Type</b></td></tr><tr><th width=\"200px;\">Xpress Value (EC)</th></tr><tr><td rowspan=\"4\">Baggage</td><td>Check-in Baggage<br />(Adult/Child)</td><td style=\"text-align:center\">15 KG (1 piece)</td></tr><tr><td>Check-in Baggage<br />(Infant)</td><td style=\"text-align:center\">Nil</td></tr><tr><td>Check-in Baggage (Student Fare)</td><td style=\"text-align:center\">25 KG (1 piece)</td></tr><tr><td>Cabin Baggage<br />(Not applicable for Infant)</td><td style=\"text-align:center\">7 KG</td></tr><tr><td>Meal/Seat</td><td></td><td style=\"text-align:center\">Chargeable</td></tr><tr><td rowspan=\"2\" width=\"200px;\">Change Fee <br><b>(Fare Difference is also applicable)</b><br />Per Person Per Sector</b></td><td>0 to 2 Hours prior to the departure</td><th>Not Allowed</th></tr><tr><td>Upto 2 hrs prior to the departure</td><td style=\"text-align:center\">INR 3000/-</td></tr></tr><tr><td rowspan=\"2\" width=\"200px;\">Cancellation Fee<br><b>or Airfare charges (Whichever is lower)</b><br />Per Person Per Sector</td><td>0 to 2 Hours prior to the departure</td><th>Not Allowed</th></tr><tr><td>Upto 2 hrs prior to the departure</td><td style=\"text-align:center\">INR 3500/-</td></tr></tbody></table><br /><b>Note</b>:<br /><ol><li>Subject to change without prior notice.</li><li>We should receive the request at least 4 hours prior to Airline Fare Rules Policy.</li></ol><br /><b>Note: Any booking change/Cancellation is not allowed within 2 hrs from the Departure irrespective of the product book</b><br /><br /><br/> <br/>",
-            "FareRestriction": null,
-            "FareInclusions": [
-              "Cabin Baggage Included",
-              "Check-In baggage Included",
-              "Cancellation fees apply",
-              "Reissue fees apply"
-            ],
-            "MiniFareRules": {
-              "Currency": null,
-              "Rules": []
-            }
+            "FareBasisCode": "XCBA000",
+            "FareRuleDetail": "",
+            "FareRestriction": "",
+            "FareFamilyCode": "",
+            "FareRuleIndex": ""
+          },
+          {
+            "Origin": "BBI",
+            "Destination": "BOM",
+            "Airline": "IX",
+            "FareBasisCode": "XCBA000",
+            "FareRuleDetail": "",
+            "FareRestriction": "",
+            "FareFamilyCode": "",
+            "FareRuleIndex": ""
           }
         ],
         "AirlineCode": "IX",
-        "MiniFareRules": [
-          [
-            {
-              "CFARExcludedDetails": "",
-              "JourneyPoints": "DEL-IXB-BLR",
-              "Type": "Reissue",
-              "From": "2",
-              "To": "",
-              "Unit": "HOURS",
-              "Details": "INR 3000",
-              "OnlineReissueAllowed": false,
-              "OnlineRefundAllowed": false
-            },
-            {
-              "CFARExcludedDetails": "",
-              "JourneyPoints": "DEL-IXB-BLR",
-              "Type": "Cancellation",
-              "From": "0",
-              "To": "2",
-              "Unit": "HOURS",
-              "Details": "100%",
-              "OnlineReissueAllowed": false,
-              "OnlineRefundAllowed": false
-            },
-            {
-              "CFARExcludedDetails": "",
-              "JourneyPoints": "DEL-IXB-BLR",
-              "Type": "Cancellation",
-              "From": "2",
-              "To": "",
-              "Unit": "HOURS",
-              "Details": "INR 3500",
-              "OnlineReissueAllowed": false,
-              "OnlineRefundAllowed": false
-            },
-            {
-              "CFARExcludedDetails": "",
-              "JourneyPoints": "DEL-IXB-BLR",
-              "Type": "Reissue",
-              "From": "0",
-              "To": "2",
-              "Unit": "HOURS",
-              "Details": "100%",
-              "OnlineReissueAllowed": false,
-              "OnlineRefundAllowed": false
-            }
-          ]
-        ],
         "ValidatingAirline": "IX",
         "FareClassification": {
-          "Color": "rgb(255,213,128)",
-          "Type": "Value"
+          "Color": "rgb(252,230,201)",
+          "Type": "Promo"
         }
       }
     ],
-    "TraceId": "031993ff-196c-4b31-928e-cdd30a3467bb"
+    "TraceId": "ae2448cf-3249-449e-8332-a73f63a86441"
   }
 }

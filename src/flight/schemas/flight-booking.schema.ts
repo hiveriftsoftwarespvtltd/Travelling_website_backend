@@ -30,6 +30,9 @@ export class FlightBooking extends Document {
   @Prop({ default: 0 })
   agencyMarkup: number; // The agency markup profit earned on this booking
 
+  @Prop({ type: SchemaTypes.Mixed, default: null })
+  competitorComparison: any;
+
   @Prop({ index: true })
   userId: string; // The MongoDB User ID of the person who booked this
 

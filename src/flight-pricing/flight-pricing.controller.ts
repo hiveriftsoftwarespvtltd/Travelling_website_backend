@@ -11,6 +11,7 @@ import {
   Request,
 } from '@nestjs/common';
 import { FlightPricingService } from './flight-pricing.service';
+import { CompetitorPricingService } from './competitor-pricing.service';
 import {
   CreatePricingRuleDto,
   UpdatePricingRuleDto,
@@ -25,7 +26,10 @@ import { Roles } from '../auth/roles.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('admin')
 export class FlightPricingController {
-  constructor(private readonly pricingService: FlightPricingService) {}
+  constructor(
+    private readonly pricingService: FlightPricingService,
+    private readonly competitorPricingService: CompetitorPricingService,
+  ) {}
 
   /**
    * GET /api/admin/flight-pricing/dashboard
@@ -102,6 +106,35 @@ export class FlightPricingController {
   }
 
   /**
+   * GET /api/admin/flight-pricing/reviews
+   * Retrieve flagged flight pricing reviews compared against MakeMyTrip
+   */
+  @Get('reviews')
+  async getReviews(
+    @Query('status') status?: string,
+    @Query('limit') limit?: number,
+  ) {
+    return this.competitorPricingService.getFlaggedReviews({ status, limit });
+  }
+
+  /**
+   * PATCH /api/admin/flight-pricing/reviews/:id/resolve
+   * Resolve a flagged flight review
+   */
+  @Patch('reviews/:id/resolve')
+  async resolveReview(
+    @Param('id') id: string,
+    @Body() body: { status: any; notes?: string },
+    @Request() req: any,
+  ) {
+    return this.competitorPricingService.resolveReview(id, {
+      status: body.status,
+      notes: body.notes,
+      user: req.user?.email || 'Admin',
+    });
+  }
+
+  /**
    * POST /api/admin/flight-pricing/calculate
    * Dedicated pricing calculator tester using the EXACT same backend calculation engine
    */
@@ -118,3 +151,4 @@ export class FlightPricingController {
     );
   }
 }
+

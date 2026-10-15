@@ -9,6 +9,7 @@ import { FlightBooking } from './schemas/flight-booking.schema';
 import { Cancellation } from './schemas/cancellation.schema';
 import { SettingsService } from '../settings/settings.service';
 import { FlightPricingService } from '../flight-pricing/flight-pricing.service';
+import { CompetitorPricingService } from '../flight-pricing/competitor-pricing.service';
 import { MarketType } from '../flight-pricing/schemas/flight-pricing-rule.schema';
 
 // ─── High-Performance Persistent Connection Pool ──────────────────
@@ -184,6 +185,7 @@ export class FlightService implements OnApplicationBootstrap {
     private cancellationModel: Model<Cancellation>,
     private readonly settingsService: SettingsService,
     private readonly flightPricingService: FlightPricingService,
+    private readonly competitorPricingService: CompetitorPricingService,
   ) {}
 
   /**
@@ -210,8 +212,23 @@ export class FlightService implements OnApplicationBootstrap {
   }
 
   /**
-   * Helper: Applies agency markup to an individual itinerary using the centralized pricing engine.
-   * Preserves supplierFare, calculates slab-based markup, clamps min/max, and formats customer fare.
+   * CENTRAL PRICING & COMPETITOR OPTIMIZATION ENGINE
+   * 
+   * Enforces:
+   * 1. Single consistent calculation:
+   *    Final Customer Price = Supplier Base Fare + Supplier Taxes + Approved Markup + Applicable Fees - Valid Discounts
+   * 2. MakeMyTrip Price Comparison & Optimization:
+   *    - Compare individual flight against equivalent MakeMyTrip flight (matching airline, flight number, route, dep time, pax, cabin, baggage, refundability).
+   *    - If our price >= MMT, optimize markup to undercut MMT wherever commercially feasible.
+   *    - Strict Margin Floor: NEVER sell below supplier cost or breach minimum commercial margin.
+   *    - If not commercially feasible: Retain compliant price and flag flight for review.
+   *    - If MMT data unavailable: Mark as UNAVAILABLE without assuming our price is lower.
+   * 3. Markup Display:
+   *    - Page 1 (Search): Clean UI, total price includes markup, NO separate markup line item.
+   *    - Page 2 (Checkout / Summary): Markup is included within the existing "Taxes and Surcharge" section.
+   *    - NO separate markup line item displayed anywhere to customer.
+   *    - Accurate internal accounting maintained for SupplierBaseFare, SupplierTax, AgencyMarkup.
+   *    - Markup is never applied twice.
    */
   private async applyMarkupToItinerary(
     itinerary: any,
@@ -233,56 +250,85 @@ export class FlightService implements OnApplicationBootstrap {
 
     const isDomestic = this.isDomesticFlight(itinerary);
     const market = isDomestic ? MarketType.DOMESTIC : MarketType.INTERNATIONAL;
-    const rawSupplierFare = Number(
-      itinerary.Fare.SupplierFare ||
-        itinerary.Fare.PublishedFare ||
-        itinerary.Fare.OfferedFare ||
-        itinerary.Fare.BaseFare ||
-        0,
-    );
 
+    // Prevent double markup if already processed (use true original supplier values)
+    const supplierBaseFare = Math.round(
+      Number(itinerary.Fare.SupplierBaseFare ?? itinerary.Fare.BaseFare) || 0,
+    );
+    const supplierTax = Math.round(
+      Number(itinerary.Fare.SupplierTax ?? itinerary.Fare.Tax) || 0,
+    );
+    const supplierOtherCharges = Math.round(
+      Number(itinerary.Fare.SupplierOtherCharges ?? itinerary.Fare.OtherCharges) || 0,
+    );
+    const totalSupplierCost = supplierBaseFare + supplierTax + supplierOtherCharges;
+
+    // Step 1: Calculate standard approved markup via active pricing rules
     const pricing = await this.flightPricingService.calculateFlightPrice(
-      rawSupplierFare,
+      totalSupplierCost,
       market,
       { paxCount: totalPax },
     );
 
-    itinerary.Fare.SupplierFare = rawSupplierFare;
-    itinerary.Fare.SupplierBaseFare = itinerary.Fare.BaseFare;
-    itinerary.Fare.AgencyMarkup = pricing.markupAmount;
+    // Step 2: Compare against MakeMyTrip & Optimize Price
+    const competitorResult = await this.competitorPricingService.compareAndOptimize(
+      itinerary,
+      market,
+      pricing.markupAmount,
+      totalPax,
+    );
+
+    const finalApprovedMarkup = competitorResult.breakdown.approvedMarkup;
+    const finalCustomerFare = competitorResult.breakdown.finalCustomerFare;
+
+    // Step 3: Maintain Accurate Internal Accounting
+    itinerary.Fare.SupplierBaseFare = supplierBaseFare;
+    itinerary.Fare.SupplierTax = supplierTax;
+    itinerary.Fare.SupplierOtherCharges = supplierOtherCharges;
+    itinerary.Fare.SupplierFare = totalSupplierCost;
+    itinerary.Fare.AgencyMarkup = finalApprovedMarkup;
     itinerary.Fare.MarkupPercentage = pricing.markupPercentage;
     itinerary.Fare.PricingRuleId = pricing.pricingRuleId;
     itinerary.Fare.IsDomestic = isDomestic;
     itinerary.Fare.MarketType = market;
-    itinerary.Fare.FinalCustomerFare = pricing.finalCustomerFare;
+    itinerary.Fare.FinalCustomerFare = finalCustomerFare;
+    itinerary.CompetitorComparison = competitorResult;
 
-    if (pricing.markupAmount > 0) {
-      itinerary.Fare.PublishedFare = pricing.finalCustomerFare;
-      itinerary.Fare.OfferedFare = pricing.finalCustomerFare;
-      if (typeof itinerary.Fare.BaseFare === 'number') {
-        itinerary.Fare.BaseFare = Math.round(itinerary.Fare.BaseFare + pricing.markupAmount);
-      }
+    // Step 4: Customer-Facing Display Structure (Markup inside Taxes & Surcharges)
+    // - BaseFare is the pure Supplier Base Fare
+    // - Tax includes Supplier Tax + Approved Markup (combined under Taxes and Surcharges)
+    // - No separate markup line item is exposed to the customer
+    itinerary.Fare.BaseFare = supplierBaseFare;
+    itinerary.Fare.Tax = supplierTax + finalApprovedMarkup;
+    itinerary.Fare.OtherCharges = supplierOtherCharges;
+    itinerary.Fare.PublishedFare = finalCustomerFare;
+    itinerary.Fare.OfferedFare = finalCustomerFare;
 
-      if (
-        Array.isArray(itinerary.FareBreakdown) &&
-        itinerary.FareBreakdown.length > 0
-      ) {
-        const payingBreakdowns = itinerary.FareBreakdown.filter(
-          (fb: any) => fb.PassengerType === 1 || fb.PassengerType === 2,
-        );
-        const totalPaying =
-          payingBreakdowns.reduce(
-            (sum: number, fb: any) => sum + (Number(fb.PassengerCount) || 1),
-            0,
-          ) || 1;
-        const markupPerPax = Math.round(pricing.markupAmount / totalPaying);
+    // Step 5: Passenger-Level Fare Breakdown Accounting
+    if (
+      Array.isArray(itinerary.FareBreakdown) &&
+      itinerary.FareBreakdown.length > 0
+    ) {
+      const payingBreakdowns = itinerary.FareBreakdown.filter(
+        (fb: any) => fb.PassengerType === 1 || fb.PassengerType === 2,
+      );
+      const totalPaying =
+        payingBreakdowns.reduce(
+          (sum: number, fb: any) => sum + (Number(fb.PassengerCount) || 1),
+          0,
+        ) || 1;
+      const markupPerPax = Math.round(finalApprovedMarkup / totalPaying);
 
-        for (const fb of payingBreakdowns) {
-          const count = Number(fb.PassengerCount) || 1;
-          const fbMarkup = markupPerPax * count;
-          fb.BaseFare = Math.round((fb.BaseFare || 0) + fbMarkup);
-          fb.AgencyMarkup = markupPerPax;
-        }
+      for (const fb of itinerary.FareBreakdown) {
+        const isPaying = fb.PassengerType === 1 || fb.PassengerType === 2;
+        const count = Number(fb.PassengerCount) || 1;
+        const paxMarkup = isPaying ? markupPerPax * count : 0;
+
+        fb.SupplierBaseFare = Math.round(Number(fb.SupplierBaseFare ?? fb.BaseFare) || 0);
+        fb.SupplierTax = Math.round(Number(fb.SupplierTax ?? fb.Tax) || 0);
+        fb.AgencyMarkup = isPaying ? markupPerPax : 0;
+        fb.BaseFare = fb.SupplierBaseFare; // Clean supplier base fare
+        fb.Tax = fb.SupplierTax + paxMarkup; // Markup embedded inside Taxes & Surcharges
       }
     }
   }
@@ -1198,12 +1244,24 @@ export class FlightService implements OnApplicationBootstrap {
         );
         if (paxMarkup > 0) {
           totalAgencyMarkup += paxMarkup;
-          if (pax.Fare && typeof pax.Fare.BaseFare === 'number') {
-            pax.Fare.BaseFare = Math.max(0, pax.Fare.BaseFare - paxMarkup);
+          if (pax.Fare) {
+            if (pax.Fare.SupplierTax !== undefined) {
+              pax.Fare.Tax = pax.Fare.SupplierTax;
+            } else if (typeof pax.Fare.Tax === 'number' && pax.Fare.Tax >= paxMarkup) {
+              pax.Fare.Tax = Math.max(0, pax.Fare.Tax - paxMarkup);
+            } else if (typeof pax.Fare.BaseFare === 'number') {
+              pax.Fare.BaseFare = Math.max(0, pax.Fare.BaseFare - paxMarkup);
+            }
+            if (pax.Fare.SupplierBaseFare !== undefined) {
+              pax.Fare.BaseFare = pax.Fare.SupplierBaseFare;
+            }
           }
         }
         if (pax.Fare) {
           delete pax.Fare.AgencyMarkup;
+          delete pax.Fare.SupplierBaseFare;
+          delete pax.Fare.SupplierTax;
+          delete pax.Fare.SupplierOtherCharges;
           delete pax.Fare.IsDomestic;
         }
         delete pax.AgencyMarkup;
@@ -1340,12 +1398,24 @@ export class FlightService implements OnApplicationBootstrap {
         );
         if (paxMarkup > 0) {
           totalAgencyMarkup += paxMarkup;
-          if (pax.Fare && typeof pax.Fare.BaseFare === 'number') {
-            pax.Fare.BaseFare = Math.max(0, pax.Fare.BaseFare - paxMarkup);
+          if (pax.Fare) {
+            if (pax.Fare.SupplierTax !== undefined) {
+              pax.Fare.Tax = pax.Fare.SupplierTax;
+            } else if (typeof pax.Fare.Tax === 'number' && pax.Fare.Tax >= paxMarkup) {
+              pax.Fare.Tax = Math.max(0, pax.Fare.Tax - paxMarkup);
+            } else if (typeof pax.Fare.BaseFare === 'number') {
+              pax.Fare.BaseFare = Math.max(0, pax.Fare.BaseFare - paxMarkup);
+            }
+            if (pax.Fare.SupplierBaseFare !== undefined) {
+              pax.Fare.BaseFare = pax.Fare.SupplierBaseFare;
+            }
           }
         }
         if (pax.Fare) {
           delete pax.Fare.AgencyMarkup;
+          delete pax.Fare.SupplierBaseFare;
+          delete pax.Fare.SupplierTax;
+          delete pax.Fare.SupplierOtherCharges;
           delete pax.Fare.IsDomestic;
         }
         delete pax.AgencyMarkup;
