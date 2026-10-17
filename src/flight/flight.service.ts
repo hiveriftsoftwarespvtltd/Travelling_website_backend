@@ -644,6 +644,50 @@ export class FlightService implements OnApplicationBootstrap {
         }
 
         if (tboError?.ErrorCode === 25 || tboError?.ErrorCode === 2) {
+          // If RoundTrip (JourneyType 2) with 2 segments returns No result found (common for domestic Indian routes where LCCs sell point-to-point fares),
+          // fallback to fetching Outbound and Return in parallel and merge them into Results: [outboundFlights, returnFlights]
+          if (searchDto.JourneyType === 2 && searchDto.Segments?.length === 2) {
+            this.logger.log('🔄 Round-trip pairing returned no combined fares. Executing parallel outbound & return searches...');
+            const outDto: FlightSearchDto = {
+              ...searchDto,
+              JourneyType: 1,
+              Segments: [searchDto.Segments[0]],
+            };
+            const retDto: FlightSearchDto = {
+              ...searchDto,
+              JourneyType: 1,
+              Segments: [searchDto.Segments[1]],
+            };
+
+            const [outData, retData] = await Promise.all([
+              this.executeTboSearch(outDto, endUserIp, `${searchCacheKey}:out`).catch(() => null),
+              this.executeTboSearch(retDto, endUserIp, `${searchCacheKey}:ret`).catch(() => null),
+            ]);
+
+            const outFlights = outData?.Response?.Results?.[0] || [];
+            const retFlights = retData?.Response?.Results?.[0] || [];
+
+            if (outFlights.length > 0 || retFlights.length > 0) {
+              const now = Date.now();
+              const mergedData = {
+                Response: {
+                  ResponseStatus: 1,
+                  TraceId: outData?.Response?.TraceId || retData?.Response?.TraceId,
+                  Origin: searchDto.Segments[0].Origin,
+                  Destination: searchDto.Segments[0].Destination,
+                  Results: [outFlights, retFlights],
+                  Error: null,
+                },
+              };
+              this.flightSearchCache.set(searchCacheKey, {
+                data: mergedData,
+                freshUntil: now + 15 * 60 * 1000,
+                staleUntil: now + 2 * 60 * 60 * 1000,
+              });
+              return mergedData;
+            }
+          }
+
           this.logger.warn(`⚠️ TBO Search: No flights found (ErrorCode ${tboError?.ErrorCode})`);
           return data;
         }

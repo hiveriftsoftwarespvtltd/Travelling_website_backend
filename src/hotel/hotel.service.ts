@@ -20,8 +20,10 @@ import {
 } from './schemas/hotel-booking.schema';
 
 // ─── TBO Shared Auth (same as flight module) ────────────────────────────────
-const AUTH_URL =
-  'http://Sharedapi.tektravels.com/SharedData.svc/rest/Authenticate';
+const getAuthUrl = () => {
+  const base = process.env.TBO_AUTH_BASE_URL || 'http://Sharedapi.tektravels.com/SharedData.svc/rest';
+  return base.endsWith('/Authenticate') ? base : `${base.replace(/\/+$/, '')}/Authenticate`;
+};
 
 // ─── TBO Hotel API Endpoints ─────────────────────────────────────────────────
 // Affiliate (Search + PreBook) — no TokenId in body, use Basic Auth from JiyoLife credentials
@@ -125,7 +127,7 @@ export class HotelService implements OnModuleInit {
     const authIp = process.env.END_USER_IP || '68.178.170.69';
     try {
       const response = await axios.post(
-        AUTH_URL,
+        getAuthUrl(),
         { ...AUTH_CREDENTIALS, EndUserIp: authIp },
         { headers: { 'Content-Type': 'application/json' }, timeout: 15000 },
       );
