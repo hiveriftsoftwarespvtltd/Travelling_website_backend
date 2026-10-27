@@ -13,10 +13,8 @@ export class DestinationDto {
   @IsNotEmpty()
   name: string;
 
-  @IsNumber()
-  @Min(0)
   @IsOptional()
-  listings?: number;
+  listings?: any;
 
   @IsString()
   @IsNotEmpty()
@@ -109,4 +107,36 @@ export class DestinationDto {
   @IsBoolean()
   @IsOptional()
   isPopularTour?: boolean;
+
+  @IsString()
+  @IsOptional()
+  category?: string;
+
+  @IsString()
+  @IsOptional()
+  location?: string;
+
+  @IsString()
+  @IsOptional()
+  itinerary?: string;
+
+  @IsString()
+  @IsOptional()
+  inclusions?: string;
+
+  @IsString()
+  @IsOptional()
+  exclusions?: string;
+
+  @IsString()
+  @IsOptional()
+  termsConditions?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  featuredTour?: boolean;
+
+  @IsString()
+  @IsOptional()
+  status?: string;
 }

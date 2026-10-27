@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export type DestinationDocument = Destination & Document;
 
@@ -11,8 +11,8 @@ export class Destination {
   @Prop({ required: true })
   image: string; // Thumbnail for lists, e.g., tour_3_1.jpg
 
-  @Prop({ required: false, default: 0 })
-  listings: number; // Number of tours associated with it
+  @Prop({ required: false, type: MongooseSchema.Types.Mixed, default: '' })
+  listings: any; // Number of tours, spots, places or custom text info
 
   @Prop({ required: false })
   price: string;
