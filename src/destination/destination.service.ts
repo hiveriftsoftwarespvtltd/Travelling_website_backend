@@ -57,14 +57,28 @@ export class DestinationService implements OnModuleInit {
       destination = await this.destinationModel.findById(idOrSlug).exec();
     }
     if (!destination && idOrSlug) {
-      destination = await this.destinationModel.findOne({
-        name: { $regex: new RegExp(`^${idOrSlug}$`, 'i') }
-      }).exec();
-    }
-    if (!destination && idOrSlug) {
-      destination = await this.destinationModel.findOne({
-        name: { $regex: new RegExp(idOrSlug, 'i') }
-      }).exec();
+      try {
+        const decoded = decodeURIComponent(idOrSlug).trim();
+        const normalized = decoded.replace(/[-_]+/g, ' ').trim();
+        const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        destination = await this.destinationModel.findOne({
+          $or: [
+            { name: { $regex: new RegExp(`^${escapeRegex(decoded)}$`, 'i') } },
+            { name: { $regex: new RegExp(`^${escapeRegex(normalized)}$`, 'i') } },
+            { pageTitle: { $regex: new RegExp(`^${escapeRegex(normalized)}$`, 'i') } },
+          ],
+        }).exec();
+
+        if (!destination) {
+          destination = await this.destinationModel.findOne({
+            name: { $regex: new RegExp(escapeRegex(normalized), 'i') }
+          }).exec();
+        }
+      } catch (e) {
+        // Fallback to direct query
+        destination = await this.destinationModel.findOne({ name: idOrSlug }).exec();
+      }
     }
     if (!destination) {
       const capitalized = idOrSlug ? idOrSlug.charAt(0).toUpperCase() + idOrSlug.slice(1) : 'Explore Destination';
