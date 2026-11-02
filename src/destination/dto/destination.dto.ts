@@ -114,6 +114,10 @@ export class DestinationDto {
 
   @IsString()
   @IsOptional()
+  packageType?: string;
+
+  @IsString()
+  @IsOptional()
   location?: string;
 
   @IsString()

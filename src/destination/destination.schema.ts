@@ -83,6 +83,9 @@ export class Destination {
   @Prop({ required: false })
   category: string;
 
+  @Prop({ required: false, default: 'Domestic' })
+  packageType: string; // 'Domestic' | 'International'
+
   @Prop({ required: false })
   location: string;
 
