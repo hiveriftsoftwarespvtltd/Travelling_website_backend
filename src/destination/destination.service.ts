@@ -66,6 +66,7 @@ export class DestinationService implements OnModuleInit {
           $or: [
             { name: { $regex: new RegExp(`^${escapeRegex(decoded)}$`, 'i') } },
             { name: { $regex: new RegExp(`^${escapeRegex(normalized)}$`, 'i') } },
+            { destination: { $regex: new RegExp(`^${escapeRegex(normalized)}$`, 'i') } },
             { pageTitle: { $regex: new RegExp(`^${escapeRegex(normalized)}$`, 'i') } },
           ],
         }).exec();

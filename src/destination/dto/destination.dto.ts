@@ -13,6 +13,10 @@ export class DestinationDto {
   @IsNotEmpty()
   name: string;
 
+  @IsString()
+  @IsOptional()
+  destination?: string;
+
   @IsOptional()
   listings?: any;
 

@@ -8,6 +8,9 @@ export class Destination {
   @Prop({ required: true })
   name: string; // The title/location name, e.g., Dubai
 
+  @Prop({ required: false })
+  destination: string; // Specific destination place/city/region name
+
   @Prop({ required: true })
   image: string; // Thumbnail for lists, e.g., tour_3_1.jpg
 
