@@ -688,6 +688,62 @@ export class FlightService implements OnApplicationBootstrap {
             }
           }
 
+          // ─── Multi-City Fallback (JourneyType 3) ───────────────────────────────
+          // TBO API can't handle 4+ mixed segments in a single multi-city call.
+          // Fallback: search each segment individually as OneWay and merge results.
+          if (searchDto.JourneyType === 3 && searchDto.Segments?.length >= 2) {
+            this.logger.log(
+              `🔄 Multi-city with ${searchDto.Segments.length} segments returned no combined fares. Executing per-segment parallel OneWay searches...`,
+            );
+
+            const segmentSearches = searchDto.Segments.map((seg, idx) => {
+              const segDto: FlightSearchDto = {
+                ...searchDto,
+                JourneyType: 1,
+                Segments: [seg],
+              };
+              return this.executeTboSearch(
+                segDto,
+                endUserIp,
+                `${searchCacheKey}:seg${idx}`,
+              ).catch(() => null);
+            });
+
+            const segmentResults = await Promise.all(segmentSearches);
+
+            // Each element of Results[] = one segment's flights
+            const mergedResults = segmentResults.map(
+              (res) => res?.Response?.Results?.[0] || [],
+            );
+            const hasAnyFlights = mergedResults.some((r) => r.length > 0);
+
+            if (hasAnyFlights) {
+              const now = Date.now();
+              const firstTrace = segmentResults.find((r) => r?.Response?.TraceId)?.Response?.TraceId;
+              const mergedData = {
+                Response: {
+                  ResponseStatus: 1,
+                  TraceId: firstTrace,
+                  Origin: searchDto.Segments[0].Origin,
+                  Destination: searchDto.Segments[searchDto.Segments.length - 1].Destination,
+                  Results: mergedResults,
+                  MultiCityFallback: true,   // ← tells frontend: each Results[i] = one segment's flights
+                  Error: null,
+                },
+              };
+              this.flightSearchCache.set(searchCacheKey, {
+                data: mergedData,
+                freshUntil: now + 15 * 60 * 1000,
+                staleUntil: now + 2 * 60 * 60 * 1000,
+              });
+              this.logger.log(
+                `✅ Multi-city fallback success! Segments: ${mergedResults.map((r, i) => `Seg${i + 1}:${r.length}`).join(', ')} flights`,
+              );
+              return mergedData;
+            }
+          }
+          // ─────────────────────────────────────────────────────────────────────
+
           this.logger.warn(`⚠️ TBO Search: No flights found (ErrorCode ${tboError?.ErrorCode})`);
           return data;
         }
