@@ -711,10 +711,12 @@ export class FlightService implements OnApplicationBootstrap {
 
             const segmentResults = await Promise.all(segmentSearches);
 
-            // Each element of Results[] = one segment's flights
-            const mergedResults = segmentResults.map(
-              (res) => res?.Response?.Results?.[0] || [],
-            );
+            // Each element of Results[] = one segment's flights (tagged with that segment's TraceId)
+            const mergedResults = segmentResults.map((res) => {
+              const segTrace = res?.Response?.TraceId;
+              const flights = res?.Response?.Results?.[0] || [];
+              return flights.map((f) => ({ ...f, TraceId: segTrace }));
+            });
             const hasAnyFlights = mergedResults.some((r) => r.length > 0);
 
             if (hasAnyFlights) {
