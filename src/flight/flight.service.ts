@@ -1237,6 +1237,53 @@ export class FlightService implements OnApplicationBootstrap {
   // ─── Step 9: SSR (Meals, Baggage, Seats) ────────────────────────────────
   async getSSR(reqBody: any, endUserIp: string) {
     const tokenId = await this.getToken(endUserIp);
+    const resultIndexStr = String(reqBody.ResultIndex || '');
+
+    // Handle Round-Trip / Multi-segment comma-separated ResultIndex
+    if (resultIndexStr.includes(',')) {
+      const indices = resultIndexStr.split(',').map((s: string) => s.trim()).filter(Boolean);
+      this.logger.log(`🍽️ Multi-segment SSR request for indices: ${indices.join(', ')}`);
+
+      const responses = await Promise.all(
+        indices.map((idx) =>
+          this.getSSR({ ...reqBody, ResultIndex: idx }, endUserIp).catch(() => null)
+        )
+      );
+
+      const extractList = (data: any) => {
+        if (!data || !Array.isArray(data) || data.length === 0) return [];
+        if (Array.isArray(data[0])) return data[0];
+        return data;
+      };
+
+      const extractSeat = (r: any) => {
+        const sd = r?.Response?.SeatDynamic;
+        if (!sd) return { SegmentSeat: [] };
+        if (Array.isArray(sd)) {
+          if (sd.length === 0) return { SegmentSeat: [] };
+          if (sd[0]?.SegmentSeat) return sd[0];
+          return { SegmentSeat: sd };
+        }
+        if (sd.SegmentSeat) return sd;
+        return { SegmentSeat: [] };
+      };
+
+      const mergedBaggage = responses.map((r) => extractList(r?.Response?.Baggage));
+      const mergedMeals = responses.map((r) => extractList(r?.Response?.MealDynamic || r?.Response?.Meal));
+      const mergedSeats = responses.map(extractSeat);
+
+      return {
+        Response: {
+          ResponseStatus: 1,
+          TraceId: reqBody.TraceId,
+          Baggage: mergedBaggage,
+          MealDynamic: mergedMeals,
+          Meal: mergedMeals,
+          SeatDynamic: mergedSeats,
+          SeatPreferences: responses.flatMap((r) => r?.Response?.SeatPreferences || [])
+        }
+      };
+    }
 
     const payload = {
       EndUserIp: endUserIp,
