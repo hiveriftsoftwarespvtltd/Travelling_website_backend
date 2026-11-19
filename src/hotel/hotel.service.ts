@@ -215,11 +215,19 @@ export class HotelService implements OnModuleInit {
 
         const hotels = hotelCodesRes?.Hotels || [];
         if (hotels.length > 0) {
-          // Limit to max 100 hotel codes per request as recommended by TBO
-          payload.HotelCodes = hotels
-            .slice(0, 100)
-            .map((h: any) => h.HotelCode)
-            .join(',');
+          // TBO certification rule: batches of max 100 HotelCodes sent in parallel
+          const hotelBatches: string[] = [];
+          const maxHotelsToSearch = hotels.slice(0, 300); // Up to 3 parallel requests = 300 hotels
+          for (let i = 0; i < maxHotelsToSearch.length; i += 100) {
+            hotelBatches.push(
+              maxHotelsToSearch
+                .slice(i, i + 100)
+                .map((h: any) => h.HotelCode)
+                .join(','),
+            );
+          }
+          payload.HotelCodes = hotelBatches[0];
+          (payload as any)._allBatches = hotelBatches;
         } else {
           fs.appendFileSync(
             'search_debug.log',
@@ -245,15 +253,61 @@ export class HotelService implements OnModuleInit {
       );
     }
 
-    // Dynamic ResponseTime between 5 and 23 sec based on hotel count as mandated by TBO
-    const hotelCount = payload.HotelCodes ? payload.HotelCodes.split(',').filter(Boolean).length : 1;
-    payload.ResponseTime = Math.min(23.0, Math.max(5.0, Number((5.0 + (hotelCount / 100) * 18.0).toFixed(1))));
-
-    this.logger.log(
-      `🏨 Affiliate Hotel Search: CheckIn=${payload.CheckIn} CheckOut=${payload.CheckOut} HotelCodesCount=${hotelCount} ResponseTime=${payload.ResponseTime}s HotelCodes=${payload.HotelCodes ? payload.HotelCodes.substring(0, 50) + '...' : 'none'}`,
-    );
+    const allBatches: string[] = (payload as any)._allBatches || (payload.HotelCodes ? [payload.HotelCodes] : []);
+    delete (payload as any)._allBatches;
 
     try {
+      // If city has >100 hotels, send parallel requests of max 100 codes each as required by TBO
+      if (allBatches.length > 1) {
+        this.logger.log(
+          `🏨 TBO Parallel Searches: Sending ${allBatches.length} parallel requests of max 100 hotel codes each as mandated by TBO`,
+        );
+
+        const parallelRequests = allBatches.map(async (batchCodes) => {
+          const bCount = batchCodes.split(',').filter(Boolean).length;
+          const bResponseTime = Math.min(23.0, Math.max(5.0, Number((5.0 + (bCount / 100) * 18.0).toFixed(1))));
+          const bPayload = {
+            ...payload,
+            HotelCodes: batchCodes,
+            ResponseTime: bResponseTime,
+          };
+
+          const res = await axios.post(HOTEL_SEARCH_URL, bPayload, {
+            auth: AFFILIATE_AUTH,
+            headers: { 'Content-Type': 'application/json' },
+            timeout: 45000,
+          });
+          return res.data;
+        });
+
+        const results = await Promise.allSettled(parallelRequests);
+        const combinedHotelResults: any[] = [];
+        let finalStatus = { Code: 200, Description: 'Successful' };
+
+        for (const r of results) {
+          if (r.status === 'fulfilled' && r.value?.HotelResult) {
+            combinedHotelResults.push(...r.value.HotelResult);
+            if (r.value?.Status?.Code === 200) finalStatus = r.value.Status;
+          }
+        }
+
+        const count = combinedHotelResults.length;
+        this.logger.log(`✅ TBO Parallel Hotel Search found ${count} hotels across ${allBatches.length} parallel batches`);
+
+        return {
+          Status: finalStatus,
+          HotelResult: combinedHotelResults,
+        };
+      }
+
+      // Single batch execution (<= 100 hotel codes)
+      const hotelCount = payload.HotelCodes ? payload.HotelCodes.split(',').filter(Boolean).length : 1;
+      payload.ResponseTime = Math.min(23.0, Math.max(5.0, Number((5.0 + (hotelCount / 100) * 18.0).toFixed(1))));
+
+      this.logger.log(
+        `🏨 Affiliate Hotel Search: CheckIn=${payload.CheckIn} CheckOut=${payload.CheckOut} HotelCodesCount=${hotelCount} ResponseTime=${payload.ResponseTime}s HotelCodes=${payload.HotelCodes ? payload.HotelCodes.substring(0, 50) + '...' : 'none'}`,
+      );
+
       const response = await axios.post(HOTEL_SEARCH_URL, payload, {
         auth: AFFILIATE_AUTH, // Basic Auth with JiyoLife credentials
         headers: { 'Content-Type': 'application/json' },
