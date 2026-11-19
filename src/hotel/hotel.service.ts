@@ -158,6 +158,161 @@ export class HotelService implements OnModuleInit {
     this.tokenExpiry = 0;
   }
 
+  // ─── Helper: Parse Star Rating to Number (1 to 5) ────────────────────────
+  private parseRatingToNumber(rating: any): number {
+    if (typeof rating === 'number') {
+      return Math.max(1, Math.min(5, Math.round(rating)));
+    }
+    if (!rating) return 3;
+    const s = String(rating).toLowerCase();
+    if (s.includes('five') || s.includes('5')) return 5;
+    if (s.includes('four') || s.includes('4')) return 4;
+    if (s.includes('three') || s.includes('3')) return 3;
+    if (s.includes('two') || s.includes('2')) return 2;
+    if (s.includes('one') || s.includes('1')) return 1;
+    return 3;
+  }
+
+  // ─── Helper: Deterministic Curated Luxury Hotel Image Pool ───────────────
+  private getCuratedFallbackImage(hotelCode: string): string {
+    const images = [
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1591088398332-8a7791972843?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=800&q=80',
+    ];
+    let hash = 0;
+    const str = String(hotelCode || '0');
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    const idx = Math.abs(hash) % images.length;
+    return images[idx];
+  }
+
+  // ─── Helper: Augment Hotel Search Results with Static Metadata & Images ───
+  private async augmentHotelResults(
+    hotelResults: any[],
+    cityHotelsMap?: Map<string, any>,
+  ): Promise<any[]> {
+    if (!hotelResults || hotelResults.length === 0) return [];
+
+    // Step 1: Pre-populate from cityHotelsMap (Name, Rating, Address from TBOHotelCodeList)
+    const augmented = hotelResults.map((h) => {
+      const code = String(h.HotelCode || '');
+      const cityInfo = cityHotelsMap?.get(code);
+      const name = h.HotelName || cityInfo?.HotelName || `Hotel ${code}`;
+      const rating = h.HotelRating || cityInfo?.HotelRating || 3;
+      const starRatingNum = this.parseRatingToNumber(h.StarRating || rating);
+      const address = h.HotelAddress || cityInfo?.Address || '';
+      return {
+        ...h,
+        HotelName: name,
+        HotelRating: rating,
+        StarRating: starRatingNum,
+        HotelAddress: address,
+        HotelPicture: h.HotelPicture || '',
+      };
+    });
+
+    // Step 2: Fetch detailed static data (Real photos, amenities, etc.) from TBO STATIC_HOTEL_DETAILS
+    const uniqueCodes = Array.from(
+      new Set(augmented.map((h) => String(h.HotelCode)).filter(Boolean)),
+    );
+
+    if (uniqueCodes.length > 0) {
+      try {
+        // Chunk into groups of 50 to respect TBO limits and ensure quick parallel responses
+        const chunks: string[][] = [];
+        for (let i = 0; i < uniqueCodes.length; i += 50) {
+          chunks.push(uniqueCodes.slice(i, i + 50));
+        }
+
+        const detailPromises = chunks.map(async (chunk) => {
+          try {
+            const res = await axios.post(
+              STATIC_HOTEL_DETAILS,
+              { Hotelcodes: chunk.join(','), Language: 'EN' },
+              {
+                auth: STATIC_API_AUTH,
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 8000,
+              },
+            );
+            return res.data?.HotelDetails || [];
+          } catch (err) {
+            this.logger.warn(`Static details chunk fetch error: ${err?.message}`);
+            return [];
+          }
+        });
+
+        const settled = await Promise.allSettled(detailPromises);
+        const staticMap = new Map<string, any>();
+        for (const s of settled) {
+          if (s.status === 'fulfilled' && Array.isArray(s.value)) {
+            for (const item of s.value) {
+              if (item.HotelCode) staticMap.set(String(item.HotelCode), item);
+            }
+          }
+        }
+
+        for (const h of augmented) {
+          const code = String(h.HotelCode);
+          const details = staticMap.get(code);
+          if (details) {
+            if (details.HotelName) h.HotelName = details.HotelName;
+            if (details.Image || details.HotelPicture) {
+              h.HotelPicture = details.Image || details.HotelPicture;
+            } else if (Array.isArray(details.Images) && details.Images.length > 0) {
+              h.HotelPicture = details.Images[0];
+            }
+            if (Array.isArray(details.Images)) {
+              h.Images = details.Images;
+            }
+            if (details.HotelRating || details.StarRating) {
+              h.HotelRating = details.HotelRating || details.StarRating;
+              h.StarRating = this.parseRatingToNumber(details.HotelRating || details.StarRating);
+            }
+            if (details.Address) h.HotelAddress = details.Address;
+            if (details.HotelFacilities) h.HotelFacilities = details.HotelFacilities;
+            if (details.Description) h.Description = details.Description;
+          }
+        }
+      } catch (err) {
+        this.logger.warn(`Failed during static detail augmentation: ${err?.message}`);
+      }
+    }
+
+    // Step 3: Fallback assurance for any hotel missing a photo or star rating
+    for (const h of augmented) {
+      if (
+        !h.HotelPicture ||
+        !h.HotelPicture.startsWith('http') ||
+        h.HotelPicture.includes('HotelNA')
+      ) {
+        h.HotelPicture = this.getCuratedFallbackImage(String(h.HotelCode));
+      }
+      if (!h.StarRating) {
+        h.StarRating = this.parseRatingToNumber(h.HotelRating || 3);
+      }
+    }
+
+    this.logger.log(`✅ Successfully augmented ${augmented.length} hotel results with names, ratings, and photos`);
+    return augmented;
+  }
+
   // ─── 1. Search Hotels ──────────────────────────────────────────────────────
   // POST https://affiliate.tektravels.com/HotelAPI/Search
   // Affiliate API — uses Basic Auth (JiyoLife credentials), NO TokenId in body
@@ -197,6 +352,8 @@ export class HotelService implements OnModuleInit {
       },
     };
 
+    const cityHotelsMap = new Map<string, any>();
+
     // HotelCodes filter (comma-separated string)
     if (body.HotelCodes) {
       payload.HotelCodes = body.HotelCodes;
@@ -215,6 +372,11 @@ export class HotelService implements OnModuleInit {
 
         const hotels = hotelCodesRes?.Hotels || [];
         if (hotels.length > 0) {
+          for (const h of hotels) {
+            if (h.HotelCode) {
+              cityHotelsMap.set(String(h.HotelCode), h);
+            }
+          }
           // TBO certification rule: batches of max 100 HotelCodes sent in parallel
           const hotelBatches: string[] = [];
           const maxHotelsToSearch = hotels.slice(0, 300); // Up to 3 parallel requests = 300 hotels
@@ -294,9 +456,11 @@ export class HotelService implements OnModuleInit {
         const count = combinedHotelResults.length;
         this.logger.log(`✅ TBO Parallel Hotel Search found ${count} hotels across ${allBatches.length} parallel batches`);
 
+        const augmentedResults = await this.augmentHotelResults(combinedHotelResults, cityHotelsMap);
+
         return {
           Status: finalStatus,
-          HotelResult: combinedHotelResults,
+          HotelResult: augmentedResults,
         };
       }
 
@@ -332,49 +496,8 @@ export class HotelService implements OnModuleInit {
       const count = data?.HotelResult?.length ?? 0;
       this.logger.log(`✅ Affiliate Hotel Search found ${count} hotels`);
 
-      // ─── Augment with Static Data (HotelName, Image, Rating, etc.) ────────
       if (count > 0) {
-        try {
-          // Fetch static data for up to 100 hotels (TBO max limit)
-          const hotelCodesToFetch = data.HotelResult.slice(0, 100)
-            .map((h: any) => h.HotelCode)
-            .join(',');
-          const staticDataRes = await this.getHotelDetails(hotelCodesToFetch);
-
-          if (staticDataRes?.HotelDetails) {
-            const staticMap = new Map();
-            staticDataRes.HotelDetails.forEach((sd: any) => {
-              staticMap.set(String(sd.HotelCode), sd);
-            });
-
-            data.HotelResult = data.HotelResult.map((h: any) => {
-              const staticInfo = staticMap.get(String(h.HotelCode));
-              if (staticInfo) {
-                return {
-                  ...h,
-                  HotelName: staticInfo.HotelName,
-                  HotelPicture:
-                    staticInfo.Image ||
-                    staticInfo.HotelPicture ||
-                    h.HotelPicture,
-                  HotelRating:
-                    staticInfo.StarRating ||
-                    staticInfo.HotelRating ||
-                    h.HotelRating ||
-                    h.StarRating,
-                  HotelAddress: staticInfo.Address || h.HotelAddress,
-                  HotelFacilities: staticInfo.HotelFacilities,
-                };
-              }
-              return h;
-            });
-            this.logger.log(`✅ Augmented search results with static data`);
-          }
-        } catch (e) {
-          this.logger.warn(
-            `⚠️ Failed to augment static data for search results: ${e.message}`,
-          );
-        }
+        data.HotelResult = await this.augmentHotelResults(data.HotelResult, cityHotelsMap);
       }
 
       // Return Affiliate response directly — frontend will handle HotelResult[] format
