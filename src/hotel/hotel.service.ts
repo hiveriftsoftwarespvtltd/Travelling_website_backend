@@ -811,6 +811,49 @@ export class HotelService implements OnModuleInit {
 
       return data;
     } catch (error) {
+      // TBO Mandate (Sheet 3 Item 38): If Book request times out (after 120s), check status via BookingDetail
+      const isTimeout =
+        error.code === 'ECONNABORTED' ||
+        (error.message && error.message.toLowerCase().includes('timeout'));
+      if (isTimeout && payload?.TraceId) {
+        this.logger.warn(
+          `⏳ Book RQ timed out after 120s. Verifying status via GetBookingDetail for TraceId=${payload.TraceId}...`,
+        );
+        try {
+          const detailRes = await this.getBookingDetail(
+            { TraceId: payload.TraceId },
+            endUserIp,
+          );
+          const bDetail =
+            detailRes?.GetBookingDetailResult ||
+            detailRes?.HotelBookingDetailResponse ||
+            detailRes;
+          if (
+            bDetail?.BookingId &&
+            (bDetail.HotelBookingStatus === 'Confirmed' ||
+              bDetail.BookingStatus === 'Confirmed' ||
+              bDetail.HotelBookingStatus === '1')
+          ) {
+            this.logger.log(
+              `✅ TBO Booking confirmed via GetBookingDetail after timeout! BookingId: ${bDetail.BookingId}`,
+            );
+            bookingRecord.status = 'CONFIRMED';
+            bookingRecord.bookingId = bDetail.BookingId.toString();
+            bookingRecord.confirmationNo = bDetail.ConfirmationNo;
+            bookingRecord.apiLogs.response = bDetail;
+            await bookingRecord.save();
+            return {
+              Status: { Code: 200, Description: 'Successful' },
+              BookResult: bDetail,
+            };
+          }
+        } catch (detailErr) {
+          this.logger.error(
+            `Failed to verify booking detail after timeout: ${detailErr.message}`,
+          );
+        }
+      }
+
       bookingRecord.status = 'FAILED';
       bookingRecord.apiLogs = bookingRecord.apiLogs || {};
       bookingRecord.apiLogs.error = error?.response?.data || error?.message;
