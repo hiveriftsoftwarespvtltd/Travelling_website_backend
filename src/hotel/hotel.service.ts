@@ -652,9 +652,7 @@ export class HotelService implements OnModuleInit {
             GSTCompanyEmail: p.GSTCompanyEmail || null,
             // TBO certification rule: Only pass PAN if isPanMandatory is true
             ...(body.isPanMandatory && p.PAN ? { PAN: p.PAN } : {}),
-            PassportNo: p.PassportNo || null,
-            PassportIssueDate: p.PassportIssueDate || null,
-            PassportExpDate: p.PassportExpDate || null,
+            // TBO says passport not applicable for Indian domestic B2C — do NOT send passport nodes
           };
         }),
       })),
