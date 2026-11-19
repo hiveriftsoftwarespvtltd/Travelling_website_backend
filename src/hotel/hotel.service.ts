@@ -19,9 +19,9 @@ import {
   HotelBookingDocument,
 } from './schemas/hotel-booking.schema';
 
-// ─── TBO Shared Auth (same as flight module) ────────────────────────────────
+// ─── TBO Shared Auth (for Hotel B2B APIs) ────────────────────────────────
 const getAuthUrl = () => {
-  const base = process.env.TBO_AUTH_BASE_URL || 'http://Sharedapi.tektravels.com/SharedData.svc/rest';
+  const base = process.env.TBO_HOTEL_AUTH_BASE_URL || 'http://Sharedapi.tektravels.com/SharedData.svc/rest';
   return base.endsWith('/Authenticate') ? base : `${base.replace(/\/+$/, '')}/Authenticate`;
 };
 
@@ -55,24 +55,23 @@ const STATIC_TBO_HOTEL_CODES = `${STATIC_BASE_URL}/TBOHotelCodeList`;
 // B2B Auth credentials (used for Authenticate → TokenId flow)
 const AUTH_CREDENTIALS = {
   get ClientId() {
-    const raw = process.env.TBO_CLIENT_ID || 'ApiIntegrationNew';
-    return raw.toLowerCase() === 'tboprod' ? 'TBOPROD' : raw.trim();
+    return (process.env.TBO_HOTEL_CLIENT_ID || 'ApiIntegrationNew').trim();
   },
   get UserName() {
-    return (process.env.TBO_USERNAME || 'Lifejiyo').trim();
+    return (process.env.TBO_HOTEL_USERNAME || 'Lifejiyo').trim();
   },
   get Password() {
-    return (process.env.TBO_PASSWORD || 'Lifejiyo@123').trim();
+    return (process.env.TBO_HOTEL_PASSWORD || 'Lifejiyo@123').trim();
   },
 };
 
-// Affiliate API uses Basic Auth with JiyoLife credentials
+// Affiliate API uses Basic Auth with JiyoLife Hotel credentials (separate from B2B flight creds)
 const AFFILIATE_AUTH = {
   get username() {
-    return process.env.TBO_USERNAME || 'Lifejiyo';
+    return process.env.TBO_HOTEL_USERNAME || process.env.TBO_USERNAME || 'Lifejiyo';
   },
   get password() {
-    return process.env.TBO_PASSWORD || 'Lifejiyo@123';
+    return process.env.TBO_HOTEL_PASSWORD || process.env.TBO_PASSWORD || 'Lifejiyo@123';
   },
 };
 
@@ -399,12 +398,16 @@ export class HotelService implements OnModuleInit {
       body.ClientReferenceNumber ||
       `REF-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    const payload = {
+    const payload: any = {
       BookingCode: body.BookingCode, // ← CRITICAL: must be at root level for Affiliate BookingCodes
       ClientReferenceNo: Math.floor(Date.now() / 1000), // MUST BE INT32
       IsVoucherBooking: body.IsVoucherBooking ?? true,
       GuestNationality: body.GuestNationality || 'IN',
       EndUserIp: endUserIp,
+      TokenId: tokenId,
+      TraceId: body.TraceId,
+      ResultIndex: Number(body.ResultIndex || 1),
+      HotelCode: body.HotelCode || '',
       RequestedBookingMode: body.RequestedBookingMode || 5,
       NetAmount: body.NetAmount || 0, // NetAmount from Affiliate PreBook response
       ClientReferenceId: clientRef,
@@ -678,17 +681,23 @@ export class HotelService implements OnModuleInit {
 
   // ─── Get My Bookings ────────────────────────────────────────────────────────
   async getMyBookings(userId?: string, email?: string, phone?: string) {
-    const filter: any = {};
-    if (userId) filter.userId = userId;
-    else if (email) filter.email = email;
-    else if (phone) filter.phone = phone;
+    const conditions: any[] = [];
+    if (userId) conditions.push({ userId });
+    if (email) {
+      conditions.push({ email });
+      conditions.push({ 'guestDetails.HotelPassenger.Email': email });
+    }
+    if (phone) {
+      conditions.push({ phone });
+      conditions.push({ 'guestDetails.HotelPassenger.Phoneno': phone });
+    }
 
-    if (Object.keys(filter).length === 0) {
+    if (conditions.length === 0) {
       return [];
     }
 
     const bookings = await this.bookingModel
-      .find(filter)
+      .find({ $or: conditions })
       .sort({ createdAt: -1 })
       .exec();
     return bookings;
