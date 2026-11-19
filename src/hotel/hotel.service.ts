@@ -456,6 +456,15 @@ export class HotelService implements OnModuleInit {
       body.ClientReferenceNumber ||
       `REF-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
+    // Auto-extract TraceId from BookingCode if not provided (Format: <Code>!TB!<Index>!TB!<TraceId>!TB!<Policy>!TB!AFF!)
+    let traceId = (body.TraceId || '').toString().trim();
+    if (!traceId && body.BookingCode) {
+      const parts = body.BookingCode.split('!TB!');
+      if (parts.length >= 3 && parts[2]) {
+        traceId = parts[2].trim();
+      }
+    }
+
     const payload: any = {
       BookingCode: body.BookingCode, // ← CRITICAL: must be at root level for Affiliate BookingCodes
       ClientReferenceNo: Math.floor(Date.now() / 1000), // MUST BE INT32
@@ -463,7 +472,7 @@ export class HotelService implements OnModuleInit {
       GuestNationality: body.GuestNationality || 'IN',
       EndUserIp: endUserIp,
       TokenId: tokenId,
-      TraceId: body.TraceId,
+      TraceId: traceId,
       ResultIndex: Number(body.ResultIndex || 1),
       HotelCode: body.HotelCode || '',
       RequestedBookingMode: body.RequestedBookingMode || 5,
@@ -549,7 +558,7 @@ export class HotelService implements OnModuleInit {
       endUserIp,
       userId: body.userId || '',
       email: body.email || '',
-      traceId: body.TraceId,
+      traceId: traceId,
       apiLogs: { request: payload },
     });
     await bookingRecord.save();
@@ -596,13 +605,15 @@ export class HotelService implements OnModuleInit {
 
         // Auto Refund if payment ID is present
         if (bookingRecord.razorpayPaymentId) {
+          const refundAmount = bookingRecord.fareDetails?.TotalFare || bookingRecord.fareDetails?.NetAmount;
           const refundRes = await this.paymentService.processRefund(
             bookingRecord.razorpayPaymentId,
-            bookingRecord.fareDetails.NetAmount,
-            { reason: 'TBO Hotel booking failed' },
+            refundAmount,
+            { reason: 'TBO Hotel booking failed: ' + errMsg },
           );
           if (refundRes.success) {
             bookingRecord.status = 'REFUND_INITIATED';
+            bookingRecord.bookingId = `REFUND-${Date.now().toString().slice(-4)}`;
           }
         }
         bookingRecord.markModified('apiLogs');
